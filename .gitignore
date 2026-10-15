@@ -1,0 +1,67 @@
+# ===================================
+# Unity (6000.0.85f1) .gitignore
+# ===================================
+
+# Unity'nin otomatik ürettiği klasörler (asla commit edilmez)
+[Ll]ibrary/
+[Tt]emp/
+[Oo]bj/
+[Bb]uild/
+[Bb]uilds/
+[Ll]ogs/
+[Uu]ser[Ss]ettings/
+[Mm]emoryCaptures/
+[Rr]ecordings/
+
+# Build çıktıları (teslim ZIP'i ayrıca hazırlanacak, repoya konmaz)
+*.apk
+*.aab
+*.unitypackage
+*.app
+ExportedObj/
+*.exe
+*.pdb
+
+# Unity crash raporları
+sysinfo.txt
+crashlytics-build.properties
+
+# Asset Store araçları
+[Aa]ssets/AssetStoreTools*
+[Aa]ssets/Plugins/Editor/JetBrains*
+
+# IDE / Editör dosyaları
+.vs/
+.vscode/
+.idea/
+*.csproj
+*.unityproj
+*.sln
+*.suo
+*.tmp
+*.user
+*.userprefs
+*.pidb
+*.booproj
+*.svd
+*.pdb.meta
+*.mdb
+*.mdb.meta
+*.opendb
+*.VC.db
+
+# Rider
+.idea/
+
+# Gradle (mobil build olursa)
+.gradle/
+
+# OS dosyaları
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Addressables & Streaming
+/[Aa]ssets/[Aa]ddressable[Aa]ssets[Dd]ata/*/*.bin*
+/[Aa]ssets/[Ss]treamingAssets/aa.meta
+/[Aa]ssets/[Ss]treamingAssets/aa/*
