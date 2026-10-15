@@ -25,6 +25,7 @@ ExportedObj/
 # Unity crash raporları
 sysinfo.txt
 crashlytics-build.properties
+crashlytics-buildid.txt
 
 # Asset Store araçları
 [Aa]ssets/AssetStoreTools*
@@ -37,11 +38,13 @@ crashlytics-build.properties
 *.csproj
 *.unityproj
 *.sln
+*.slnx
 *.suo
 *.tmp
 *.user
 *.userprefs
 *.pidb
+*.pidb.meta
 *.booproj
 *.svd
 *.pdb.meta
