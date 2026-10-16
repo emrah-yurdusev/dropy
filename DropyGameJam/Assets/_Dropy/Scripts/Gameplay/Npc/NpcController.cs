@@ -50,9 +50,9 @@ namespace Dropy.Gameplay
         [SerializeField] FaceController face;
 
         [Header("Hareket")]
-        [SerializeField, Min(0.1f)] float walkSpeed = 1.1f;
-        [Tooltip("Walk animasyonu 1x hızdayken karakterin kat ettiği mesafe (m/sn). Ayak kayıyorsa bunu ayarlayın")]
-        [SerializeField, Min(0.05f)] float walkAnimSpeed = 0.42f;
+        [SerializeField, Min(0.1f)] float walkSpeed = 0.85f;
+        [Tooltip("Walk animasyonu 1x hızdayken karakterin kat ettiği mesafe (m/sn). Klipteki basan ayağın hızından ölçüldü; ayak kayıyorsa bunu ayarlayın")]
+        [SerializeField, Min(0.05f)] float walkAnimSpeed = 0.31f;
         [Tooltip("Yerinde dönme hızı (derece/saniye)")]
         [SerializeField, Min(1f)] float turnSpeed = 360f;
         [Tooltip("Oturmadan önce Sit Point'e kayarak hizalanma süresi")]

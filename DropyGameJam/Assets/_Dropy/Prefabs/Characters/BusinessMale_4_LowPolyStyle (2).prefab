@@ -156,7 +156,7 @@ NavMeshAgent:
   m_Enabled: 1
   m_AgentTypeID: 0
   m_Radius: 0.25
-  m_Speed: 1.1
+  m_Speed: 0.85
   m_Acceleration: 6
   avoidancePriority: 50
   m_AngularSpeed: 400
@@ -182,8 +182,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   animator: {fileID: 0}
   face: {fileID: 0}
-  walkSpeed: 1.1
-  walkAnimSpeed: 0.42
+  walkSpeed: 0.85
+  walkAnimSpeed: 0.31
   turnSpeed: 360
   sitAlignTime: 0.3
   playRoutineOnStart: 1
