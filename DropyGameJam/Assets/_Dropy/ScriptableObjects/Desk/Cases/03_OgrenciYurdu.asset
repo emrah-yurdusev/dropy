@@ -1,0 +1,27 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b53e488de2e93c841b0e8998a55e2701, type: 3}
+  m_Name: 03_OgrenciYurdu
+  m_EditorClassIdentifier: 
+  contractorName: Murat Demir
+  buildingName: "\xD6\u011Frenci Yurdu"
+  contractorPrefab: {fileID: 0}
+  documents:
+  - {fileID: 11400000, guid: 4ccc0b47108d76c40be067e202b67aef, type: 2}
+  - {fileID: 11400000, guid: bfeb1083effa29842850c5e66d723ecb, type: 2}
+  - {fileID: 11400000, guid: 2e61a440794ca4040a9f9de4e09016c5, type: 2}
+  dialogue: {fileID: 11400000, guid: c7040593662db8045b10dbb54762a52a, type: 2}
+  bribeAmount: 0
+  approvedLine: "Te\u015Fekk\xFCrler, in\u015Faata hemen ba\u015Fl\u0131yoruz."
+  revisedLine: "Kaz\u0131kl\u0131 temel... Hakl\u0131s\u0131n\u0131z, orada 400 gen\xE7
+    kalacak. D\xFCzelttirece\u011Fim."
+  rejectedLine: "Yurt da yap\u0131lmazsa bu \xE7ocuklar nerede kalacak?"

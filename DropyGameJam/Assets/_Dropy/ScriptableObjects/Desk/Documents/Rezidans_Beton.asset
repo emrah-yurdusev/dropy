@@ -1,0 +1,28 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d0061260a9dace34c8ebf2881a79f5b6, type: 3}
+  m_Name: Rezidans_Beton
+  m_EditorClassIdentifier: 
+  title: Beton Test Raporu
+  kind: 3
+  subtitle: Laboratuvar sonucu
+  fields:
+  - label: "Beton s\u0131n\u0131f\u0131"
+    value: C16
+    isFatalFlaw: 1
+  - label: Agrega
+    value: "Deniz kumu (y\u0131kanmam\u0131\u015F)"
+    isFatalFlaw: 1
+  - label: "Klor\xFCr testi"
+    value: "Yap\u0131lmad\u0131"
+    isFatalFlaw: 0
+  footer: 

@@ -1,0 +1,34 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d0061260a9dace34c8ebf2881a79f5b6, type: 3}
+  m_Name: Gunes_Pafta
+  m_EditorClassIdentifier: 
+  title: "Proje Paftas\u0131"
+  kind: 1
+  subtitle: "Statik proje \xF6zeti"
+  fields:
+  - label: "Zemin kat y\xFCksekli\u011Fi"
+    value: 3,0 m
+    isFatalFlaw: 0
+  - label: "Normal kat y\xFCksekli\u011Fi"
+    value: 3,0 m
+    isFatalFlaw: 0
+  - label: Kolonlar
+    value: 16 adet, kesintisiz
+    isFatalFlaw: 0
+  - label: Perde duvar
+    value: 4 adet, simetrik
+    isFatalFlaw: 0
+  - label: "Balkon derinli\u011Fi"
+    value: 1,35 m (projede 1,20 m)
+    isFatalFlaw: 0
+  footer: 
