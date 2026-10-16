@@ -1,0 +1,34 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d0061260a9dace34c8ebf2881a79f5b6, type: 3}
+  m_Name: Yurt_Basvuru
+  m_EditorClassIdentifier: 
+  title: "Ba\u015Fvuru Formu"
+  kind: 0
+  subtitle: "Yap\u0131 vize ba\u015Fvurusu"
+  fields:
+  - label: Proje
+    value: "Belediye \xD6\u011Frenci Yurdu"
+    isFatalFlaw: 0
+  - label: "M\xFCteahhit"
+    value: "Demir Yap\u0131"
+    isFatalFlaw: 0
+  - label: "Kat say\u0131s\u0131"
+    value: Zemin + 6
+    isFatalFlaw: 0
+  - label: Kapasite
+    value: "400 \xF6\u011Frenci"
+    isFatalFlaw: 0
+  - label: Parsel
+    value: "Ada 7 / Parsel 21 (dere kenar\u0131)"
+    isFatalFlaw: 0
+  footer: "Ba\u015Fvuru No: 2026/0421"

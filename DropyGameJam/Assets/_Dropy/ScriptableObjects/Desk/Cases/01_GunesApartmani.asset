@@ -1,0 +1,27 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b53e488de2e93c841b0e8998a55e2701, type: 3}
+  m_Name: 01_GunesApartmani
+  m_EditorClassIdentifier: 
+  contractorName: "Hasan Y\u0131lmaz"
+  buildingName: "G\xFCne\u015F Apartman\u0131"
+  contractorPrefab: {fileID: 0}
+  documents:
+  - {fileID: 11400000, guid: fd581d061902e0b48a4db4f8c07ec86c, type: 2}
+  - {fileID: 11400000, guid: b09e9cfd63c10934891634220ed9f9f2, type: 2}
+  - {fileID: 11400000, guid: f02df2cccdbcea5498fd1f9b914abf69, type: 2}
+  dialogue: {fileID: 11400000, guid: d84a1cb4cfbdb20448ebdfe9e53b56a6, type: 2}
+  bribeAmount: 0
+  approvedLine: "Sa\u011F olun hocam, Allah raz\u0131 olsun!"
+  revisedLine: "Balkon i\xE7in mi revizyon? Peki hocam, ne diyelim..."
+  rejectedLine: "Bu kadar k\xFC\xE7\xFCk bir \u015Fey i\xE7in mi? Olmaz b\xF6yle
+    \u015Fey!"

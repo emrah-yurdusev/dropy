@@ -1,0 +1,35 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ea03c079f1db36a42a78afdb91d3b8a9, type: 3}
+  m_Name: Yurt_Dialogue
+  m_EditorClassIdentifier: 
+  nodes:
+  - id: start
+    npcText: "Merhaba, belediyenin \xF6\u011Frenci yurdu projesi. B\xFCt\xE7e \xE7ok
+      k\u0131s\u0131tl\u0131, a\xE7\u0131k\xE7as\u0131 kaz\u0131k i\u015Fini atlad\u0131k."
+    expression: 0
+    choices:
+    - text: "Zemin et\xFCd\xFCn\xFC g\xF6rmem laz\u0131m."
+      next: 
+      evt: 3
+    - text: "Kaz\u0131ks\u0131z m\u0131? Oras\u0131 dere kenar\u0131 de\u011Fil mi?"
+      next: dere
+      evt: 0
+    next: 
+    evt: 0
+  - id: dere
+    npcText: "\xD6yle... Ama kaz\u0131k maliyeti ikiye katl\u0131yor. Bir bak\u0131n,
+      belki idare eder."
+    expression: 2
+    choices: []
+    next: 
+    evt: 3
