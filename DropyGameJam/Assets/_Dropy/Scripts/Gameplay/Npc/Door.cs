@@ -63,6 +63,13 @@ namespace Dropy.Gameplay
 
         public void Close() => targetAngle = 0f;
 
+        /// <summary>Kapıyı animasyonsuz anında kapatır (geçiş atlanınca, ekran kararmışken).</summary>
+        public void SnapClosed()
+        {
+            currentAngle = targetAngle = 0f;
+            Leaf.localRotation = leafClosedRotation;
+        }
+
         /// <summary>Verilen pozisyonun bulunduğu taraftaki (veya karşı taraftaki) bekleme noktası.</summary>
         public Vector3 GetApproachPoint(Vector3 from, bool otherSide)
         {

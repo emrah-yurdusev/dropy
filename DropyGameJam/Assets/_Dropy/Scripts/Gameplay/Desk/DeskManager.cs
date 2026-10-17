@@ -28,11 +28,17 @@ namespace Dropy.Gameplay
             public string warning;
             /// <summary>Kitapta yazan bir kuralı çiğneyen onay: müfettiş tutanağı.</summary>
             public bool citation;
+            /// <summary>Tutanağın akşam kasadan düşecek tutarı (harç iadesi + artan ceza).</summary>
+            public int fine;
         }
 
-        /// <summary>2. günden itibaren müteahhitler biraz daha hızlı yürür; masa temposu açılır.</summary>
+        /// <summary>Müteahhitler biraz hızlı yürür (1. gün 1.2, 2. günden itibaren 1.3 kat); fazlası koşar adım görünür.</summary>
         const int FastWalkDay = 2;
+        const float FirstDayWalkMultiplier = 1.2f;
         const float FastWalkMultiplier = 1.3f;
+        /// <summary>Gelişi/gidişi geçerken kararma süreleri (saniye).</summary>
+        const float SkipFadeOut = 0.15f;
+        const float SkipFadeIn = 0.25f;
         const string EndQuestions = "Tamam, dosyaya bakayım.";
         const string KeepReject = "Kararım belli, red.";
         const string Reconsider = "Bir daha bakayım.";
@@ -299,15 +305,19 @@ namespace Dropy.Gameplay
             var go = Instantiate(prefab, spawnPoint.position, spawnPoint.rotation);
             visitor = go.GetComponent<NpcController>();
             visitorHead = FindDeep(go.transform, "Head") ?? go.transform;
-            if (day >= FastWalkDay)
-                visitor.SetWalkSpeedMultiplier(FastWalkMultiplier);
+            visitor.SetWalkSpeedMultiplier(day >= FastWalkDay ? FastWalkMultiplier : FirstDayWalkMultiplier);
+            // Oyunun ilk müteahhidinde (Kemal Bey) geçiş yok: oyuncu ofisi, kapıyı ve oturuşu bir kez görsün.
+            bool skippable = index > 0;
             if (!go.TryGetComponent<SeatedLife>(out var life))
                 life = go.AddComponent<SeatedLife>();
             life.lookTarget = deskCamera != null ? deskCamera.transform : null;
 
-            if (door != null)
-                yield return visitor.WalkThrough(door);
-            yield return visitor.SitOn(visitorChair);
+            yield return Skippable(Enter(), skippable, () =>
+            {
+                if (door != null)
+                    door.SnapClosed();
+                visitor.SnapSeat(visitorChair);
+            });
 
             float tremor = story != null ? story.Tremor(day) : 0f;
             if (tremor > 0f && index % Economy.FilesPerDay == 1)
@@ -355,9 +365,9 @@ namespace Dropy.Gameplay
             string paid = day > Economy.LastPaidDay ? "harç yok" : $"+{Ui.Money(result.money)}";
             hud.Toast($"{SealName(result.seal)}   {paid}", new Color(0.98f, 0.82f, 0.4f));
             if (result.citation)
-                hud.Warn(citations <= Economy.FreeCitations
-                    ? $"Müfettiş tutanağı: {result.warning} · ilk uyarı"
-                    : $"Müfettiş tutanağı: {result.warning} · akşam -{Ui.Money(Economy.CitationFine)}");
+                hud.Warn(citations == 1
+                    ? $"Müfettiş tutanağı: {result.warning} · ilk uyarı, harç geri alınır"
+                    : $"Müfettiş tutanağı: {result.warning} · akşam -{Ui.Money(result.fine)}");
             else if (result.warning != null)
                 hud.Warn("Yönetmelik: " + result.warning);
 
@@ -369,13 +379,74 @@ namespace Dropy.Gameplay
 
             yield return React(buildingCase, result.seal);
 
+            yield return Skippable(Leave(), skippable, () =>
+            {
+                if (door != null)
+                    door.SnapClosed();
+            });
+            visitorChair.Release(visitor);
+            Destroy(visitor.gameObject);
+            visitor = null;
+        }
+
+        IEnumerator Enter()
+        {
+            if (door != null)
+                yield return visitor.WalkThrough(door);
+            yield return visitor.SitOn(visitorChair);
+        }
+
+        IEnumerator Leave()
+        {
             yield return visitor.StandUp();
             if (door != null)
                 yield return visitor.WalkThrough(door);
             if (exitPoint != null)
                 yield return visitor.MoveTo(exitPoint.position);
-            Destroy(visitor.gameObject);
-            visitor = null;
+        }
+
+        /// <summary>
+        /// Yürüyüşü oynatır; oyuncu sol tıklarsa (ya da Space) ekran kısa süre kararır, yürüyüş kesilir ve
+        /// <paramref name="snap"/> sonucu anında kurar. Geçişe sebep olan tık bir sonraki konuşmayı ilerletmez.
+        /// </summary>
+        IEnumerator Skippable(IEnumerator walk, bool allowed, System.Action snap)
+        {
+            bool done = false;
+            var routine = StartCoroutine(Track(walk, () => done = true));
+            hud.SetSkipHint(allowed);
+            // Önceki konuşmayı bitiren tık bu karede hâlâ "basıldı" görünür; onu geçiş saymamak için bir kare bekle.
+            yield return null;
+            while (!done)
+            {
+                if (allowed && SkipPressed())
+                {
+                    hud.SetSkipHint(false);
+                    yield return hud.FadeTo(1f, SkipFadeOut);
+                    StopCoroutine(routine);
+                    snap();
+                    yield return null;
+                    yield return hud.FadeTo(0f, SkipFadeIn);
+                    yield break;
+                }
+                yield return null;
+            }
+            hud.SetSkipHint(false);
+        }
+
+        static IEnumerator Track(IEnumerator routine, System.Action onDone)
+        {
+            yield return routine;
+            onDone();
+        }
+
+        bool SkipPressed()
+        {
+            if (paused || hud.BlocksInput)
+                return false;
+            var mouse = Mouse.current;
+            var keyboard = Keyboard.current;
+            return (mouse != null && mouse.leftButton.wasPressedThisFrame)
+                || (keyboard != null && keyboard.spaceKey.wasPressedThisFrame);
         }
 
         IEnumerator Talk(BuildingCase buildingCase)
@@ -503,8 +574,12 @@ namespace Dropy.Gameplay
             if (result.citation)
             {
                 citations++;
-                if (citations > Economy.FreeCitations && day <= Economy.LastPaidDay)
-                    finesPending += Economy.CitationFine;
+                // 5. gün akşam yok: tutanak karnede sayılır, para kesilmez.
+                if (day <= Economy.LastPaidDay)
+                {
+                    result.fine = Economy.CitationFine(citations, result.money);
+                    finesPending += result.fine;
+                }
             }
             return result;
         }

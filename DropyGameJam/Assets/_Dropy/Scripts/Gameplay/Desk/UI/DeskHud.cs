@@ -36,6 +36,8 @@ namespace Dropy.Gameplay
         GameObject title;
         bool started;
         GameObject pauseMenu;
+        CanvasGroup fade;
+        TextMeshProUGUI skipHint;
         Coroutine toastRoutine;
         Coroutine warnRoutine;
 
@@ -105,6 +107,18 @@ namespace Dropy.Gameplay
             again.onClick.AddListener(() => RestartClicked?.Invoke());
             summary.gameObject.SetActive(false);
 
+            // Gelişi/gidişi geçerken ekranı kısa süre karartan perde ve yürürken görünen ipucu.
+            var fadeImage = Ui.Image(root, "Fade", Color.black, raycast: false);
+            fadeImage.rectTransform.Stretch();
+            fade = fadeImage.gameObject.AddComponent<CanvasGroup>();
+            fade.alpha = 0f;
+            fade.blocksRaycasts = false;
+            skipHint = Ui.Text(root, "SkipHint", "Geç  [Sol tık]", 22f, new Color(1f, 1f, 1f, 0.75f), TextAlignmentOptions.Bottom, FontStyles.Italic);
+            skipHint.rectTransform.Stretch(0f, 30f, 0f, 0f);
+            skipHint.outlineWidth = 0.2f;
+            skipHint.outlineColor = new Color32(0, 0, 0, 200);
+            skipHint.gameObject.SetActive(false);
+
             title = BuildTitle(root);
             pauseMenu = BuildPause(root);
         }
@@ -163,6 +177,26 @@ namespace Dropy.Gameplay
             while (!started)
                 yield return null;
             title.SetActive(false);
+        }
+
+        public void SetSkipHint(bool visible) => skipHint.gameObject.SetActive(visible);
+
+        void Update()
+        {
+            if (skipHint.gameObject.activeSelf)
+                skipHint.alpha = 0.55f + 0.3f * Mathf.Sin(Time.unscaledTime * 3f);
+        }
+
+        /// <summary>Ekranı karartır ya da açar (gerçek zamanla; oyun duraklatılmışken de çalışır).</summary>
+        public IEnumerator FadeTo(float target, float duration)
+        {
+            float start = fade.alpha;
+            for (float t = 0f; t < duration; t += Time.unscaledDeltaTime)
+            {
+                fade.alpha = Mathf.Lerp(start, target, t / duration);
+                yield return null;
+            }
+            fade.alpha = target;
         }
 
         public void SetPaused(bool paused)

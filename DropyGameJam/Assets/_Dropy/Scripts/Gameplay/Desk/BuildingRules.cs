@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using UnityEngine;
 
 namespace Dropy.Gameplay
 {
@@ -41,11 +42,17 @@ namespace Dropy.Gameplay
         public const int LastPaidDay = 4;
 
         /// <summary>
-        /// Müfettiş tutanağı: kitapta yazan bir kuralı çiğneyen onay. İlki yalnızca uyarıdır, sonrakiler
-        /// o akşam kasadan düşer. Dürüst yol tutanak yemez, yani hesabı değişmez.
+        /// Müfettiş tutanağı: kitapta yazan bir kuralı çiğneyen onay. Her tutanakta o dosyanın normal harcı
+        /// geri alınır (ilki yalnızca budur: uyarı); ikinciden itibaren üstüne 1.000, 2.000, 3.000... ceza eklenir.
+        /// Böylece tek hata kâr getirmez, toptan onaylamak dürüst oyundan geride kalır, rüşvetin fazlası
+        /// (4.000 − 1.000) ise cepte kalır. Dürüst yol tutanak yemez, hesabı değişmez. Akşam kasadan düşer.
         /// </summary>
-        public const int CitationFine = 500;
-        public const int FreeCitations = 1;
+        public const int CitationStep = 1000;
+
+        /// <param name="citationNumber">Bu kaçıncı tutanak (1'den başlar).</param>
+        /// <param name="feeTaken">Bu onaydan alınan para (rüşvette 4.000; iade yalnız normal harç kadar).</param>
+        public static int CitationFine(int citationNumber, int feeTaken) =>
+            Mathf.Min(feeTaken, ApproveFee) + CitationStep * (citationNumber - 1);
 
         /// <summary>Çekiç 3. günden itibaren gelir ve günde bu kadar kullanılabilir; hangi dosyanın ölçüleceği oyuncunun kararı.</summary>
         public const int HammerDay = 3;

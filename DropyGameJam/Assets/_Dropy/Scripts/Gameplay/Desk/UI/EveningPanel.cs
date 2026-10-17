@@ -222,7 +222,7 @@ namespace Dropy.Gameplay
             ledgerText.text =
                 $"<size=34><b>{day}. gün akşamı</b></size>\n\n" +
                 $"Bugünkü mühürler   <b>+{Ui.Money(income)}</b>\n" +
-                (fine > 0 ? $"<color=#a3221b>Tutanak cezası   <b>-{Ui.Money(fine)}</b></color>\n" : "") +
+                (fine > 0 ? $"<color=#a3221b>Tutanak (harç iadesi + ceza)   <b>-{Ui.Money(fine)}</b></color>\n" : "") +
                 $"Kira   <b>-{Ui.Money(rent)}</b>" +
                 (rent < Economy.Rent ? "\n<size=80%><i>Kiranın tamamı ödenemedi.</i></size>" : "") +
                 bondNote +

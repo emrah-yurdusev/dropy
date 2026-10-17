@@ -500,8 +500,8 @@ namespace Dropy.EditorTools
                            "<b>RED</b>: 0 TL. Bina yapılmaz.\n\n" +
                            "<b>PERDE EKLE</b>: +500 TL, günde bir kez. Binaya deprem perdesi (taşıyıcı duvar) eklenir, " +
                            "sonra onaylanır.\n\n" +
-                           "Kitapta yazan bir kuralı çiğneyen onay <b>müfettiş tutanağı</b> yer: ilki uyarı, " +
-                           "sonrakiler akşam 500 TL ceza."
+                           "Kitapta yazan bir kuralı çiğneyen onay <b>müfettiş tutanağı</b> yer: aldığın harç akşam " +
+                           "geri alınır. İlk tutanak yalnızca budur; sonrakilerde üstüne 1.000, 2.000, 3.000 TL ceza eklenir."
                 },
                 new RegulationPage
                 {
@@ -595,11 +595,22 @@ namespace Dropy.EditorTools
                 r => r.bond == story.bondMax && !r.bought.Contains(ShopItem.Retrofit));
             ok &= Expect("Rüşvet alır, her şeyi öder", Simulate(cases, story, bribe, new[] { 1, 2, 3, 4 },
                     Plan((1, ShopItem.Bag), (2, ShopItem.Fixing), (4, ShopItem.Retrofit))),
-                r => r.bond == story.bondMax && r.bought.Count == 3 && r.citations == 1 && r.fines == 0);
-            // Her şeyi onaylayan: tutanaklar sömürüyü keser (ilki bedava, 5. günün cezası kesilmez).
-            ok &= Expect("Her şeyi onaylar, hiçbir şey almaz", Simulate(cases, story, approveAll, new int[0],
-                    Plan()),
-                r => r.citations == 6 && r.fines == 3 * Economy.CitationFine);
+                r => r.bond == story.bondMax && r.bought.Count == 3 && r.citations == 1 && r.fines == Economy.ApproveFee);
+
+            // Tutanak dengesi (alışverişsiz, 4. akşam kasası). Mükemmel oyuncu 6.000 ile biter.
+            int perfect = Simulate(cases, story, honest, new int[0], Plan()).money;
+            System.Func<string, System.Func<BuildingCase, Seal>> oneMistake = name =>
+                c => c.buildingName == name ? Seal.Approve : BuildingRules.CorrectSeal(c);
+            ok &= Expect("Mükemmel, alışverişsiz", Simulate(cases, story, honest, new int[0], Plan()),
+                r => r.money == 6000);
+            ok &= Expect("Temiz oynar, sadece rüşveti alır, alışverişsiz", Simulate(cases, story, bribe, new int[0], Plan()),
+                r => r.money == perfect + 3000);
+            ok &= Expect("Tek hata: Sahil Rezidans'ı onaylar", Simulate(cases, story, oneMistake("Sahil Rezidans"), new int[0], Plan()),
+                r => r.money == perfect);
+            ok &= Expect("Tek hata: Pazar Market'i perde yerine onaylar", Simulate(cases, story, oneMistake("Pazar Market"), new int[0], Plan()),
+                r => r.money == perfect - 500);
+            ok &= Expect("Her şeyi onaylar, alışverişsiz", Simulate(cases, story, approveAll, new int[0], Plan()),
+                r => r.citations == 6 && r.money <= perfect - 3000 && r.money < Shop.Price(ShopItem.Retrofit));
             if (ok)
                 Debug.Log("Aile bağı ve tutanak: bütün yollar tasarımdaki gibi.");
         }
@@ -640,8 +651,8 @@ namespace Dropy.EditorTools
                     if (seal == Seal.Approve && BuildingRules.KnownViolation(c, seal, day) != null)
                     {
                         r.citations++;
-                        if (r.citations > Economy.FreeCitations && day <= Economy.LastPaidDay)
-                            fine += Economy.CitationFine;
+                        if (day <= Economy.LastPaidDay)
+                            fine += Economy.CitationFine(r.citations, BuildingRules.Fee(c, seal, day));
                     }
                 }
                 if (day > Economy.LastPaidDay)

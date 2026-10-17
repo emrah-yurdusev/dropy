@@ -20,7 +20,9 @@ MonoBehaviour:
       yap\u0131lmaz.\n\n<b>PERDE EKLE</b>: +500 TL, g\xFCnde bir kez. Binaya deprem
       perdesi (ta\u015F\u0131y\u0131c\u0131 duvar) eklenir, sonra onaylan\u0131r.\n\nKitapta
       yazan bir kural\u0131 \xE7i\u011Fneyen onay <b>m\xFCfetti\u015F tutana\u011F\u0131</b>
-      yer: ilki uyar\u0131, sonrakiler ak\u015Fam 500 TL ceza."
+      yer: ald\u0131\u011F\u0131n har\xE7 ak\u015Fam geri al\u0131n\u0131r. \u0130lk
+      tutanak yaln\u0131zca budur; sonrakilerde \xFCst\xFCne 1.000, 2.000, 3.000
+      TL ceza eklenir."
     why: 
   - title: Beton
     day: 1

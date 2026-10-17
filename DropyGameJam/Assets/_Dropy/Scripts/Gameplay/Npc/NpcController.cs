@@ -45,6 +45,7 @@ namespace Dropy.Gameplay
         static readonly int ThinkId = Animator.StringToHash("Think");
         static readonly int GestureTag = Animator.StringToHash("Gesture");
         static readonly int SitTag = Animator.StringToHash("Sit");
+        static readonly int SitIdleState = Animator.StringToHash("SitIdle");
 
         [SerializeField] Animator animator;
         [SerializeField] FaceController face;
@@ -235,6 +236,24 @@ namespace Dropy.Gameplay
             yield return WaitForState(SitTag);
             while (animator.GetCurrentAnimatorStateInfo(0).IsName("SitDown"))
                 yield return null;
+        }
+
+        /// <summary>
+        /// Yürümeyi atlayıp doğrudan sandalyede oturur (oyuncu gelişi geçtiğinde, ekran kararmışken).
+        /// SitDown animasyonu atlanır, karakter oturma pozunda belirir.
+        /// </summary>
+        public void SnapSeat(Chair chair)
+        {
+            if (agent.enabled && agent.isOnNavMesh)
+                agent.ResetPath();
+            agent.enabled = false;
+            chair.TryOccupy(this);
+            var sitPoint = chair.SitPoint;
+            transform.SetPositionAndRotation(sitPoint.position, sitPoint.rotation);
+            currentChair = chair;
+            animator.SetBool(SittingId, true);
+            animator.Play(SitIdleState, 0, 0f);
+            animator.Update(0f);
         }
 
         /// <summary>Oturuyorsa ayağa kalkar ve NavMesh'e geri döner.</summary>
