@@ -1,4 +1,3 @@
-using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
 using UnityEngine.EventSystems;
@@ -6,16 +5,9 @@ using UnityEngine.UI;
 
 namespace Dropy.Gameplay
 {
-    public enum StampKind
-    {
-        None,
-        Approve,
-        Reject
-    }
-
     /// <summary>
-    /// Ekranda sürüklenebilen kağıt belge. Tıklayınca öne gelir; seçili araca göre
-    /// damga basılır veya satırlar kırmızı kalemle işaretlenir.
+    /// Ekranda sürüklenebilen kağıt belge. Tıklayınca öne gelir; ana belgeye (künye)
+    /// seçili mühür basılır.
     /// </summary>
     public class DocumentCard : MonoBehaviour, IPointerDownHandler, IPointerClickHandler,
         IBeginDragHandler, IDragHandler, IEndDragHandler
@@ -30,41 +22,36 @@ namespace Dropy.Gameplay
         Vector2 dragOffset;
         DeskTools tools;
         RectTransform stampLayer;
-        readonly List<Row> rows = new List<Row>();
+        RectTransform content;
+        RectTransform stampMark;
+        System.Func<Seal, bool> stampFilter;
 
         public DocumentData Data { get; private set; }
         public bool IsMain { get; private set; }
-        public StampKind Stamp { get; private set; }
+        public Seal Stamp { get; private set; }
         public RectTransform RectTransform => rect;
 
         public event System.Action<DocumentCard> Dropped;
 
-        public IEnumerable<DocumentField> MarkedFields
-        {
-            get
-            {
-                foreach (var row in rows)
-                    if (row.Marked)
-                        yield return row.Field;
-            }
-        }
-
-        public static DocumentCard Create(DocumentData data, bool isMain, RectTransform parent, DeskTools tools)
+        /// <param name="stampFilter">Ana belgede mühür basılmadan önce sorulur; false dönerse basılmaz.</param>
+        public static DocumentCard Create(DocumentData data, bool isMain, RectTransform parent, DeskTools tools,
+            float height, System.Func<Seal, bool> stampFilter = null)
         {
             var image = Ui.Image(parent, data.title, Paper, Ui.Rounded);
             var card = image.gameObject.AddComponent<DocumentCard>();
-            card.Build(data, isMain, parent, tools);
+            card.stampFilter = stampFilter;
+            card.Build(data, isMain, parent, tools, height);
             return card;
         }
 
-        void Build(DocumentData data, bool isMain, RectTransform area, DeskTools deskTools)
+        void Build(DocumentData data, bool isMain, RectTransform area, DeskTools deskTools, float height)
         {
             Data = data;
             IsMain = isMain;
             dragArea = area;
             tools = deskTools;
             rect = (RectTransform)transform;
-            rect.Place(new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), Vector2.zero, new Vector2(400f, 520f));
+            rect.Place(new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), Vector2.zero, new Vector2(400f, height));
             shadow = Ui.DropShadow(rect, 16f, new Vector2(4f, -6f), 0.35f);
 
             var header = Ui.Image(rect, "Header", HeaderColor(data.kind), Ui.Rounded, raycast: false).rectTransform;
@@ -76,7 +63,7 @@ namespace Dropy.Gameplay
             var title = Ui.Text(header, "Title", data.title.ToUpperInvariant(), 24f, Color.white, TextAlignmentOptions.MidlineLeft, FontStyles.Bold);
             title.rectTransform.Stretch(16f, 0f, 12f, 0f);
 
-            var content = Ui.Rect("Content", rect).Stretch(22f, isMain ? 124f : 56f, 22f, 82f);
+            content = Ui.Rect("Content", rect).Stretch(22f, isMain ? 124f : 56f, 22f, 82f);
             var layout = content.gameObject.AddComponent<VerticalLayoutGroup>();
             layout.spacing = 6f;
             layout.childControlHeight = true;
@@ -89,7 +76,7 @@ namespace Dropy.Gameplay
                 sub.gameObject.AddComponent<LayoutElement>().minHeight = 24f;
             }
             foreach (var field in data.fields)
-                rows.Add(new Row(this, content, field));
+                AddField(field);
 
             if (!string.IsNullOrEmpty(data.footer))
             {
@@ -106,7 +93,7 @@ namespace Dropy.Gameplay
             {
                 var box = Ui.Image(rect, "StampBox", new Color(0f, 0f, 0f, 0.6f), Ui.Frame, raycast: false).rectTransform;
                 box.Place(new Vector2(1f, 0f), new Vector2(1f, 0f), new Vector2(-18f, 18f), new Vector2(170f, 90f));
-                var label = Ui.Text(box, "Label", "VİZE KARARI", 14f, Faded, TextAlignmentOptions.Top, FontStyles.Bold);
+                var label = Ui.Text(box, "Label", "MÜHÜR", 14f, Faded, TextAlignmentOptions.Top, FontStyles.Bold);
                 label.rectTransform.Stretch(0f, 0f, 0f, 6f);
             }
 
@@ -125,50 +112,80 @@ namespace Dropy.Gameplay
             }
         }
 
-        /// <summary>Verilen ekran noktasına damga basar. Ana belgede son damga kararı belirler.</summary>
-        public void ApplyStamp(StampKind kind, Vector2 screenPoint)
+        /// <summary>Belgeye sonradan satır ekler (ör. çekiç ölçümü).</summary>
+        public void AddField(DocumentField field, bool highlight = false)
         {
-            RectTransformUtility.ScreenPointToLocalPointInRectangle(stampLayer, screenPoint, null, out var local);
-            var stamp = CreateStampGraphic(stampLayer, kind);
-            stamp.anchoredPosition = local;
-            stamp.localRotation = Quaternion.Euler(0f, 0f, Random.Range(-14f, 14f));
-            stamp.gameObject.AddComponent<StampThump>();
-            if (IsMain)
-                Stamp = kind;
+            var row = Ui.Image(content, field.label, highlight ? new Color(1f, 0.85f, 0.3f, 0.35f) : new Color(0f, 0f, 0f, 0f), raycast: false);
+            var element = row.gameObject.AddComponent<LayoutElement>();
+            element.minHeight = 34f;
+
+            var label = Ui.Text(row.transform, "Label", field.label, 17f, Faded);
+            label.rectTransform.Stretch();
+            label.rectTransform.anchorMax = new Vector2(0.48f, 1f);
+            label.alignment = TextAlignmentOptions.MidlineLeft;
+            var value = Ui.Text(row.transform, "Value", field.value, 19f, Ink, TextAlignmentOptions.MidlineLeft, FontStyles.Bold);
+            value.rectTransform.Stretch();
+            value.rectTransform.anchorMin = new Vector2(0.5f, 0f);
+            element.preferredHeight = Mathf.Max(34f, value.GetPreferredValues(field.value, 175f, 0f).y + 10f);
+
+            var line = Ui.Image(row.transform, "Line", new Color(0f, 0f, 0f, 0.08f), raycast: false).rectTransform;
+            line.anchorMin = Vector2.zero;
+            line.anchorMax = new Vector2(1f, 0f);
+            line.sizeDelta = new Vector2(0f, 1.5f);
         }
 
-        public static RectTransform CreateStampGraphic(Transform parent, StampKind kind)
+        /// <summary>Ana belgeye mühür basar; son basılan mühür karardır.</summary>
+        public void ApplyStamp(Seal seal, Vector2 screenPoint)
         {
-            bool approve = kind == StampKind.Approve;
-            var color = approve ? new Color(0.12f, 0.55f, 0.25f, 0.85f) : new Color(0.8f, 0.12f, 0.12f, 0.85f);
+            if (!IsMain || seal == Seal.None)
+                return;
+            if (stampFilter != null && !stampFilter(seal))
+                return;
+            if (stampMark != null)
+                stampMark.GetComponent<CanvasGroup>().alpha = 0.25f;
+            RectTransformUtility.ScreenPointToLocalPointInRectangle(stampLayer, screenPoint, null, out var local);
+            stampMark = CreateStampGraphic(stampLayer, seal);
+            stampMark.gameObject.AddComponent<CanvasGroup>();
+            stampMark.anchoredPosition = local;
+            stampMark.localRotation = Quaternion.Euler(0f, 0f, Random.Range(-14f, 14f));
+            stampMark.gameObject.AddComponent<StampThump>();
+            Stamp = seal;
+        }
+
+        public static RectTransform CreateStampGraphic(Transform parent, Seal seal)
+        {
+            Color color;
+            string label;
+            switch (seal)
+            {
+                case Seal.Approve:
+                    color = new Color(0.12f, 0.55f, 0.25f, 0.85f);
+                    label = "ONAYLANDI";
+                    break;
+                case Seal.ShearWall:
+                    color = new Color(0.15f, 0.35f, 0.75f, 0.85f);
+                    label = "PERDE EKLENSİN";
+                    break;
+                default:
+                    color = new Color(0.8f, 0.12f, 0.12f, 0.85f);
+                    label = "REDDEDİLDİ";
+                    break;
+            }
             var frame = Ui.Image(parent, "Stamp", color, Ui.Frame, raycast: false).rectTransform;
-            frame.Place(new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), Vector2.zero, new Vector2(190f, 70f));
-            var text = Ui.Text(frame, "Text", approve ? "ONAYLANDI" : "REDDEDİLDİ", 30f, color, TextAlignmentOptions.Center, FontStyles.Bold);
+            frame.Place(new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), Vector2.zero, new Vector2(230f, 70f));
+            var text = Ui.Text(frame, "Text", label, 28f, color, TextAlignmentOptions.Center, FontStyles.Bold);
             text.rectTransform.Stretch();
-            text.characterSpacing = 4f;
+            text.characterSpacing = 3f;
             return frame;
         }
 
         public void OnPointerDown(PointerEventData eventData) => rect.SetAsLastSibling();
 
-        public void OnPointerClick(PointerEventData eventData) => HandleClick(eventData, null);
-
-        void HandleClick(PointerEventData eventData, Row row)
+        public void OnPointerClick(PointerEventData eventData)
         {
             if (eventData.dragging || tools == null)
                 return;
-            switch (tools.Active)
-            {
-                case DeskTool.ApproveStamp:
-                    ApplyStamp(StampKind.Approve, eventData.position);
-                    break;
-                case DeskTool.RejectStamp:
-                    ApplyStamp(StampKind.Reject, eventData.position);
-                    break;
-                case DeskTool.RedPen:
-                    row?.ToggleMark();
-                    break;
-            }
+            ApplyStamp(tools.Active, eventData.position);
         }
 
         public void OnBeginDrag(PointerEventData eventData)
@@ -194,64 +211,6 @@ namespace Dropy.Gameplay
             rect.localScale = Vector3.one;
             shadow.color = new Color(0f, 0f, 0f, 0.35f);
             Dropped?.Invoke(this);
-        }
-
-        /// <summary>Kırmızı kalemle işaretlenebilen bir belge satırı.</summary>
-        class Row
-        {
-            readonly Image mark;
-            public DocumentField Field { get; }
-            public bool Marked => mark.gameObject.activeSelf;
-
-            public Row(DocumentCard card, RectTransform parent, DocumentField field)
-            {
-                Field = field;
-                var bg = Ui.Image(parent, field.label, new Color(0f, 0f, 0f, 0f));
-                var element = bg.gameObject.AddComponent<LayoutElement>();
-                element.minHeight = 34f;
-
-                var label = Ui.Text(bg.transform, "Label", field.label, 17f, Faded);
-                label.rectTransform.Stretch(0f, 0f, 0f, 0f);
-                label.rectTransform.anchorMax = new Vector2(0.48f, 1f);
-                label.alignment = TextAlignmentOptions.MidlineLeft;
-                var value = Ui.Text(bg.transform, "Value", field.value, 19f, Ink, TextAlignmentOptions.MidlineLeft, FontStyles.Bold);
-                value.rectTransform.Stretch();
-                value.rectTransform.anchorMin = new Vector2(0.5f, 0f);
-                element.preferredHeight = Mathf.Max(34f, value.GetPreferredValues(field.value, 175f, 0f).y + 10f);
-
-                var line = Ui.Image(bg.transform, "Line", new Color(0f, 0f, 0f, 0.08f), raycast: false).rectTransform;
-                line.anchorMin = Vector2.zero;
-                line.anchorMax = new Vector2(1f, 0f);
-                line.sizeDelta = new Vector2(0f, 1.5f);
-
-                mark = Ui.Image(bg.transform, "RedMark", new Color(0.85f, 0.1f, 0.1f, 0.9f), raycast: false);
-                mark.type = Image.Type.Simple;
-                mark.sprite = Ui.Ellipse;
-                mark.rectTransform.Stretch(-8f, -4f, -8f, -4f);
-                mark.rectTransform.anchorMin = new Vector2(0.47f, 0f);
-                mark.rectTransform.localRotation = Quaternion.Euler(0f, 0f, Random.Range(-4f, 4f));
-                mark.gameObject.SetActive(false);
-
-                bg.gameObject.AddComponent<RowClick>().Init(card, this);
-            }
-
-            public void ToggleMark() => mark.gameObject.SetActive(!mark.gameObject.activeSelf);
-
-            public void Click(DocumentCard card, PointerEventData e) => card.HandleClick(e, this);
-        }
-
-        class RowClick : MonoBehaviour, IPointerClickHandler
-        {
-            DocumentCard card;
-            Row row;
-
-            public void Init(DocumentCard owner, Row target)
-            {
-                card = owner;
-                row = target;
-            }
-
-            public void OnPointerClick(PointerEventData eventData) => row.Click(card, eventData);
         }
     }
 

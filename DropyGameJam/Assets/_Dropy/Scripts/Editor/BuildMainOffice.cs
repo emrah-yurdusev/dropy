@@ -114,12 +114,7 @@ namespace Dropy.EditorTools
             so.FindProperty("regulations").objectReferenceValue =
                 AssetDatabase.LoadAssetAtPath<RegulationData>("Assets/_Dropy/ScriptableObjects/Desk/Regulations.asset");
 
-            var casePaths = new[]
-            {
-                "Assets/_Dropy/ScriptableObjects/Desk/Cases/01_GunesApartmani.asset",
-                "Assets/_Dropy/ScriptableObjects/Desk/Cases/02_LuksRezidans.asset",
-                "Assets/_Dropy/ScriptableObjects/Desk/Cases/03_OgrenciYurdu.asset"
-            };
+            var casePaths = BuildCaseFiles.Paths;
             var cases = so.FindProperty("cases");
             cases.arraySize = casePaths.Length;
             for (var i = 0; i < casePaths.Length; i++)
@@ -137,7 +132,6 @@ namespace Dropy.EditorTools
             contractors.arraySize = prefabs.Length;
             for (var i = 0; i < prefabs.Length; i++)
                 contractors.GetArrayElementAtIndex(i).objectReferenceValue = prefabs[i];
-            so.FindProperty("startMoney").intValue = 1000;
             so.ApplyModifiedPropertiesWithoutUndo();
 
             var navGo = new GameObject("NavMesh");

@@ -1,0 +1,35 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b53e488de2e93c841b0e8998a55e2701, type: 3}
+  m_Name: 04_SariSite
+  m_EditorClassIdentifier: 
+  contractorName: "R\u0131za Bey"
+  contractorPrefab: {fileID: 0}
+  buildingName: "Sar\u0131 Site"
+  floors: 3
+  claimedConcrete: 30
+  groundUse: 0
+  groundFloorHeight: 2.8
+  foundation: 0
+  columns: 0
+  hasShearWall: 0
+  labConcrete: 30
+  soil: 0
+  note: "Cephe boyas\u0131 solmu\u015F"
+  hammerConcrete: 0
+  approveFeeOverride: 0
+  dialogue: {fileID: 0}
+  introLines:
+  - "Cephe boyas\u0131 biraz soldu ama binaya bir \u015Fey olmaz, de\u011Fil mi?"
+  approvedLine: "Sa\u011F olun, hay\u0131rl\u0131 i\u015Fler."
+  shearWallLine: Perde mi? Masraf ama... peki, ekletiriz.
+  rejectedLine: "Bu i\u015F burada bitmez!"

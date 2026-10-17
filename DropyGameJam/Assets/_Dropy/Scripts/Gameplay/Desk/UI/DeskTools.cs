@@ -6,17 +6,9 @@ using UnityEngine.UI;
 
 namespace Dropy.Gameplay
 {
-    public enum DeskTool
-    {
-        None,
-        ApproveStamp,
-        RejectStamp,
-        RedPen
-    }
-
     /// <summary>
-    /// Masa araçları: onay damgası, red damgası ve kırmızı kalem.
-    /// Araç seçilince imleci takip eder; sağ tık veya ESC bırakır.
+    /// Sağdaki mühürler: Onay, Red, Perde ekle. Her mührün üstünde kazandıracağı para yazar.
+    /// Mühür seçilince imleci takip eder; sağ tık veya ESC bırakır.
     /// </summary>
     public class DeskTools : MonoBehaviour
     {
@@ -24,19 +16,27 @@ namespace Dropy.Gameplay
         static readonly Color SlotColor = new Color(0.32f, 0.28f, 0.25f);
         static readonly Color SelectedColor = new Color(0.95f, 0.75f, 0.3f);
 
+        class Slot
+        {
+            public Button button;
+            public Image image;
+            public TextMeshProUGUI label;
+            public string title;
+        }
+
         RectTransform canvasRect;
         RectTransform ghostRoot;
-        readonly Dictionary<DeskTool, Image> slots = new Dictionary<DeskTool, Image>();
-        readonly Dictionary<DeskTool, RectTransform> ghosts = new Dictionary<DeskTool, RectTransform>();
+        readonly Dictionary<Seal, Slot> slots = new Dictionary<Seal, Slot>();
+        readonly Dictionary<Seal, RectTransform> ghosts = new Dictionary<Seal, RectTransform>();
 
-        public DeskTool Active { get; private set; }
+        public Seal Active { get; private set; }
 
         public void Build(RectTransform trayParent, RectTransform canvasRoot)
         {
             canvasRect = canvasRoot;
 
-            var tray = Ui.Image(trayParent, "ToolTray", TrayColor, Ui.Rounded).rectTransform;
-            tray.Place(new Vector2(0.5f, 0f), new Vector2(0.5f, 0f), new Vector2(0f, 18f), new Vector2(560f, 92f));
+            var tray = Ui.Image(trayParent, "SealTray", TrayColor, Ui.Rounded).rectTransform;
+            tray.Place(new Vector2(0.5f, 0f), new Vector2(0.5f, 0f), new Vector2(0f, 18f), new Vector2(600f, 104f));
             Ui.DropShadow(tray, 12f, new Vector2(0f, -4f), 0.35f);
             var layout = tray.gameObject.AddComponent<HorizontalLayoutGroup>();
             layout.padding = new RectOffset(12, 12, 10, 10);
@@ -45,28 +45,44 @@ namespace Dropy.Gameplay
             layout.childControlHeight = true;
             layout.childForceExpandWidth = true;
 
-            AddSlot(tray, DeskTool.ApproveStamp, "ONAY\nDamgası", new Color(0.3f, 0.8f, 0.45f));
-            AddSlot(tray, DeskTool.RejectStamp, "RED\nDamgası", new Color(0.95f, 0.4f, 0.35f));
-            AddSlot(tray, DeskTool.RedPen, "Kırmızı\nKalem", new Color(1f, 0.55f, 0.5f));
+            AddSlot(tray, Seal.Approve, "ONAY", new Color(0.3f, 0.8f, 0.45f));
+            AddSlot(tray, Seal.Reject, "RED", new Color(0.95f, 0.4f, 0.35f));
+            AddSlot(tray, Seal.ShearWall, "PERDE EKLE", new Color(0.45f, 0.7f, 1f));
 
-            ghostRoot = Ui.Rect("ToolGhost", canvasRoot);
+            ghostRoot = Ui.Rect("SealGhost", canvasRoot);
             ghostRoot.Place(new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), Vector2.zero, Vector2.zero);
-            ghosts[DeskTool.ApproveStamp] = MakeStampGhost(StampKind.Approve);
-            ghosts[DeskTool.RejectStamp] = MakeStampGhost(StampKind.Reject);
-            ghosts[DeskTool.RedPen] = MakePenGhost();
-            Select(DeskTool.None);
+            foreach (var seal in slots.Keys)
+                ghosts[seal] = MakeStampGhost(seal);
+            Select(Seal.None);
         }
 
-        void AddSlot(RectTransform tray, DeskTool tool, string label, Color labelColor)
+        void AddSlot(RectTransform tray, Seal seal, string title, Color labelColor)
         {
-            var button = Ui.Button(tray, tool.ToString(), label, SlotColor, labelColor, 20f);
-            button.onClick.AddListener(() => Select(Active == tool ? DeskTool.None : tool));
-            slots[tool] = (Image)button.targetGraphic;
+            var button = Ui.Button(tray, seal.ToString(), title, SlotColor, labelColor, 19f);
+            button.onClick.AddListener(() => Select(Active == seal ? Seal.None : seal));
+            slots[seal] = new Slot
+            {
+                button = button,
+                image = button.GetComponent<Image>(),
+                label = button.GetComponentInChildren<TextMeshProUGUI>(),
+                title = title
+            };
         }
 
-        RectTransform MakeStampGhost(StampKind kind)
+        /// <summary>Mührün üstündeki tutarı ve kullanılabilirliğini günceller.</summary>
+        public void SetSeal(Seal seal, int fee, bool available, string extra = null)
         {
-            var stamp = DocumentCard.CreateStampGraphic(ghostRoot, kind);
+            var slot = slots[seal];
+            string amount = fee > 0 ? $"+{fee:N0} TL" : "0 TL";
+            slot.label.text = $"{slot.title}\n<size=80%>{amount}{extra}</size>";
+            slot.button.interactable = available;
+            if (!available && Active == seal)
+                Select(Seal.None);
+        }
+
+        RectTransform MakeStampGhost(Seal seal)
+        {
+            var stamp = DocumentCard.CreateStampGraphic(ghostRoot, seal);
             stamp.localScale = Vector3.one * 0.9f;
             foreach (var g in stamp.GetComponentsInChildren<Graphic>())
             {
@@ -76,33 +92,25 @@ namespace Dropy.Gameplay
             return stamp;
         }
 
-        RectTransform MakePenGhost()
+        public void Select(Seal seal)
         {
-            var pen = Ui.Image(ghostRoot, "Pen", new Color(0.85f, 0.1f, 0.1f), Ui.Rounded, raycast: false).rectTransform;
-            pen.Place(new Vector2(0.5f, 0.5f), new Vector2(0f, 0.5f), Vector2.zero, new Vector2(90f, 14f));
-            pen.localRotation = Quaternion.Euler(0f, 0f, 45f);
-            return pen;
-        }
-
-        public void Select(DeskTool tool)
-        {
-            Active = tool;
+            Active = seal;
             foreach (var pair in slots)
-                pair.Value.color = pair.Key == tool ? SelectedColor : SlotColor;
+                pair.Value.image.color = pair.Key == seal ? SelectedColor : SlotColor;
             foreach (var pair in ghosts)
-                pair.Value.gameObject.SetActive(pair.Key == tool);
+                pair.Value.gameObject.SetActive(pair.Key == seal);
         }
 
         void Update()
         {
-            if (Active == DeskTool.None)
+            if (Active == Seal.None)
                 return;
 
             var mouse = Mouse.current;
             var keyboard = Keyboard.current;
             if ((mouse != null && mouse.rightButton.wasPressedThisFrame) || (keyboard != null && keyboard.escapeKey.wasPressedThisFrame))
             {
-                Select(DeskTool.None);
+                Select(Seal.None);
                 return;
             }
             if (mouse == null)
@@ -112,6 +120,6 @@ namespace Dropy.Gameplay
             ghostRoot.SetAsLastSibling();
         }
 
-        void OnDisable() => Select(DeskTool.None);
+        void OnDisable() => Select(Seal.None);
     }
 }

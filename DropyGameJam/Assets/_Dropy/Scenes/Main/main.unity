@@ -3982,14 +3982,25 @@ MonoBehaviour:
   door: {fileID: 1452814092}
   regulations: {fileID: 11400000, guid: db25f86c1b07c0642aba2a4d5d50526b, type: 2}
   cases:
-  - {fileID: 11400000, guid: 27493cca73530654da38f243c022d1ef, type: 2}
-  - {fileID: 11400000, guid: b202437821c5b1f44bb3aec497815f79, type: 2}
-  - {fileID: 11400000, guid: 9c2a2b51559ec6a4186a6e27fa72eace, type: 2}
+  - {fileID: 11400000, guid: 59dd8e2ccc51d09489b0212c36774432, type: 2}
+  - {fileID: 11400000, guid: 539c8f05b44557945a388c7ff694897c, type: 2}
+  - {fileID: 11400000, guid: 878f605ee9a935e4589a50402955940c, type: 2}
+  - {fileID: 11400000, guid: 26927a6027f3d23498323e34cb84f8a6, type: 2}
+  - {fileID: 11400000, guid: cad8d8069ac676b4cbd3386c8d9a8f68, type: 2}
+  - {fileID: 11400000, guid: dc2fa8bdc76fb6142a3be3bf36383ded, type: 2}
+  - {fileID: 11400000, guid: 2d12b7e758147304885356af262cd532, type: 2}
+  - {fileID: 11400000, guid: fb0c0151a53ca7448a9b0dfd201466ef, type: 2}
+  - {fileID: 11400000, guid: ebb36597000f08b4db29f90b0c3806d4, type: 2}
+  - {fileID: 11400000, guid: f0271633f1d431c4daa783bb37bd3e4e, type: 2}
+  - {fileID: 11400000, guid: 09e2150ac34fcfe4485dff9597a5decb, type: 2}
+  - {fileID: 11400000, guid: 9ac03a467c981484cb0d0e4e6f4b1b83, type: 2}
+  - {fileID: 11400000, guid: 0f3579dee61e66145b762e1ea80da8e0, type: 2}
+  - {fileID: 11400000, guid: 1986bdf522e0ac144b57f71a1ed2b462, type: 2}
+  - {fileID: 11400000, guid: 05a98307ff5209f4c847b60b61d512a9, type: 2}
   defaultContractors:
   - {fileID: 4505210945888876964, guid: 5e9f8a618b0dffa448370ab8616ce086, type: 3}
   - {fileID: 7493389791816327554, guid: aaa0b14b0a190e5498e844caf86c6e03, type: 3}
   - {fileID: 1908980133230793377, guid: 6823acef784bb114fa75908d92f4cd8e, type: 3}
-  startMoney: 1000
 --- !u!1001 &1064052642
 PrefabInstance:
   m_ObjectHideFlags: 0

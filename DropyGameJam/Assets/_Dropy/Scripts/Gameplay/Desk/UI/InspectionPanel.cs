@@ -8,12 +8,14 @@ namespace Dropy.Gameplay
 {
     /// <summary>
     /// "Belgeleri İncele" modu: ekran %40 / %20 / %40 bölünür.
-    /// Solda mevzuat, sağda müteahhidin belgeleri ve araçlar, ortada karakter görünmeye devam eder.
-    /// Damgalanan ana belge ortaya (karaktere) sürüklenince ya da "Teslim Et"e basınca karar verilir.
+    /// Solda yönetmelik, sağda proje künyesi, ek rapor (3. günden itibaren altında çekiç) ve mühürler;
+    /// ortada karakter görünmeye devam eder. Mühürlü künye ortaya sürüklenince ya da "Teslim Et"e basınca karar verilir.
     /// </summary>
     public class InspectionPanel : MonoBehaviour
     {
         const float SideWidth = 0.4f;
+        const float MainCardHeight = 600f;
+        const float ReportCardHeight = 400f;
         static readonly Color PanelColor = new Color(0.36f, 0.27f, 0.2f, 0.97f);
         static readonly Color PanelEdge = new Color(0.22f, 0.16f, 0.12f, 1f);
 
@@ -28,6 +30,7 @@ namespace Dropy.Gameplay
         Button submitButton;
         TextMeshProUGUI hintText;
         DeskTools tools;
+        RegulationBook book;
         Camera deskCamera;
         float normalFieldOfView;
         float openAmount;
@@ -37,6 +40,10 @@ namespace Dropy.Gameplay
         public bool IsOpen { get; private set; }
         public DocumentCard MainCard { get; private set; }
         public DeskTools Tools => tools;
+        public bool HammerUsed { get; private set; }
+
+        /// <summary>Künyeye mühür basılmadan önce sorulur; false dönerse mühür basılmaz.</summary>
+        public System.Func<Seal, bool> StampFilter;
 
         public event System.Action SubmitRequested;
 
@@ -46,7 +53,8 @@ namespace Dropy.Gameplay
             normalFieldOfView = camera.fieldOfView;
 
             leftPanel = SidePanel(root, "Mevzuat", 0f);
-            gameObject.AddComponent<RegulationBook>().Build(leftPanel, regulations);
+            book = gameObject.AddComponent<RegulationBook>();
+            book.Build(leftPanel, regulations);
 
             rightPanel = SidePanel(root, "Belgeler", 1f - SideWidth);
             tools = gameObject.AddComponent<DeskTools>();
@@ -86,50 +94,65 @@ namespace Dropy.Gameplay
             return panel;
         }
 
-        /// <summary>Yeni vakanın belgelerini sağ panelin üstüne dağıtır.</summary>
-        public void LoadCase(BuildingCase buildingCase)
+        /// <summary>Yönetmelik kitabını o güne kadar açılmış sayfalarla günceller.</summary>
+        public void SetDay(int day) => book.SetDay(day);
+
+        /// <summary>Dosyanın künyesini ve ek raporunu sağ panelin üstüne koyar.</summary>
+        public void LoadCase(BuildingCase buildingCase, bool hammerAvailable)
         {
             ClearCase();
             float rightCenter = documentLayer.rect.width * (0.5f - SideWidth / 2f);
-            var docs = buildingCase.documents;
-            for (int i = docs.Count - 1; i >= 0; i--)
+
+            var report = AddCard(CaseDocuments.Report(buildingCase), false, ReportCardHeight, new Vector2(rightCenter + 175f, 110f), -2f);
+            if (hammerAvailable)
+                AddHammer(report, buildingCase);
+            MainCard = AddCard(CaseDocuments.Kunye(buildingCase), true, MainCardHeight, new Vector2(rightCenter - 165f, 40f), 1.5f);
+        }
+
+        DocumentCard AddCard(DocumentData data, bool isMain, float height, Vector2 position, float angle)
+        {
+            var card = DocumentCard.Create(data, isMain, documentLayer, tools, height, isMain ? StampFilter : null);
+            card.RectTransform.anchoredPosition = position;
+            card.RectTransform.localRotation = Quaternion.Euler(0f, 0f, angle);
+            card.Dropped += OnCardDropped;
+            cards.Add(card);
+            return card;
+        }
+
+        void AddHammer(DocumentCard report, BuildingCase buildingCase)
+        {
+            var hammer = Ui.Button(report.RectTransform, "Hammer", "ÇEKİÇLE ÖLÇ", new Color(0.55f, 0.4f, 0.25f), Color.white, 20f);
+            ((RectTransform)hammer.transform).Place(new Vector2(0.5f, 0f), new Vector2(0.5f, 1f), new Vector2(0f, -12f), new Vector2(260f, 56f));
+            hammer.onClick.AddListener(() =>
             {
-                var card = DocumentCard.Create(docs[i], i == 0, documentLayer, tools);
-                float offset = (i - (docs.Count - 1) * 0.5f);
-                card.RectTransform.anchoredPosition = new Vector2(rightCenter + offset * 46f, 60f - offset * 30f);
-                card.RectTransform.localRotation = Quaternion.Euler(0f, 0f, -offset * 2.5f);
-                card.Dropped += OnCardDropped;
-                cards.Add(card);
-                if (i == 0)
-                    MainCard = card;
-            }
-            MainCard?.RectTransform.SetAsLastSibling();
+                HammerUsed = true;
+                hammer.interactable = false;
+                report.AddField(new DocumentField
+                {
+                    label = "Çekiç ölçümü",
+                    value = BuildingCase.Concrete(buildingCase.TrueConcrete)
+                }, highlight: true);
+            });
         }
 
         public void ClearCase()
         {
             foreach (var card in cards)
                 if (card != null)
+                {
+                    Destroy(card.Data);
                     Destroy(card.gameObject);
+                }
             cards.Clear();
             MainCard = null;
-            tools?.Select(DeskTool.None);
-        }
-
-        public IEnumerable<DocumentField> MarkedFields
-        {
-            get
-            {
-                foreach (var card in cards)
-                    foreach (var field in card.MarkedFields)
-                        yield return field;
-            }
+            HammerUsed = false;
+            tools?.Select(Seal.None);
         }
 
         void OnCardDropped(DocumentCard card)
         {
             card.RectTransform.localRotation = Quaternion.identity;
-            if (card != MainCard || card.Stamp == StampKind.None)
+            if (card != MainCard || card.Stamp == Seal.None)
                 return;
             // Ortadaki şeride (karaktere) bırakılan damgalı ana belge = teslim.
             float x = card.RectTransform.anchoredPosition.x / documentLayer.rect.width + 0.5f;
@@ -141,11 +164,11 @@ namespace Dropy.Gameplay
         {
             if (!IsOpen)
                 return;
-            bool ready = MainCard != null && MainCard.Stamp != StampKind.None;
+            bool ready = MainCard != null && MainCard.Stamp != Seal.None;
             submitButton.interactable = ready;
             hintText.text = ready
-                ? "Damgalı formu karaktere sürükle ya da teslim et."
-                : "Başvuru formuna ONAY ya da RED damgası bas.\nHatalı satırları kırmızı kalemle işaretle = revizyon.";
+                ? "Mühürlü künyeyi müteahhide sürükle ya da teslim et."
+                : "Künyeye bir mühür bas:\nONAY, RED ya da PERDE EKLE.";
         }
 
         public void Toggle() => SetOpen(!IsOpen);
@@ -156,7 +179,7 @@ namespace Dropy.Gameplay
                 return;
             IsOpen = open;
             if (!open)
-                tools.Select(DeskTool.None);
+                tools.Select(Seal.None);
             if (animation != null)
                 StopCoroutine(animation);
             animation = StartCoroutine(Animate(open ? 1f : 0f));

@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 using TMPro;
 using UnityEngine;
@@ -7,7 +8,8 @@ using UnityEngine.UI;
 
 namespace Dropy.Gameplay
 {
-    /// <summary>Kasa, müşteri sayacı, "Belgeleri İncele" butonu, para bildirimi ve gün sonu özeti.</summary>
+    /// <summary>Kasa, gün/dosya sayacı, "Belgeleri İncele" butonu, para bildirimi, yönetmelik uyarısı,
+    /// gün başı yazısı ve deprem sonrası rapor.</summary>
     public class DeskHud : MonoBehaviour
     {
         static readonly Color Dark = new Color(0.1f, 0.1f, 0.12f, 0.85f);
@@ -19,9 +21,14 @@ namespace Dropy.Gameplay
         TextMeshProUGUI inspectLabel;
         TextMeshProUGUI toastText;
         CanvasGroup toastGroup;
+        TextMeshProUGUI warnText;
+        CanvasGroup warnGroup;
+        TextMeshProUGUI bannerText;
+        CanvasGroup bannerGroup;
         RectTransform summary;
         TextMeshProUGUI summaryText;
         Coroutine toastRoutine;
+        Coroutine warnRoutine;
 
         public event System.Action InspectClicked;
 
@@ -33,7 +40,7 @@ namespace Dropy.Gameplay
             moneyText.rectTransform.Stretch();
 
             var counter = Ui.Image(root, "Counter", Dark, Ui.Rounded).rectTransform;
-            counter.Place(new Vector2(1f, 1f), new Vector2(1f, 1f), new Vector2(-20f, -20f), new Vector2(300f, 56f));
+            counter.Place(new Vector2(1f, 1f), new Vector2(1f, 1f), new Vector2(-20f, -20f), new Vector2(460f, 56f));
             counterText = Ui.Text(counter, "Text", "", 22f, Color.white, TextAlignmentOptions.Center);
             counterText.rectTransform.Stretch();
 
@@ -52,9 +59,28 @@ namespace Dropy.Gameplay
             toastText = Ui.Text(toast, "Text", "", 24f, Gold, TextAlignmentOptions.Center, FontStyles.Bold);
             toastText.rectTransform.Stretch(12f, 0f, 12f, 0f);
 
+            var warn = Ui.Image(root, "Warning", new Color(0.55f, 0.08f, 0.08f, 0.92f), Ui.Rounded).rectTransform;
+            warn.Place(new Vector2(0.5f, 1f), new Vector2(0.5f, 1f), new Vector2(0f, -100f), new Vector2(620f, 56f));
+            warnGroup = warn.gameObject.AddComponent<CanvasGroup>();
+            warnGroup.alpha = 0f;
+            warnGroup.blocksRaycasts = false;
+            warnText = Ui.Text(warn, "Text", "", 22f, Color.white, TextAlignmentOptions.Center, FontStyles.Bold);
+            warnText.rectTransform.Stretch(12f, 0f, 12f, 0f);
+
+            var banner = Ui.Image(root, "DayBanner", new Color(0.05f, 0.05f, 0.07f, 0.9f)).rectTransform.Stretch();
+            bannerGroup = banner.gameObject.AddComponent<CanvasGroup>();
+            bannerGroup.alpha = 0f;
+            bannerGroup.blocksRaycasts = false;
+            bannerText = Ui.Text(banner, "Text", "", 30f, Color.white, TextAlignmentOptions.Center);
+            bannerText.rectTransform.Stretch(200f, 0f, 200f, 0f);
+            bannerText.richText = true;
+
             summary = Ui.Image(root, "Summary", new Color(0.08f, 0.08f, 0.1f, 0.94f), Ui.Rounded).rectTransform;
-            summary.Place(new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), Vector2.zero, new Vector2(900f, 620f));
-            summaryText = Ui.Text(summary, "Text", "", 24f, Color.white);
+            summary.Place(new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), Vector2.zero, new Vector2(1100f, 980f));
+            summaryText = Ui.Text(summary, "Text", "", 22f, Color.white);
+            summaryText.enableAutoSizing = true;
+            summaryText.fontSizeMin = 14f;
+            summaryText.fontSizeMax = 22f;
             summaryText.rectTransform.Stretch(40f, 40f, 40f, 36f);
             summaryText.richText = true;
             summary.gameObject.SetActive(false);
@@ -62,8 +88,8 @@ namespace Dropy.Gameplay
 
         public void SetMoney(int amount) => moneyText.text = $"Kasa: {amount:N0} TL";
 
-        public void SetCounter(int current, int total, string contractor) =>
-            counterText.text = $"Müşteri {current}/{total}  ·  {contractor}";
+        public void SetCounter(int day, int file, int filesPerDay, string contractor) =>
+            counterText.text = $"Gün {day}  ·  Dosya {file}/{filesPerDay}  ·  {contractor}";
 
         public void SetInspectAvailable(bool available) => inspectButton.gameObject.SetActive(available);
 
@@ -74,33 +100,93 @@ namespace Dropy.Gameplay
         {
             if (toastRoutine != null)
                 StopCoroutine(toastRoutine);
-            toastRoutine = StartCoroutine(ShowToast(message, color));
-        }
-
-        IEnumerator ShowToast(string message, Color color)
-        {
             toastText.text = message;
             toastText.color = color;
-            for (float t = 0f; t < 3f; t += Time.unscaledDeltaTime)
-            {
-                toastGroup.alpha = t < 0.2f ? t / 0.2f : t > 2.5f ? (3f - t) / 0.5f : 1f;
-                yield return null;
-            }
-            toastGroup.alpha = 0f;
+            toastRoutine = StartCoroutine(Fade(toastGroup, 3f));
         }
 
-        public void ShowSummary(IList<DeskManager.CaseResult> results, int money)
+        /// <summary>Kitapta yazan bir kural çiğnenince ya da mühür basılamayınca kısa kırmızı uyarı.</summary>
+        public void Warn(string message)
+        {
+            if (warnRoutine != null)
+                StopCoroutine(warnRoutine);
+            warnText.text = message;
+            warnRoutine = StartCoroutine(Fade(warnGroup, 3.5f));
+        }
+
+        static IEnumerator Fade(CanvasGroup group, float duration)
+        {
+            for (float t = 0f; t < duration; t += Time.unscaledDeltaTime)
+            {
+                group.alpha = t < 0.2f ? t / 0.2f : t > duration - 0.5f ? (duration - t) / 0.5f : 1f;
+                yield return null;
+            }
+            group.alpha = 0f;
+        }
+
+        /// <summary>Gün başında ekranı kaplayan "GÜN N" yazısı.</summary>
+        public IEnumerator DayBanner(int day, string subtitle)
+        {
+            bannerText.text = $"<size=90><b>GÜN {day}</b></size>\n\n{subtitle}";
+            bannerGroup.alpha = 1f;
+            yield return new WaitForSeconds(2.2f);
+            for (float t = 0f; t < 0.6f; t += Time.unscaledDeltaTime)
+            {
+                bannerGroup.alpha = 1f - t / 0.6f;
+                yield return null;
+            }
+            bannerGroup.alpha = 0f;
+        }
+
+        public void Quake(string message)
+        {
+            toastText.text = message;
+            toastText.color = new Color(1f, 0.4f, 0.35f);
+            if (toastRoutine != null)
+                StopCoroutine(toastRoutine);
+            toastRoutine = StartCoroutine(Fade(toastGroup, 4.5f));
+        }
+
+        /// <summary>Deprem sonrası rapor: her binanın akıbeti ve ailenin durumu.</summary>
+        public void ShowFinal(IList<DeskManager.CaseResult> results, ICollection<ShopItem> purchased, int money)
         {
             var sb = new StringBuilder();
-            sb.AppendLine("<size=38><b>MESAİ BİTTİ</b></size>\n");
+            sb.AppendLine("<size=40><b>DEPREMDEN SONRA</b></size>\n");
+            int collapsed = 0;
             foreach (var r in results)
             {
-                string safety = r.buildingSafe ? "<color=#6fdc8c>Depreme dayanıklı</color>" : "<color=#ff6b6b>RİSKLİ</color>";
-                sb.AppendLine($"<b>{r.buildingCase.buildingName}</b>  ·  {DeskManager.DecisionName(r.decision)}  ·  +{r.money:N0} TL  ·  {safety}");
+                string fate;
+                switch (r.fate)
+                {
+                    case BuildingFate.Collapsed:
+                        fate = "<color=#ff6b6b>ÇÖKTÜ</color>";
+                        collapsed++;
+                        break;
+                    case BuildingFate.Standing:
+                        fate = "<color=#6fdc8c>Ayakta</color>";
+                        break;
+                    default:
+                        fate = "<color=#9aa0a6>Yapılmadı</color>";
+                        break;
+                }
+                sb.AppendLine($"Gün {r.day}  <b>{r.buildingCase.buildingName}</b>  ·  {DeskManager.SealName(r.seal)}  ·  {fate}");
             }
-            sb.AppendLine($"\n<size=30><color=#fad166>Kasa: {money:N0} TL</color></size>");
+            sb.AppendLine($"\nÇöken bina: <b>{collapsed}</b>");
+
+            sb.AppendLine("\n<size=30><b>EVDE</b></size>");
+            sb.AppendLine(Line(purchased, ShopItem.Bag, "Su, fener ve ilk yardım çantası hazırdı.", "Karanlıkta ne su vardı ne fener."));
+            sb.AppendLine(Line(purchased, ShopItem.Fixing, "Dolaplar duvara sabitliydi, yerinde kaldı.", "Sabitlenmemiş dolap devrildi."));
+            sb.AppendLine(Line(purchased, ShopItem.Retrofit, "Güçlendirilen apartman ayakta kaldı.", "Güçlendirilmemiş apartman ağır hasar aldı."));
+            bool safe = Shop.Items.All(purchased.Contains);
+            sb.AppendLine(safe ? "\n<color=#6fdc8c><b>Ailen güvende.</b></color>" : "\n<color=#ff6b6b><b>Ailen güvende değil.</b></color>");
+            sb.AppendLine($"\n<color=#fad166>Kasa: {money:N0} TL</color>");
             summaryText.text = sb.ToString();
             summary.gameObject.SetActive(true);
         }
+
+        static string Line(ICollection<ShopItem> purchased, ShopItem item, string yes, string no) =>
+            purchased.Contains(item)
+                ? $"<color=#6fdc8c>Alındı</color>  {Shop.Name(item)}: {yes}"
+                : $"<color=#ff6b6b>Alınmadı</color>  {Shop.Name(item)}: {no}";
     }
 }

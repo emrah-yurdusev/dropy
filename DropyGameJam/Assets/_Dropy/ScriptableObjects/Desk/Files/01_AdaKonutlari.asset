@@ -1,0 +1,37 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b53e488de2e93c841b0e8998a55e2701, type: 3}
+  m_Name: 01_AdaKonutlari
+  m_EditorClassIdentifier: 
+  contractorName: Kemal Bey
+  contractorPrefab: {fileID: 0}
+  buildingName: "Ada Konutlar\u0131"
+  floors: 3
+  claimedConcrete: 30
+  groundUse: 0
+  groundFloorHeight: 2.8
+  foundation: 0
+  columns: 0
+  hasShearWall: 0
+  labConcrete: 30
+  soil: 0
+  note: "Balkon 15 cm ta\u015F\u0131yor"
+  hammerConcrete: 0
+  approveFeeOverride: 0
+  dialogue: {fileID: 0}
+  introLines:
+  - "G\xFCnayd\u0131n! Ada Konutlar\u0131. \xDC\xE7 kat, sa\u011Flam i\u015F."
+  - "Balkon on be\u015F santim ta\u015Fm\u0131\u015F, ona tak\u0131lmazs\u0131n\u0131z
+    herhalde."
+  approvedLine: "Sa\u011F olun, hay\u0131rl\u0131 i\u015Fler."
+  shearWallLine: Perde mi? Masraf ama... peki, ekletiriz.
+  rejectedLine: "Bu i\u015F burada bitmez!"

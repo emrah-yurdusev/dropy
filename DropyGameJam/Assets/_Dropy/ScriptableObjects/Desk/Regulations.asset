@@ -12,37 +12,26 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 836a4cb26276cde4093849b74cf6ad68, type: 3}
   m_Name: Regulations
   m_EditorClassIdentifier: 
-  bookTitle: "Deprem Y\xF6netmeli\u011Fi (\xD6zet)"
+  bookTitle: "Y\xD6NETMEL\u0130K"
   pages:
+  - title: "M\xFCh\xFCrler"
+    day: 1
+    body: "<b>ONAY</b>: +1000 TL. Bina yap\u0131l\u0131r.\n\n<b>RED</b>: 0 TL. Bina
+      yap\u0131lmaz.\n\n<b>PERDE EKLE</b>: +500 TL, g\xFCnde bir kez. Binaya deprem
+      perdesi (ta\u015F\u0131y\u0131c\u0131 duvar) eklenir, sonra onaylan\u0131r."
   - title: Beton
-    body: "\u2022 Yeni binalarda beton s\u0131n\u0131f\u0131 en az <b>C25</b> olmal\u0131d\u0131r.\n\u2022
-      C16 / C20 betonla vize VER\u0130LEMEZ.\n\u2022 Betonda <b>y\u0131kanmam\u0131\u015F
-      deniz kumu</b> kullan\u0131lamaz: i\xE7indeki tuz (klor\xFCr) donat\u0131y\u0131
-      pasland\u0131r\u0131r, kolon zamanla ta\u015F\u0131ma g\xFCc\xFCn\xFC kaybeder.\n\u2022
-      Beton test raporu proje de\u011Ferleriyle uyumlu olmal\u0131d\u0131r."
-  - title: Zemin
-    body: "\u2022 Zemin s\u0131n\u0131f\u0131 <b>ZE</b> veya <b>ZF</b> ise (gev\u015Fek
-      kum, al\xFCvyon, s\u0131\u011F yeralt\u0131 suyu) <b>SIVILA\u015EMA</b> riski
-      vard\u0131r.\n\u2022 Bu zeminlerde <b>kaz\u0131kl\u0131 temel</b> veya zemin
-      iyile\u015Ftirmesi ZORUNLUDUR.\n\u2022 S\u0131v\u0131la\u015Fma riskli zeminde
-      kaz\u0131ks\u0131z radye/tekil temel yetersizdir; bina deprem s\u0131ras\u0131nda
-      yan yatabilir."
-  - title: Kolon & Kat
-    body: "\u2022 <b>YUMU\u015EAK KAT:</b> Zemin kat y\xFCksekli\u011Fi, \xFCst kat
-      y\xFCksekli\u011Finin 1,5 kat\u0131n\u0131 a\u015Famaz (\xF6r. 3 m \u2192 en
-      fazla 4,5 m).\n\u2022 Ta\u015F\u0131y\u0131c\u0131 <b>kolon kesilemez</b>,
-      kald\u0131r\u0131lamaz. D\xFCkk\xE2n/vitrin i\xE7in zemin katta kolon iptali
-      yasakt\u0131r.\n\u2022 Perde duvarlar planda dengeli (simetrik) yerle\u015Fmelidir."
-  - title: Gri Alan
-    body: "Deprem g\xFCvenli\u011Fini ETK\u0130LEMEYEN mimari farklar <b>onay engeli
-      de\u011Fildir</b>:\n\u2022 Balkon \xF6l\xE7\xFCs\xFCnde \xB120 cm fark\n\u2022
-      Cephe rengi, do\u011Frama malzemesi\n\u2022 \u0130\xE7 b\xF6lme duvarlar\u0131n\u0131n
-      yeri\n\nBunlar i\xE7in revizyon istemek zaman ve para kaybettirir."
-  - title: Karar
-    body: "<b>ONAY damgas\u0131:</b> proje g\xFCvenli \u2192 +1.000 TL vize harc\u0131.\n<b>KIRMIZI
-      KALEM + ONAY:</b> \xF6l\xFCmc\xFCl hatalar\u0131 i\u015Faretle, revizyonla
-      onayla \u2192 +500 TL, bina g\xFC\xE7lendirilir.\n<b>RED damgas\u0131:</b>
-      proje kurtar\u0131lamaz \u2192 0 TL.\n<b>R\xFC\u015Fvet:</b> cebin dolar ama
-      hatal\u0131 bina oldu\u011Fu gibi yap\u0131l\u0131r.\n\nDamgal\u0131 ba\u015Fvuru
-      formunu m\xFCteahhide uzatarak (ortaya s\xFCr\xFCkleyerek) karar\u0131 teslim
-      et."
+    day: 1
+    body: "Ger\xE7ek beton yaln\u0131z <b>C25, C30 ya da C35</b> olabilir. Ba\u015Fka
+      her beton: RED.\n\nK\xFCnye ile ek rapor farkl\u0131ysa <b>ek rapor</b> ge\xE7erlidir.\n\nKitapta
+      yazmayan kusur (balkon, boya, kap\u0131 rengi, korkuluk) reddettirmez: ONAY."
+  - title: "Yumu\u015Fak kat"
+    day: 2
+    body: "Zemin kat <b>market</b> ve tavan\u0131 <b>4 m ya da daha y\xFCksek</b>,
+      perde yoksa: yumu\u015Fak kat. PERDE EKLE ya da RED.\n\nKolon <b>kesik</b>
+      ise yaln\u0131z RED. Perde kesik kolonu kurtarmaz."
+  - title: "Zemin ve \xE7eki\xE7"
+    day: 3
+    body: "<b>Kum</b> zemin ve <b>5 ya da daha fazla kat</b>: kaz\u0131k temel \u015Fart.
+      Radye temel: RED.\n\n<b>\xC7eki\xE7</b> betonun ger\xE7ek dayan\u0131m\u0131n\u0131
+      \xF6l\xE7er. \xC7ekicin okudu\u011Fu beton iki k\xE2\u011F\u0131d\u0131 da
+      ge\xE7ersiz k\u0131lar."

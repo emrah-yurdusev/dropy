@@ -9,17 +9,10 @@ using UnityEngine.UI;
 
 namespace Dropy.Gameplay
 {
-    public enum DeskDecision
-    {
-        DirectApprove,
-        BribedApprove,
-        RevisedApprove,
-        Reject
-    }
-
     /// <summary>
-    /// Vize bürosu masa akışı: müteahhit kapıdan girer, karşıya oturur, sohbet edilir,
-    /// belgeler incelenip damgalanır, karar verilir, müteahhit tepki verip çıkar. Sıradaki gelir.
+    /// Vize bürosu masa akışı: 5 gün, günde 3 dosya. Müteahhit kapıdan girer, karşıya oturur, konuşur;
+    /// oyuncu yönetmeliğe, künyeye ve ek rapora bakıp künyeye mühür basar. Akşam kira düşer, telefondan
+    /// alışveriş yapılır. 5. günün üçüncü dosyasından sonra deprem olur.
     /// Arayüzü (Canvas, EventSystem) kendisi kurar; sahnede yalnızca bu bileşen ve referanslar gerekir.
     /// </summary>
     public class DeskManager : MonoBehaviour
@@ -27,13 +20,14 @@ namespace Dropy.Gameplay
         public class CaseResult
         {
             public BuildingCase buildingCase;
-            public DeskDecision decision;
+            public int day;
+            public Seal seal;
             public int money;
-            public bool buildingSafe;
+            public BuildingFate fate;
+            public string warning;
         }
 
-        public const int DirectFee = 1000;
-        public const int RevisionFee = 500;
+        const int HammerDay = 3;
 
         [Header("Sahne")]
         [Tooltip("Oyuncunun gözü: karşıdaki sandalyeye bakan sabit kamera")]
@@ -46,34 +40,38 @@ namespace Dropy.Gameplay
 
         [Header("İçerik")]
         [SerializeField] RegulationData regulations;
+        [Tooltip("Sırayla 15 dosya: her gün 3 tane")]
         [SerializeField] BuildingCase[] cases;
         [Tooltip("Vakada karakter seçilmemişse sırayla bunlar kullanılır")]
         [SerializeField] GameObject[] defaultContractors;
-        [SerializeField] int startMoney;
 
         DialogueUI dialogue;
         InspectionPanel inspection;
         DeskHud hud;
+        EveningPanel evening;
         NpcController visitor;
         Transform visitorHead;
         BuildingCase current;
-        bool bribeAccepted;
         bool submitted;
         bool inspectAllowed;
+        bool shearWallUsedToday;
+        int day;
         int money;
         readonly List<CaseResult> results = new List<CaseResult>();
+        readonly HashSet<ShopItem> purchased = new HashSet<ShopItem>();
 
         public IReadOnlyList<CaseResult> Results => results;
         public int Money => money;
+        public int Day => day;
 
         void Awake()
         {
             BuildUi();
-            money = startMoney;
+            money = Economy.StartMoney;
             hud.SetMoney(money);
         }
 
-        void Start() => StartCoroutine(RunDay());
+        void Start() => StartCoroutine(RunWeek());
 
         void BuildUi()
         {
@@ -98,6 +96,7 @@ namespace Dropy.Gameplay
             inspection = canvasGo.AddComponent<InspectionPanel>();
             inspection.Build(root, regulations, deskCamera);
             inspection.SubmitRequested += () => submitted = true;
+            inspection.StampFilter = CanStamp;
 
             dialogue = canvasGo.AddComponent<DialogueUI>();
             dialogue.Build(root, deskCamera);
@@ -105,6 +104,10 @@ namespace Dropy.Gameplay
             hud = canvasGo.AddComponent<DeskHud>();
             hud.Build(root);
             hud.InspectClicked += ToggleInspection;
+
+            evening = canvasGo.AddComponent<EveningPanel>();
+            evening.Build(root);
+            evening.BuyClicked += Buy;
         }
 
         void Update()
@@ -122,20 +125,49 @@ namespace Dropy.Gameplay
             hud.SetInspectOpen(inspection.IsOpen);
         }
 
-        IEnumerator RunDay()
+        IEnumerator RunWeek()
         {
-            for (int i = 0; i < cases.Length; i++)
+            int expected = Economy.Days * Economy.FilesPerDay;
+            if (cases.Length != expected)
+                Debug.LogWarning($"DeskManager: {expected} dosya bekleniyordu, {cases.Length} var. Dropy > Dosyaları Üret ile kur.");
+
+            for (day = 1; day <= Economy.Days; day++)
             {
-                current = cases[i];
-                hud.SetCounter(i + 1, cases.Length, current.contractorName);
-                yield return RunCase(current, i);
+                shearWallUsedToday = false;
+                inspection.SetDay(day);
+                yield return hud.DayBanner(day, NewRules(day));
+
+                int income = 0;
+                for (int k = 0; k < Economy.FilesPerDay; k++)
+                {
+                    int index = (day - 1) * Economy.FilesPerDay + k;
+                    if (index >= cases.Length)
+                        break;
+                    current = cases[index];
+                    hud.SetCounter(day, k + 1, Economy.FilesPerDay, current.contractorName);
+                    yield return RunCase(current, index);
+                    income += results[results.Count - 1].money;
+                }
+
+                if (day < Economy.Days)
+                    yield return Evening(income);
             }
-            hud.ShowSummary(results, money);
+            day = Economy.Days;
+
+            yield return Earthquake();
+            hud.ShowFinal(results, purchased, money);
+        }
+
+        string NewRules(int forDay)
+        {
+            if (regulations == null)
+                return null;
+            var titles = regulations.pages.Where(p => p.day == forDay).Select(p => p.title).ToList();
+            return titles.Count == 0 ? "Yönetmelikte yeni madde yok." : "Yönetmeliğe yeni madde: " + string.Join(", ", titles);
         }
 
         IEnumerator RunCase(BuildingCase buildingCase, int index)
         {
-            bribeAccepted = false;
             submitted = false;
 
             var prefab = buildingCase.contractorPrefab != null
@@ -149,24 +181,25 @@ namespace Dropy.Gameplay
                 yield return visitor.WalkThrough(door);
             yield return visitor.SitOn(visitorChair);
 
-            inspection.LoadCase(buildingCase);
-            bool openDocs = false;
-            yield return RunDialogue(buildingCase.dialogue, () => openDocs = true);
+            RefreshSeals(buildingCase);
+            inspection.LoadCase(buildingCase, day >= HammerDay);
+            yield return Talk(buildingCase);
 
             inspectAllowed = true;
             hud.SetInspectAvailable(true);
-            if (openDocs && !inspection.IsOpen)
+            if (!inspection.IsOpen)
                 ToggleInspection();
 
             while (!submitted)
                 yield return null;
 
-            var result = Evaluate(buildingCase);
+            var result = Decide(buildingCase);
             results.Add(result);
             money += result.money;
             hud.SetMoney(money);
-            hud.Toast($"{DecisionName(result.decision)}   +{result.money:N0} TL",
-                result.decision == DeskDecision.BribedApprove ? new Color(1f, 0.55f, 0.45f) : new Color(0.98f, 0.82f, 0.4f));
+            hud.Toast($"{SealName(result.seal)}   +{result.money:N0} TL", new Color(0.98f, 0.82f, 0.4f));
+            if (result.warning != null)
+                hud.Warn("Yönetmelik: " + result.warning);
 
             if (inspection.IsOpen)
                 ToggleInspection();
@@ -174,7 +207,7 @@ namespace Dropy.Gameplay
             hud.SetInspectAvailable(false);
             inspection.ClearCase();
 
-            yield return React(buildingCase, result.decision);
+            yield return React(buildingCase, result.seal);
 
             yield return visitor.StandUp();
             if (door != null)
@@ -185,11 +218,21 @@ namespace Dropy.Gameplay
             visitor = null;
         }
 
-        IEnumerator RunDialogue(DialogueData data, System.Action onOpenDocuments)
+        IEnumerator Talk(BuildingCase buildingCase)
         {
-            if (data == null || data.nodes.Count == 0)
+            if (buildingCase.dialogue != null && buildingCase.dialogue.nodes.Count > 0)
+            {
+                yield return RunDialogue(buildingCase.dialogue);
                 yield break;
+            }
+            visitor.Face?.SetExpression(FaceExpression.Happy);
+            foreach (var line in buildingCase.introLines)
+                yield return dialogue.Say(buildingCase.contractorName, line, visitorHead, waitForClick: true);
+            dialogue.HideBubble();
+        }
 
+        IEnumerator RunDialogue(DialogueData data)
+        {
             var node = data.nodes[0];
             while (node != null)
             {
@@ -198,80 +241,77 @@ namespace Dropy.Gameplay
                 yield return dialogue.Say(current.contractorName, node.npcText, visitorHead, waitForClick: !hasChoices);
 
                 string next = node.next;
-                var evt = node.evt;
                 if (hasChoices)
                 {
                     int picked = 0;
                     yield return dialogue.Choose(node.choices.Select(c => c.text).ToList(), i => picked = i);
                     next = node.choices[picked].next;
-                    evt = node.choices[picked].evt;
-                }
-
-                switch (evt)
-                {
-                    case DialogueEvent.AcceptBribe: bribeAccepted = true; break;
-                    case DialogueEvent.RefuseBribe: bribeAccepted = false; break;
-                    case DialogueEvent.OpenDocuments: onOpenDocuments?.Invoke(); break;
                 }
                 node = data.Find(next);
             }
             dialogue.HideBubble();
         }
 
-        CaseResult Evaluate(BuildingCase buildingCase)
+        void RefreshSeals(BuildingCase buildingCase)
         {
-            var marked = new HashSet<DocumentField>(inspection.MarkedFields);
-            var fatal = buildingCase.documents.SelectMany(d => d.fields).Where(f => f.isFatalFlaw).ToList();
-            bool approved = inspection.MainCard != null && inspection.MainCard.Stamp == StampKind.Approve;
-            var result = new CaseResult { buildingCase = buildingCase };
-
-            if (!approved)
-            {
-                result.decision = DeskDecision.Reject;
-                result.buildingSafe = true; // bina yapılmıyor
-            }
-            else if (bribeAccepted)
-            {
-                result.decision = DeskDecision.BribedApprove;
-                result.money = buildingCase.bribeAmount;
-                result.buildingSafe = fatal.Count == 0;
-            }
-            else if (marked.Count > 0)
-            {
-                result.decision = DeskDecision.RevisedApprove;
-                result.money = RevisionFee;
-                result.buildingSafe = fatal.All(marked.Contains);
-            }
-            else
-            {
-                result.decision = DeskDecision.DirectApprove;
-                result.money = DirectFee;
-                result.buildingSafe = fatal.Count == 0;
-            }
-            return result;
+            var tools = inspection.Tools;
+            tools.SetSeal(Seal.Approve, BuildingRules.Fee(buildingCase, Seal.Approve, day), true);
+            tools.SetSeal(Seal.Reject, 0, true);
+            tools.SetSeal(Seal.ShearWall, BuildingRules.Fee(buildingCase, Seal.ShearWall, day), !shearWallUsedToday,
+                shearWallUsedToday ? " · bugün kullanıldı" : " · günde 1");
         }
 
-        IEnumerator React(BuildingCase buildingCase, DeskDecision decision)
+        /// <summary>Perde mührü yalnız yumuşak katı kurtarır; işe yaramıyorsa basılmaz ve hak harcanmaz.</summary>
+        bool CanStamp(Seal seal)
+        {
+            if (seal != Seal.ShearWall)
+                return true;
+            if (shearWallUsedToday)
+            {
+                hud.Warn("Bugünkü perde hakkı kullanıldı");
+                return false;
+            }
+            if (!BuildingRules.ShearWallSaves(current))
+            {
+                hud.Warn("Perde bunu kurtarmaz");
+                return false;
+            }
+            return true;
+        }
+
+        CaseResult Decide(BuildingCase buildingCase)
+        {
+            var seal = inspection.MainCard != null ? inspection.MainCard.Stamp : Seal.Reject;
+            if (seal == Seal.ShearWall)
+                shearWallUsedToday = true;
+            return new CaseResult
+            {
+                buildingCase = buildingCase,
+                day = day,
+                seal = seal,
+                money = BuildingRules.Fee(buildingCase, seal, day),
+                fate = BuildingRules.Fate(buildingCase, seal),
+                warning = BuildingRules.KnownViolation(buildingCase, seal, day)
+            };
+        }
+
+        IEnumerator React(BuildingCase buildingCase, Seal seal)
         {
             string line;
             FaceExpression expression;
-            switch (decision)
+            switch (seal)
             {
-                case DeskDecision.Reject:
+                case Seal.Reject:
                     line = buildingCase.rejectedLine;
                     expression = FaceExpression.Angry;
                     break;
-                case DeskDecision.RevisedApprove:
-                    line = buildingCase.revisedLine;
+                case Seal.ShearWall:
+                    line = buildingCase.shearWallLine;
                     expression = FaceExpression.Sad;
-                    break;
-                case DeskDecision.BribedApprove:
-                    line = buildingCase.approvedLine;
-                    expression = FaceExpression.Suspicious;
                     break;
                 default:
                     line = buildingCase.approvedLine;
-                    expression = FaceExpression.Happy;
+                    expression = buildingCase.approveFeeOverride > 0 ? FaceExpression.Suspicious : FaceExpression.Happy;
                     break;
             }
             visitor.Face?.SetExpression(expression);
@@ -279,13 +319,48 @@ namespace Dropy.Gameplay
             dialogue.HideBubble();
         }
 
-        public static string DecisionName(DeskDecision decision)
+        IEnumerator Evening(int income)
         {
-            switch (decision)
+            int rent = Mathf.Min(money, Economy.Rent);
+            money -= rent;
+            hud.SetMoney(money);
+            yield return evening.Run(day, income, rent, money, purchased, shopOpen: day <= Economy.LastPaidDay);
+        }
+
+        void Buy(ShopItem item)
+        {
+            int price = Shop.Price(item);
+            if (purchased.Contains(item) || money < price)
+                return;
+            money -= price;
+            purchased.Add(item);
+            hud.SetMoney(money);
+            evening.Refresh(money, purchased);
+        }
+
+        IEnumerator Earthquake()
+        {
+            hud.Quake("DEPREM");
+            var cam = deskCamera != null ? deskCamera.transform : null;
+            var origin = cam != null ? cam.localPosition : Vector3.zero;
+            for (float t = 0f; t < 4f; t += Time.deltaTime)
             {
-                case DeskDecision.BribedApprove: return "Rüşvetle Onay";
-                case DeskDecision.RevisedApprove: return "Revizyonla Onay";
-                case DeskDecision.Reject: return "Red";
+                float strength = Mathf.Sin(Mathf.Clamp01(t / 4f) * Mathf.PI) * 0.06f;
+                if (cam != null)
+                    cam.localPosition = origin + Random.insideUnitSphere * strength;
+                yield return null;
+            }
+            if (cam != null)
+                cam.localPosition = origin;
+            yield return new WaitForSeconds(0.8f);
+        }
+
+        public static string SealName(Seal seal)
+        {
+            switch (seal)
+            {
+                case Seal.ShearWall: return "Perde";
+                case Seal.Reject: return "Red";
                 default: return "Onay";
             }
         }

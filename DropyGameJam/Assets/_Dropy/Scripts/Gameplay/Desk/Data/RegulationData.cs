@@ -7,6 +7,8 @@ namespace Dropy.Gameplay
     public class RegulationPage
     {
         public string title;
+        [Tooltip("Bu sayfanın kitaba girdiği gün")]
+        [Min(1)] public int day = 1;
         [TextArea(4, 12)] public string body;
     }
 
