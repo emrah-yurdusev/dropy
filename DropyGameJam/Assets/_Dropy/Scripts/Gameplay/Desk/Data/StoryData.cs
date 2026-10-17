@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Video;
 
 namespace Dropy.Gameplay
 {
@@ -38,6 +39,26 @@ namespace Dropy.Gameplay
     }
 
     /// <summary>
+    /// Bir sabahın televizyon haberi: alt banttaki manşet ve kayan yazı. Görsel ve video inspector'dan bağlanır;
+    /// dosya üreticisi yazıları yeniden yazarken bağlanan görseli ve videoyu korur.
+    /// </summary>
+    [System.Serializable]
+    public class DailyNews
+    {
+        [Min(1)] public int day = 1;
+        [Tooltip("Alt bantta, SON DAKİKA'nın yanında")]
+        [TextArea(1, 3)] public string headline;
+        [Tooltip("Ekranın altında kayan satırlar")]
+        public List<string> ticker = new List<string>();
+        [Tooltip("Ekranın sağındaki görselin üstüne yazılan kısa etiket (görsel yoksa yer tutucuda görünür)")]
+        public string graphicLabel;
+        [Tooltip("Ekranın sağındaki haber görseli (harita, fotoğraf...)")]
+        public Sprite graphic;
+        [Tooltip("Varsa spiker yerine bu video oynar")]
+        public VideoClip clip;
+    }
+
+    /// <summary>
     /// Akşam aileden biri bir şey ister; mesajın içinde "Öde" düğmesi olur. Ödenirse aile bağı artar,
     /// ödenmeden sabah olursa azalır; ertesi akşam bir cevap, depremden sonra gazetede bir satır gelir.
     /// </summary>
@@ -66,7 +87,9 @@ namespace Dropy.Gameplay
     {
         [Header("Gün başı")]
         public List<PhoneCall> calls = new List<PhoneCall>();
-        [Tooltip("Gün sırasıyla sabah radyosu (0 = 1. gün)")]
+        [Tooltip("Sabah televizyon haberleri (gün başına bir tane)")]
+        public List<DailyNews> news = new List<DailyNews>();
+        [Tooltip("Eski sabah radyosu: o günün haberi yoksa manşet olarak kullanılır (0 = 1. gün)")]
         [TextArea(1, 3)] public List<string> radio = new List<string>();
 
         [Header("Sarsıntılar")]
@@ -83,6 +106,8 @@ namespace Dropy.Gameplay
         [Min(1)] public int bondMax = 5;
 
         public string Radio(int day) => day >= 1 && day <= radio.Count ? radio[day - 1] : null;
+
+        public DailyNews News(int day) => news.Find(n => n.day == day);
 
         public float Tremor(int day) => day >= 1 && day <= tremors.Count ? tremors[day - 1] : 0f;
     }

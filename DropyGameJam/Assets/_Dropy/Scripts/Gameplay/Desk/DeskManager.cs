@@ -63,8 +63,10 @@ namespace Dropy.Gameplay
 
         [Header("İçerik")]
         [SerializeField] RegulationData regulations;
-        [Tooltip("Açılış telefonu, sabah radyosu, akşam mesajları, sarsıntılar")]
+        [Tooltip("Açılış telefonu, sabah haberleri, akşam mesajları, sarsıntılar")]
         [SerializeField] StoryData story;
+        [Tooltip("Sabah televizyonu ve final gazetesinin görünüşü ve sabit yazıları. Boşsa varsayılanlar kullanılır")]
+        [SerializeField] NewsStyle newsStyle;
         [Tooltip("Sırayla 18 dosya: her gün 3 tane")]
         [SerializeField] BuildingCase[] cases;
         [Tooltip("Vakada karakter seçilmemişse sırayla bunlar kullanılır")]
@@ -162,7 +164,7 @@ namespace Dropy.Gameplay
             dialogue.Build(root, deskCamera);
 
             hud = canvasGo.AddComponent<DeskHud>();
-            hud.Build(root);
+            hud.Build(root, newsStyle != null ? newsStyle : NewsStyle.Default);
             hud.InspectClicked += ToggleInspection;
             hud.ResumeClicked += () => SetPaused(false);
             hud.RestartClicked += Restart;
@@ -247,7 +249,7 @@ namespace Dropy.Gameplay
                 {
                     shearWallUsedToday = false;
                     hammersUsedToday = 0;
-                    yield return hud.DayBanner(day, Morning(day));
+                    yield return hud.Morning(Broadcast(day));
                     yield return MorningCalls();
                 }
 
@@ -295,32 +297,56 @@ namespace Dropy.Gameplay
             hud.ShowFinal(results, boughtOn, family, Estranged, money, DeskHud.ReportCard(results));
         }
 
-        string Morning(int forDay)
+        /// <summary>
+        /// Sabah haberleri: günün manşeti ve kayan yazısı hikâyeden gelir. Dünkü sarsıntıda çatlayan bina varsa
+        /// SON DAKİKA o olur, günün manşeti kayan yazıya iner. Yönetmeliğe giren madde ve harç notu televizyonun
+        /// altında sabit durur (kayan yazıda kaçırılmasın).
+        /// </summary>
+        TvBroadcast Broadcast(int forDay)
         {
+            var broadcast = new TvBroadcast { day = forDay };
+            var news = story != null ? story.News(forDay) : null;
+            string headline = news != null ? news.headline : story != null ? story.Radio(forDay) : null;
+            var cracks = CrackNews(forDay);
+            if (cracks.Count > 0)
+            {
+                broadcast.headline = cracks[0];
+                broadcast.ticker.AddRange(cracks.Skip(1));
+                if (!string.IsNullOrEmpty(headline))
+                    broadcast.ticker.Add(headline);
+            }
+            else
+                broadcast.headline = headline;
+            if (news != null)
+            {
+                broadcast.ticker.AddRange(news.ticker.Where(t => !string.IsNullOrEmpty(t)));
+                broadcast.graphic = news.graphic;
+                broadcast.graphicLabel = news.graphicLabel;
+                broadcast.clip = news.clip;
+            }
+
             string rules = "Yönetmelikte yeni madde yok.";
             if (regulations != null)
             {
                 var titles = regulations.pages.Where(p => p.day == forDay).Select(p => p.title).ToList();
                 if (titles.Count > 0)
-                    rules = "Yönetmeliğe yeni madde: " + string.Join(", ", titles);
+                    rules = "Yönetmeliğe yeni madde: <b>" + string.Join(", ", titles) + "</b>";
             }
+            broadcast.notes.Add(rules);
+            broadcast.ticker.Add(rules.Replace("<b>", "").Replace("</b>", ""));
             if (forDay > Economy.LastPaidDay)
-                rules += "\n<b>Bugün harç yok: mühürler para getirmez, ama aileler yine taşınır.</b>";
-            string radio = story != null ? story.Radio(forDay) : null;
-            string cracks = CrackNews(forDay);
-            if (!string.IsNullOrEmpty(cracks))
-                radio = string.IsNullOrEmpty(radio) ? cracks : radio + "\n" + cracks;
-            return string.IsNullOrEmpty(radio) ? rules : $"<i>{radio}</i>\n\n{rules}";
+                broadcast.notes.Add("<b>Bugün harç yok: mühürler para getirmez, ama aileler yine taşınır.</b>");
+            return broadcast;
         }
 
         /// <summary>
         /// Dünkü sarsıntıda çatlayan binalar: yalnız oyuncunun hatalı onayladığı (depremde çökecek) binalar.
         /// Oyuncu hatasını depremden önce sezsin diye en fazla iki haber.
         /// </summary>
-        string CrackNews(int forDay)
+        List<string> CrackNews(int forDay)
         {
             if (story == null || story.Tremor(forDay - 1) <= 0f)
-                return null;
+                return new List<string>();
             var news = results
                 .Where(r => r.fate == BuildingFate.Collapsed && r.day < forDay && !crackReported.Contains(r.buildingCase))
                 .OrderByDescending(r => r.day)
@@ -328,8 +354,7 @@ namespace Dropy.Gameplay
                 .ToList();
             foreach (var r in news)
                 crackReported.Add(r.buildingCase);
-            return news.Count == 0 ? null
-                : string.Join("\n", news.Select(r => $"Radyo: Dünkü sarsıntıda {r.buildingCase.buildingName} binasında derin çatlaklar görüldü."));
+            return news.Select(r => $"Dünkü sarsıntıda {r.buildingCase.buildingName} binasında derin çatlaklar görüldü").ToList();
         }
 
         /// <summary>Çekiç günde sınırlı: hak varsa birini düşer.</summary>

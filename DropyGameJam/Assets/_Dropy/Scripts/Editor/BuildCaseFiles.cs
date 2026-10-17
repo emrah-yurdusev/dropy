@@ -468,16 +468,25 @@ namespace Dropy.EditorTools
                 },
             };
 
-            story.radio = new List<string>
+            // Sabah televizyonu. İpuçları alışverişten önce gelir: çanta 1., dolap sabitleme 2. gün
+            // (sabitleme 2. akşamdan sonra satılmaz). Inspector'dan bağlanan görsel ve video korunur.
+            var oldNews = story.news ?? new List<DailyNews>();
+            story.news = new List<DailyNews>
             {
-                // İpuçları alışverişten önce gelir: çanta 1., dolap sabitleme 2. gün (sabitleme 2. akşamdan sonra satılmaz).
-                "Radyo: Uzmanlar bölgedeki fay hattına dikkat çekiyor. AFAD, her evde su, fener ve düdük olan bir deprem çantası bulunmasını hatırlattı.",
-                "Radyo: Uzmanlar uzun dolapların duvara sabitlenmesini öneriyor; depremde yaralanmaların çoğu devrilen eşyadan oluyor.",
-                "Radyo: Dün öğleden sonra hafif bir sarsıntı hissedildi. Uzmanlar tedirgin.",
-                "Radyo: Dünkü depremin ardından hasar tespit çalışmaları sürüyor. Uzmanlar artçılara karşı uyarıyor.",
-                "Radyo: Hasarlı binalara girilmemesi çağrısı yapıldı. Uzmanlar daha büyük bir deprem olasılığından söz ediyor.",
-                "Radyo: Son iki günde onlarca sarsıntı kaydedildi. Vatandaşlar tedirgin.",
+                News(oldNews, 1, "FAY HATTI", "Uzmanlar bölgedeki fay hattına dikkat çekiyor",
+                    "AFAD: Her evde su, fener ve düdük olan bir deprem çantası bulunsun", "Hava: parçalı bulutlu, 14°"),
+                News(oldNews, 2, "DOLABI SABİTLE", "Depremde yaralanmaların çoğu devrilen eşyadan",
+                    "Uzmanlar: Uzun dolapları ve kitaplıkları duvara sabitleyin", "Belediye: İskân başvuruları bu hafta hızlandırılıyor"),
+                News(oldNews, 3, "SARSINTI", "Dün öğleden sonra hafif bir sarsıntı hissedildi",
+                    "Uzmanlar tedirgin: sarsıntılar sürebilir", "AFAD: Deprem anında çök, kapan, tutun"),
+                News(oldNews, 4, "HASAR TESPİTİ", "Dünkü depremin ardından hasar tespit çalışmaları sürüyor",
+                    "Uzmanlar artçı depremlere karşı uyardı", "Kızılay: Çadır kentte yardım noktaları açıldı"),
+                News(oldNews, 5, "HASARLI BİNA", "Hasarlı binalara girilmemesi çağrısı yapıldı",
+                    "Uzmanlar daha büyük bir deprem olasılığından söz ediyor", "Belediye: Onarım izni başvuruları sürüyor"),
+                News(oldNews, 6, "ARTÇI", "Son iki günde onlarca sarsıntı kaydedildi",
+                    "Vatandaşlar tedirgin", "AFAD: Deprem çantanızı kapının yanında tutun"),
             };
+            story.radio = new List<string>();
 
             // Her depremden önceki gün küçük bir sarsıntı (2. ve 5. gün); ertesi sabah radyo çatlakları okur.
             story.tremors = new List<float> { 0f, 0.012f, 0f, 0f, 0.025f, 0f };
@@ -554,6 +563,21 @@ namespace Dropy.EditorTools
         }
 
         const string Wife = "Eşin", Child = "Elif", Mother = "Annen", Landlord = "Ev sahibi", Unknown = "Bilinmeyen numara";
+
+        /// <summary>Günün haberi; aynı günün eski kaydına inspector'dan bağlanmış görsel ve video varsa korunur.</summary>
+        static DailyNews News(List<DailyNews> old, int day, string label, string headline, params string[] ticker)
+        {
+            var previous = old.Find(n => n.day == day);
+            return new DailyNews
+            {
+                day = day,
+                graphicLabel = label,
+                headline = headline,
+                ticker = new List<string>(ticker),
+                graphic = previous?.graphic,
+                clip = previous?.clip,
+            };
+        }
 
         /// <summary>Aile küserse bu kişilerden mesaj gelmez.</summary>
         static bool IsFamily(string sender) => sender == Wife || sender == Child || sender == Mother;

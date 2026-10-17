@@ -10,7 +10,8 @@ using UnityEngine.UI;
 namespace Dropy.Gameplay
 {
     /// <summary>Kasa, gün/dosya sayacı, "Belgeleri İncele" butonu, para bildirimi, yönetmelik uyarısı,
-    /// gün başı yazısı, 1. gün brifingi, duraklatma menüsü ve deprem sonrası gazete ile dosya karnesi.</summary>
+    /// 1. gün brifingi, duraklatma menüsü ve dosya karnesi. Sabah televizyonu (<see cref="TvNewsView"/>) ve
+    /// final gazetesi (<see cref="NewspaperView"/>) ayrı bileşenlerdir; burası onları açar.</summary>
     public class DeskHud : MonoBehaviour
     {
         static readonly Color Dark = new Color(0.1f, 0.1f, 0.12f, 0.85f);
@@ -24,15 +25,11 @@ namespace Dropy.Gameplay
         CanvasGroup toastGroup;
         TextMeshProUGUI warnText;
         CanvasGroup warnGroup;
-        TextMeshProUGUI bannerText;
-        TextMeshProUGUI bannerHint;
-        CanvasGroup bannerGroup;
         RectTransform summary;
         TextMeshProUGUI summaryText;
-        TextMeshProUGUI pageToggleLabel;
-        string newspaperPage;
-        string reportPage;
-        bool showingReport;
+        NewsStyle style;
+        TvNewsView tv;
+        NewspaperView newspaper;
         GameObject title;
         bool started;
         GameObject pauseMenu;
@@ -45,8 +42,9 @@ namespace Dropy.Gameplay
         public event System.Action ResumeClicked;
         public event System.Action RestartClicked;
 
-        public void Build(RectTransform root)
+        public void Build(RectTransform root, NewsStyle newsStyle)
         {
+            style = newsStyle;
             var money = Ui.Image(root, "Money", Dark, Ui.Rounded).rectTransform;
             money.Place(new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(20f, -20f), new Vector2(260f, 56f));
             moneyText = Ui.Text(money, "Text", "", 26f, Gold, TextAlignmentOptions.Center, FontStyles.Bold);
@@ -80,15 +78,12 @@ namespace Dropy.Gameplay
             warnText = Ui.Text(warn, "Text", "", 22f, Color.white, TextAlignmentOptions.Center, FontStyles.Bold);
             warnText.rectTransform.Stretch(12f, 0f, 12f, 0f);
 
-            var banner = Ui.Image(root, "DayBanner", new Color(0.05f, 0.05f, 0.07f, 0.9f)).rectTransform.Stretch();
-            bannerGroup = banner.gameObject.AddComponent<CanvasGroup>();
-            bannerGroup.alpha = 0f;
-            bannerGroup.blocksRaycasts = false;
-            bannerText = Ui.Text(banner, "Text", "", 30f, Color.white, TextAlignmentOptions.Center);
-            bannerText.rectTransform.Stretch(200f, 0f, 200f, 0f);
-            bannerText.richText = true;
-            bannerHint = Ui.Text(banner, "Hint", "Devam etmek için tıkla", 22f, new Color(1f, 1f, 1f, 0.6f), TextAlignmentOptions.Bottom, FontStyles.Italic);
-            bannerHint.rectTransform.Stretch(0f, 60f, 0f, 0f);
+            tv = gameObject.AddComponent<TvNewsView>();
+            tv.Build(root, style, () => BlocksInput);
+            newspaper = gameObject.AddComponent<NewspaperView>();
+            newspaper.Build(root, style);
+            newspaper.ReportClicked += ShowReport;
+            newspaper.RestartClicked += () => RestartClicked?.Invoke();
 
             summary = Ui.Image(root, "Summary", new Color(0.08f, 0.08f, 0.1f, 0.94f), Ui.Rounded).rectTransform;
             summary.Place(new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), Vector2.zero, new Vector2(1100f, 980f));
@@ -98,10 +93,12 @@ namespace Dropy.Gameplay
             summaryText.fontSizeMax = 30f;
             summaryText.rectTransform.Stretch(40f, 110f, 40f, 36f);
             summaryText.richText = true;
-            var toggle = Ui.Button(summary, "PageToggle", "DOSYA KARNESİ", new Color(0.24f, 0.32f, 0.45f), Color.white, 22f);
+            // Karne sayfası: gazeteden açılır, "Gazete" ile geri döner.
+            summary.GetComponent<Image>().color = new Color(0.95f, 0.93f, 0.86f, 0.98f);
+            summaryText.color = new Color(0.12f, 0.11f, 0.1f);
+            var toggle = Ui.Button(summary, "PageToggle", "GAZETE", new Color(0.24f, 0.32f, 0.45f), Color.white, 22f);
             ((RectTransform)toggle.transform).Place(new Vector2(0.5f, 0f), new Vector2(1f, 0f), new Vector2(-10f, 28f), new Vector2(300f, 64f));
-            pageToggleLabel = toggle.GetComponentInChildren<TextMeshProUGUI>();
-            toggle.onClick.AddListener(TogglePage);
+            toggle.onClick.AddListener(ShowNewspaper);
             var again = Ui.Button(summary, "Restart", "YENİDEN OYNA", new Color(0.85f, 0.6f, 0.2f), Color.white, 22f);
             ((RectTransform)again.transform).Place(new Vector2(0.5f, 0f), new Vector2(0f, 0f), new Vector2(10f, 28f), new Vector2(300f, 64f));
             again.onClick.AddListener(() => RestartClicked?.Invoke());
@@ -186,12 +183,11 @@ namespace Dropy.Gameplay
 
         public void SetSkipHint(bool visible) => skipHint.gameObject.SetActive(visible);
 
-        /// <summary>Yarıda kesilen akışın ekranda bıraktıklarını (başlık, gün yazısı, kararma) kaldırır.</summary>
+        /// <summary>Yarıda kesilen akışın ekranda bıraktıklarını (başlık, televizyon, kararma) kaldırır.</summary>
         public void ResetOverlays()
         {
             title.SetActive(false);
-            bannerGroup.alpha = 0f;
-            bannerHint.alpha = 0f;
+            tv.Hide();
             fade.alpha = 0f;
             SetSkipHint(false);
         }
@@ -267,40 +263,8 @@ namespace Dropy.Gameplay
             group.alpha = 0f;
         }
 
-        /// <summary>
-        /// Gün başında ekranı kaplayan "GÜN N" yazısı. Oyuncu tıklayana kadar (Space / Enter da olur) kalır;
-        /// ilk yarım saniye tıklama sayılmaz ki önceki ekrandan kalan tık yanlışlıkla geçirmesin.
-        /// </summary>
-        public IEnumerator DayBanner(int day, string subtitle)
-        {
-            bannerText.text = $"<size=90><b>GÜN {day}</b></size>\n\n{subtitle}";
-            bannerGroup.alpha = 1f;
-            bannerHint.alpha = 0f;
-            for (float t = 0f; t < 0.5f; t += Time.unscaledDeltaTime)
-                yield return null;
-            while (!ContinuePressed())
-            {
-                bannerHint.alpha = 0.45f + 0.35f * Mathf.Sin(Time.unscaledTime * 3f);
-                yield return null;
-            }
-            bannerHint.alpha = 0f;
-            for (float t = 0f; t < 0.6f; t += Time.unscaledDeltaTime)
-            {
-                bannerGroup.alpha = 1f - t / 0.6f;
-                yield return null;
-            }
-            bannerGroup.alpha = 0f;
-        }
-
-        bool ContinuePressed()
-        {
-            if (BlocksInput)
-                return false;
-            var mouse = Mouse.current;
-            var keyboard = Keyboard.current;
-            return (mouse != null && mouse.leftButton.wasPressedThisFrame)
-                || (keyboard != null && (keyboard.spaceKey.wasPressedThisFrame || keyboard.enterKey.wasPressedThisFrame));
-        }
+        /// <summary>Gün başında sabah haberleri: televizyon ekranı kaplar, oyuncu tıklayana kadar kalır.</summary>
+        public IEnumerator Morning(TvBroadcast broadcast) => tv.Show(broadcast);
 
         public void Quake(string message)
         {
@@ -311,125 +275,41 @@ namespace Dropy.Gameplay
             toastRoutine = StartCoroutine(Fade(toastGroup, 4.5f));
         }
 
-        const string Green = "#1f7a3a", Amber = "#9a6a00", Red = "#a3221b";
+        const string Green = "#1f7a3a", Red = "#a3221b";
 
         /// <summary>Reddedilen çürük bina: depremde çöktü ama iskân verilmediği için boştu.</summary>
         public static bool FellEmpty(DeskManager.CaseResult r) =>
             r.fate == BuildingFate.NotBuilt && BuildingRules.Flaws(r.buildingCase).Count > 0;
 
-        static string Names(IEnumerable<DeskManager.CaseResult> list) => string.Join(", ", list.Select(r => r.buildingCase.buildingName));
-
-        /// <summary>
-        /// Deprem sonrası gazete: onaylanıp çöken bina varsa manşet olur, onaylayan müteahhidin son sözü altına düşer.
-        /// Reddedilip boş çökenler, ayakta kalanlar, boş kalan sağlam binalar ve rüşvet soruşturması kısa listelenir.
-        /// Altta evin ve ailenin durumu: ev ayakta mı, yıkıldıysa ailene ne kadar çabuk ulaşıldı.
-        /// </summary>
+        /// <summary>Oyun sonu gazetesi; altındaki düğmeyle karneye geçilir.</summary>
         public void ShowFinal(IList<DeskManager.CaseResult> results, IDictionary<ShopItem, int> boughtOn,
             IEnumerable<(FamilyNeed need, bool paid)> family, bool estranged, int money, string report)
         {
-            summary.GetComponent<Image>().color = new Color(0.95f, 0.93f, 0.86f, 0.98f);
-            summaryText.color = new Color(0.12f, 0.11f, 0.1f);
+            summaryText.text = report;
+            newspaper.Show(NewspaperWriter.Final(results, boughtOn, family, estranged, money, style));
+        }
 
-            var collapsed = results.Where(r => r.fate == BuildingFate.Collapsed).ToList();
-            var standing = results.Where(r => r.fate == BuildingFate.Standing).ToList();
-            var fellEmpty = results.Where(FellEmpty).ToList();
-            var emptySound = results.Where(r => r.fate == BuildingFate.NotBuilt && !FellEmpty(r)).ToList();
-            var bribes = results.Where(r => r.bribed).ToList();
+        /// <summary>Hapis: depremde onayladığın bina çöktü, oyun biter. Tutuklanma haberi; karne yine açılır.</summary>
+        public void ShowJail(IList<DeskManager.CaseResult> results, IList<DeskManager.CaseResult> fallen, int quakeDay)
+        {
+            summaryText.text = ReportCard(results);
+            newspaper.Show(NewspaperWriter.Jail(results, fallen, quakeDay, style));
+        }
 
-            var sb = new StringBuilder();
-            sb.AppendLine("<size=20><b>KENT GAZETESİ</b>  ·  DEPREM ÖZEL BASKISI</size>");
-            sb.AppendLine("<size=14>________________________________________________________________________________</size>");
-            string main = collapsed.Count > 0 ? Headline(collapsed[0])
-                : fellEmpty.Count > 0 ? $"{fellEmpty.Count} bina çöktü, hiçbirinde can kaybı yok"
-                : "İskân verilen binaların hepsi ayakta";
-            sb.AppendLine($"<size=42><b>{main.ToUpper(new System.Globalization.CultureInfo("tr-TR"))}</b></size>");
-            if (collapsed.Count > 0)
-                sb.AppendLine(Quote(collapsed[0]));
-            else if (fellEmpty.Count > 0)
-                sb.AppendLine("<i>Çöken binaların hiçbirine iskân verilmemişti; içlerinde kimse yoktu.</i>");
-            for (int i = 1; i < collapsed.Count; i++)
-            {
-                sb.AppendLine($"\n<size=28><b>{Headline(collapsed[i])}</b></size>");
-                sb.AppendLine(Quote(collapsed[i]));
-            }
-
-            if (fellEmpty.Count > 0)
-                sb.AppendLine("\n<b>Boş çökenler:</b> " + Names(fellEmpty));
-            if (standing.Count > 0)
-            {
-                sb.AppendLine("\n<b>Ayakta kalanlar</b>");
-                foreach (var r in standing.Where(r => !string.IsNullOrEmpty(r.buildingCase.standingLine)))
-                    sb.AppendLine(r.buildingCase.standingLine);
-                var plain = standing.Where(r => string.IsNullOrEmpty(r.buildingCase.standingLine)).ToList();
-                if (plain.Count > 0)
-                    sb.AppendLine(Names(plain));
-            }
-            if (emptySound.Count > 0)
-                sb.AppendLine($"\n<b>Sağlam ama boş kalanlar:</b> {Names(emptySound)}  <size=85%><i>İskân verilmedi; aileleri hâlâ kirada.</i></size>");
-            if (bribes.Count > 0)
-            {
-                string who = string.Join(", ", bribes.Select(r => r.buildingCase.contractorName).Distinct());
-                sb.AppendLine("\n<size=28><b>SORUŞTURMA</b></size>");
-                sb.AppendLine($"Müteahhitlerin rüşvet defteri ele geçirildi. {who} sayfasında senin adın da yazıyordu. <b>Görevden uzaklaştırıldın.</b>");
-            }
-
-            bool bag = boughtOn.TryGetValue(ShopItem.Bag, out int bagDay);
-            bool fixing = boughtOn.ContainsKey(ShopItem.Fixing);
-            bool house = boughtOn.ContainsKey(ShopItem.Retrofit);
-            sb.AppendLine("\n<size=28><b>EVDE</b></size>");
-            // Akşam alınan eşya o günün depreminden sonra gelir: 3. akşam alınan çanta ilk depremi kaçırmıştır.
-            if (!bag)
-                sb.AppendLine(Item(Red, "Alınmadı", ShopItem.Bag, "Karanlıkta ne su vardı ne fener."));
-            else if (bagDay < Economy.QuakeDays[0])
-                sb.AppendLine(Item(Green, "Alındı", ShopItem.Bag, "İki depremde de hazırdı: fener, su, düdük."));
-            else
-                sb.AppendLine(Item(Amber, "Geç alındı", ShopItem.Bag, "İlk depremde yoktu; ikinci depremde hazırdı."));
-            sb.AppendLine(fixing
-                ? Item(Green, "Alındı", ShopItem.Fixing, "Dolaplar duvara sabitliydi; ilk depremde kimse yaralanmadı.")
-                : Item(Red, "Alınmadı", ShopItem.Fixing, "Sabitlenmemiş dolap ilk depremde Elif'in üstüne devrildi, kolu incindi."));
-            sb.AppendLine(house
-                ? Item(Green, "Yapıldı", ShopItem.Retrofit, "İlk depremde hasar alan ev onarıldı; ikinci depremde ayakta kaldı.")
-                : Item(Red, "Yapılmadı", ShopItem.Retrofit, "Hasarlı ev onarılmadı; ikinci depremde yıkıldı."));
-            foreach (var (need, paid) in family)
-            {
-                string line = paid ? need.endingPaid : need.endingUnpaid;
-                if (!string.IsNullOrEmpty(line))
-                    sb.AppendLine((paid ? $"<color={Green}>Ödendi</color>  " : $"<color={Red}>Ödenmedi</color>  ") + line);
-            }
-
-            // Ailenin sonu: evi onarım, yıkıldıysa ailene ulaşılmasını çanta belirler. Küslük ayrı bir cümledir.
-            string verdict;
-            if (house && bag && fixing)
-                verdict = $"<color={Green}><b>Ailen güvende.</b></color>";
-            else if (house)
-                verdict = $"<color={Amber}><b>Ev ayakta, ailen hayatta; ama hazırlık eksikti.</b></color>";
-            else if (bag)
-                verdict = $"<color={Red}><b>Ev yıkıldı. Ailen enkazdan yaralı çıkarıldı; çantadaki düdük ve fener kurtarıcılara yol gösterdi.</b></color>";
-            else
-                verdict = $"<color={Red}><b>Ev yıkıldı. Ailene ancak ertesi sabah ulaşılabildi; eşin ve Elif yoğun bakımda.</b></color>";
-            sb.AppendLine("\n" + verdict);
-            if (estranged)
-                sb.AppendLine($"<color={Red}><b>{(house ? "Ailen seninle konuşmuyor." : "Hastanede yanında olmanı istemediler.")}</b></color>");
-
-            string cash = money < 0 ? $"Borç: {Ui.Money(-money)}. Ev sahibi icraya verdi."
-                : money > 0 && !house ? $"Kasada {Ui.Money(money)} kaldı; ev onarılmadı."
-                : $"Kasa: {Ui.Money(money)}";
-            sb.AppendLine($"<size=18>{cash}</size>");
-            newspaperPage = sb.ToString();
-            reportPage = report;
-            showingReport = false;
-            summaryText.text = newspaperPage;
-            pageToggleLabel.text = "DOSYA KARNESİ";
+        void ShowReport()
+        {
+            newspaper.Hide();
             summary.gameObject.SetActive(true);
             summary.SetAsLastSibling();
         }
 
-        void TogglePage()
+        void ShowNewspaper()
         {
-            showingReport = !showingReport;
-            summaryText.text = showingReport ? reportPage : newspaperPage;
-            pageToggleLabel.text = showingReport ? "GAZETE" : "DOSYA KARNESİ";
+            summary.gameObject.SetActive(false);
+            newspaper.Show();
         }
+
+        public static int CountCorrect(IList<DeskManager.CaseResult> results) => results.Count(r => r.seal == RightSeal(r, results));
 
         /// <summary>
         /// Dosya karnesi: her dosyada basılan ve doğru mühür; yanlışlarda kuralın kısa açıklaması.
@@ -437,7 +317,7 @@ namespace Dropy.Gameplay
         /// </summary>
         public static string ReportCard(IList<DeskManager.CaseResult> results)
         {
-            int correct = results.Count(r => r.seal == RightSeal(r, results));
+            int correct = CountCorrect(results);
             var sb = new StringBuilder();
             sb.AppendLine("<size=20><b>BÜRO KAYITLARI</b>  ·  DOSYA KARNESİ</size>");
             sb.AppendLine("<size=14>________________________________________________________________________________</size>");
@@ -472,53 +352,7 @@ namespace Dropy.Gameplay
             return right;
         }
 
-        /// <summary>
-        /// Hapis: depremde onayladığın bina çöktü, oyun biter. Gazete yerine mahkeme kararı; karne yine açılır.
-        /// (Hapse girme animasyonu sonra eklenecek.)
-        /// </summary>
-        public void ShowJail(IList<DeskManager.CaseResult> results, IList<DeskManager.CaseResult> fallen, int quakeDay)
-        {
-            summary.GetComponent<Image>().color = new Color(0.12f, 0.1f, 0.1f, 0.98f);
-            summaryText.color = new Color(0.95f, 0.92f, 0.88f);
-
-            var sb = new StringBuilder();
-            sb.AppendLine("<size=20><b>MAHKEME KARARI</b>  ·  " + quakeDay + ". GÜN DEPREMİNDEN SONRA</size>");
-            sb.AppendLine("<size=14>________________________________________________________________________________</size>");
-            sb.AppendLine("<size=64><b><color=#ff6b6b>TUTUKLANDIN</color></b></size>\n");
-            foreach (var r in fallen)
-            {
-                sb.AppendLine($"<size=28><b>{Headline(r)}</b></size>");
-                sb.AppendLine($"<i>Onay mühründe senin imzan vardı. Müteahhit {r.buildingCase.contractorName}: \"{Said(r)}\"</i>\n");
-            }
-            sb.AppendLine("Yönetmelikte yazan bir kuralı çiğneyen iskân, depremde can aldı.");
-            sb.AppendLine("Savcılık, iskân memurunun da müteahhit kadar sorumlu olduğuna karar verdi.");
-            if (results.Any(r => r.bribed))
-                sb.AppendLine("Dosyada bir de rüşvet defteri var: senin adın da yazıyor.");
-            sb.AppendLine("\n<size=26><b>OYUN BİTTİ</b></size>   <size=20>Neyi kaçırdığını karnede görebilirsin.</size>");
-
-            newspaperPage = sb.ToString();
-            reportPage = ReportCard(results);
-            showingReport = false;
-            summaryText.text = newspaperPage;
-            pageToggleLabel.text = "DOSYA KARNESİ";
-            summary.gameObject.SetActive(true);
-            summary.SetAsLastSibling();
-        }
-
-        static string Said(DeskManager.CaseResult r) =>
-            r.seal == Seal.ShearWall ? r.buildingCase.shearWallLine : r.buildingCase.approvedLine;
-
         public static string Headline(DeskManager.CaseResult r) =>
             string.IsNullOrEmpty(r.buildingCase.collapseHeadline) ? r.buildingCase.buildingName + " çöktü" : r.buildingCase.collapseHeadline;
-
-        /// <summary>Onay anında müteahhidin söylediği söz, şimdi enkazın altına yazılır.</summary>
-        static string Quote(DeskManager.CaseResult r)
-        {
-            string line = r.seal == Seal.ShearWall ? r.buildingCase.shearWallLine : r.buildingCase.approvedLine;
-            return $"<i>Müteahhit {r.buildingCase.contractorName}, onay günü: \"{line}\"</i>";
-        }
-
-        static string Item(string color, string state, ShopItem item, string text) =>
-            $"<color={color}>{state}</color>  {Shop.Name(item)}: {text}";
     }
 }

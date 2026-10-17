@@ -41,21 +41,58 @@ MonoBehaviour:
     - "Yani bug\xFCn m\xFCh\xFCrler sana para getirmez. Ama aileler yine ta\u015F\u0131nacak,
       karar\u0131n yine ge\xE7erli."
     - Radyo da hep deprem diyor. Dikkatli bak.
-  radio:
-  - "Radyo: Uzmanlar b\xF6lgedeki fay hatt\u0131na dikkat \xE7ekiyor. AFAD, her evde
-    su, fener ve d\xFCd\xFCk olan bir deprem \xE7antas\u0131 bulunmas\u0131n\u0131
-    hat\u0131rlatt\u0131."
-  - "Radyo: Uzmanlar uzun dolaplar\u0131n duvara sabitlenmesini \xF6neriyor; depremde
-    yaralanmalar\u0131n \xE7o\u011Fu devrilen e\u015Fyadan oluyor."
-  - "Radyo: D\xFCn \xF6\u011Fleden sonra hafif bir sars\u0131nt\u0131 hissedildi.
-    Uzmanlar tedirgin."
-  - "Radyo: D\xFCnk\xFC depremin ard\u0131ndan hasar tespit \xE7al\u0131\u015Fmalar\u0131
-    s\xFCr\xFCyor. Uzmanlar art\xE7\u0131lara kar\u015F\u0131 uyar\u0131yor."
-  - "Radyo: Hasarl\u0131 binalara girilmemesi \xE7a\u011Fr\u0131s\u0131 yap\u0131ld\u0131.
-    Uzmanlar daha b\xFCy\xFCk bir deprem olas\u0131l\u0131\u011F\u0131ndan s\xF6z
-    ediyor."
-  - "Radyo: Son iki g\xFCnde onlarca sars\u0131nt\u0131 kaydedildi. Vatanda\u015Flar
-    tedirgin."
+  news:
+  - day: 1
+    headline: "Uzmanlar b\xF6lgedeki fay hatt\u0131na dikkat \xE7ekiyor"
+    ticker:
+    - "AFAD: Her evde su, fener ve d\xFCd\xFCk olan bir deprem \xE7antas\u0131 bulunsun"
+    - "Hava: par\xE7al\u0131 bulutlu, 14\xB0"
+    graphicLabel: FAY HATTI
+    graphic: {fileID: 0}
+    clip: {fileID: 0}
+  - day: 2
+    headline: "Depremde yaralanmalar\u0131n \xE7o\u011Fu devrilen e\u015Fyadan"
+    ticker:
+    - "Uzmanlar: Uzun dolaplar\u0131 ve kitapl\u0131klar\u0131 duvara sabitleyin"
+    - "Belediye: \u0130sk\xE2n ba\u015Fvurular\u0131 bu hafta h\u0131zland\u0131r\u0131l\u0131yor"
+    graphicLabel: "DOLABI SAB\u0130TLE"
+    graphic: {fileID: 0}
+    clip: {fileID: 0}
+  - day: 3
+    headline: "D\xFCn \xF6\u011Fleden sonra hafif bir sars\u0131nt\u0131 hissedildi"
+    ticker:
+    - "Uzmanlar tedirgin: sars\u0131nt\u0131lar s\xFCrebilir"
+    - "AFAD: Deprem an\u0131nda \xE7\xF6k, kapan, tutun"
+    graphicLabel: SARSINTI
+    graphic: {fileID: 0}
+    clip: {fileID: 0}
+  - day: 4
+    headline: "D\xFCnk\xFC depremin ard\u0131ndan hasar tespit \xE7al\u0131\u015Fmalar\u0131
+      s\xFCr\xFCyor"
+    ticker:
+    - "Uzmanlar art\xE7\u0131 depremlere kar\u015F\u0131 uyard\u0131"
+    - "K\u0131z\u0131lay: \xC7ad\u0131r kentte yard\u0131m noktalar\u0131 a\xE7\u0131ld\u0131"
+    graphicLabel: "HASAR TESP\u0130T\u0130"
+    graphic: {fileID: 0}
+    clip: {fileID: 0}
+  - day: 5
+    headline: "Hasarl\u0131 binalara girilmemesi \xE7a\u011Fr\u0131s\u0131 yap\u0131ld\u0131"
+    ticker:
+    - "Uzmanlar daha b\xFCy\xFCk bir deprem olas\u0131l\u0131\u011F\u0131ndan s\xF6z
+      ediyor"
+    - "Belediye: Onar\u0131m izni ba\u015Fvurular\u0131 s\xFCr\xFCyor"
+    graphicLabel: "HASARLI B\u0130NA"
+    graphic: {fileID: 0}
+    clip: {fileID: 0}
+  - day: 6
+    headline: "Son iki g\xFCnde onlarca sars\u0131nt\u0131 kaydedildi"
+    ticker:
+    - "Vatanda\u015Flar tedirgin"
+    - "AFAD: Deprem \xE7antan\u0131z\u0131 kap\u0131n\u0131n yan\u0131nda tutun"
+    graphicLabel: "ART\xC7I"
+    graphic: {fileID: 0}
+    clip: {fileID: 0}
+  radio: []
   tremors:
   - 0
   - 0.012

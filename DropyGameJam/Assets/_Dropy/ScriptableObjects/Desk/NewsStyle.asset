@@ -1,0 +1,119 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c6fe4de27cfe8e64ea90067752bbf2f3, type: 3}
+  m_Name: NewsStyle
+  m_EditorClassIdentifier: 
+  channelName: K6 HABER
+  tvBrand: "TELES\u0130S"
+  liveLabel: CANLI
+  breakingLabel: "SON DAK\u0130KA"
+  clockFormat: "G\xDCN {0} \xB7 08:30"
+  dayTitleFormat: "G\xDCN {0}"
+  continueHint: "Devam etmek i\xE7in t\u0131kla"
+  tvFrame: {fileID: 0}
+  studioBackground: {fileID: 0}
+  anchor: {fileID: 0}
+  defaultAnchorClip: {fileID: 0}
+  backdrop: {r: 0.16, g: 0.13, b: 0.11, a: 0.97}
+  studio: {r: 0.07, g: 0.23, b: 0.39, a: 1}
+  breakingColor: {r: 0.75, g: 0.13, b: 0.11, a: 1}
+  tickerColor: {r: 0.95, g: 0.76, b: 0.19, a: 1}
+  tickerSpeed: 110
+  scanlines: 0.25
+  tvFont: {fileID: 0}
+  masthead: "KENT GAZETES\u0130"
+  issue: "Say\u0131 1842"
+  price: "Fiyat\u0131 10 TL"
+  specialEdition: "DEPREM \xD6ZEL BASKISI"
+  editionFormat: "{0}. g\xFCn \xB7 Ak\u015Fam bask\u0131s\u0131"
+  fillers:
+  - "Kentte hissedilen deprem k\u0131y\u0131 \u015Feridinde ve eski \xE7ar\u015F\u0131da
+    hasara yol a\xE7t\u0131. Ekipler sabaha kadar \xE7al\u0131\u015Ft\u0131."
+  - "Uzmanlar zemin et\xFCd\xFC yap\u0131lmadan verilen izinlerin a\u011F\u0131r
+    sonu\xE7lar do\u011Furabilece\u011Fini hat\u0131rlatt\u0131. Belediye meclisi
+    ola\u011Fan\xFCst\xFC toplan\u0131yor; muhalefet hesap sorulmas\u0131n\u0131
+    istedi."
+  - "Liman yolu trafi\u011Fe kontroll\xFC olarak a\xE7\u0131ld\u0131. Okullar hafta
+    boyunca tatil edildi. K\u0131z\u0131lay kan ba\u011F\u0131\u015F\u0131 \xE7a\u011Fr\u0131s\u0131nda
+    bulundu; ba\u011F\u0131\u015F noktalar\u0131 sabah dokuzda a\xE7\u0131l\u0131yor."
+  - "Spor: Yerel tak\u0131m\u0131n hafta sonu ma\xE7\u0131 ertelendi. Borsa g\xFCne
+    d\xFC\u015F\xFC\u015Fle ba\u015Flad\u0131. Hava: par\xE7al\u0131 bulutlu, gece
+    so\u011Fuk."
+  adTitle: "DEPREM \xC7ANTASI"
+  adLine: "su \xB7 fener \xB7 d\xFCd\xFCk \xB7 ilk yard\u0131m"
+  paperTexture: {fileID: 0}
+  playerPhoto: {fileID: 0}
+  mugshotPhoto: {fileID: 0}
+  paper: {r: 0.92, g: 0.9, b: 0.84, a: 1}
+  ink: {r: 0.1, g: 0.09, b: 0.07, a: 1}
+  fillerInk: {r: 0.42, g: 0.4, b: 0.35, a: 1}
+  tilt: -0.6
+  fillerWave: 3
+  inkRoughness: 0.8
+  mastheadFont: {fileID: 0}
+  headlineFont: {fileID: 0}
+  bodyFont: {fileID: 0}
+  texts:
+    headlineAllStanding: "\u0130sk\xE2n verilen binalar\u0131n hepsi ayakta"
+    headlineEmptyFallen: "{0} bina \xE7\xF6kt\xFC, hi\xE7birinde can kayb\u0131 yok"
+    subheadAllStanding: "B\xFCronun m\xFCh\xFCr bast\u0131\u011F\u0131 her bina depremi
+      ayakta kar\u015F\u0131lad\u0131."
+    subheadEmptyFallen: "\xC7\xF6ken binalar\u0131n hi\xE7birine isk\xE2n verilmemi\u015Fti;
+      i\xE7lerinde kimse yoktu."
+    photoCaption: "\u0130sk\xE2n memuru, b\xFCroda: \"Kitaba bakt\u0131m, o kadar.\""
+    photoCaptionBribed: "Soru\u015Fturma sonras\u0131 g\xF6revden uzakla\u015Ft\u0131r\u0131lan
+      isk\xE2n memuru."
+    jailHeadline: "\u0130sk\xE2n memuru tutukland\u0131"
+    jailSubheadOne: "\xC7\xF6ken {0} binas\u0131n\u0131n isk\xE2n\u0131nda onun imzas\u0131
+      vard\u0131."
+    jailSubheadMany: "\xC7\xF6ken {0} binan\u0131n isk\xE2n\u0131nda onun imzas\u0131
+      vard\u0131."
+    jailEdition: "{0}. g\xFCn depreminden sonra"
+    jailCaption: "Tutuklanan isk\xE2n memuru adliyeye sevk edildi."
+    courtText: "Y\xF6netmelikte yazan bir kural\u0131 \xE7i\u011Fneyen isk\xE2n,
+      depremde can ald\u0131. Savc\u0131l\u0131k, isk\xE2n memurunun da m\xFCteahhit
+      kadar sorumlu oldu\u011Funa karar verdi."
+    courtBribe: "Dosyada bir de r\xFC\u015Fvet defteri var: onun ad\u0131 da yaz\u0131yor."
+    jailFooterLeft: "OYUN B\u0130TT\u0130"
+    jailFooterRight: "NEY\u0130 KA\xC7IRDI\u011EINI KARNEDE G\xD6R"
+    boxHome: EVDE
+    boxFamily: "A\u0130LEDEN"
+    boxFellEmpty: "BO\u015E \xC7\xD6KENLER"
+    boxStanding: AYAKTA KALANLAR
+    boxEmptySound: "SA\u011ELAM AMA BO\u015E KALANLAR"
+    boxCollapsed: "\xC7\xD6KENLER"
+    boxInvestigation: "SORU\u015ETURMA"
+    boxCourt: MAHKEME KARARI
+    emptySoundNote: "\u0130sk\xE2n verilmedi; aileleri h\xE2l\xE2 kirada."
+    investigation: "M\xFCteahhitlerin r\xFC\u015Fvet defteri ele ge\xE7irildi. {0}
+      sayfas\u0131nda senin ad\u0131n da yaz\u0131yor. G\xF6revden uzakla\u015Ft\u0131r\u0131ld\u0131n."
+    contractorQuote: "M\xFCteahhit {0}, isk\xE2n g\xFCn\xFC: \"{1}\""
+    bagEarly: "\xC7anta iki depremde de haz\u0131rd\u0131: fener, su, d\xFCd\xFCk."
+    bagLate: "\xC7anta ilk depremde yoktu; ikincide haz\u0131rd\u0131."
+    bagNone: "Karanl\u0131kta ne su vard\u0131 ne fener."
+    fixingYes: "Dolaplar sabitti; ilk depremde kimse yaralanmad\u0131."
+    fixingNo: "Sabitlenmemi\u015F dolap Elif'in \xFCst\xFCne devrildi, kolu incindi."
+    retrofitYes: "Onar\u0131lan ev ikinci depremde ayakta kald\u0131."
+    retrofitNo: "Hasarl\u0131 ev onar\u0131lmad\u0131; ikinci depremde y\u0131k\u0131ld\u0131."
+    verdictSafe: "A\u0130LEN G\xDCVENDE"
+    verdictStandingUnprepared: "Ev ayakta, ailen hayatta; ama haz\u0131rl\u0131k
+      eksikti."
+    verdictCollapsedBag: "Ev y\u0131k\u0131ld\u0131. Ailen enkazdan yaral\u0131 \xE7\u0131kar\u0131ld\u0131;
+      \xE7antadaki d\xFCd\xFCk ve fener kurtar\u0131c\u0131lara yol g\xF6sterdi."
+    verdictCollapsedNoBag: "Ev y\u0131k\u0131ld\u0131. Ailene ancak ertesi sabah
+      ula\u015F\u0131labildi; e\u015Fin ve Elif yo\u011Fun bak\u0131mda."
+    estrangedHouse: "Ailen seninle konu\u015Fmuyor."
+    estrangedHospital: "Hastanede yan\u0131nda olman\u0131 istemediler."
+    footerReport: "KARNE: {1} DOSYADAN {0} DO\u011ERU"
+    footerCash: 'KASA: {0}'
+    footerDebt: "BOR\xC7: {0} \xB7 \u0130CRAYA VER\u0130LD\u0130"
+    footerCashNoHouse: KASADA {0} KALDI; EV ONARILMADI

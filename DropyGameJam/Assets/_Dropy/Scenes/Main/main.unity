@@ -4033,6 +4033,7 @@ MonoBehaviour:
   door: {fileID: 1452814092}
   regulations: {fileID: 11400000, guid: db25f86c1b07c0642aba2a4d5d50526b, type: 2}
   story: {fileID: 11400000, guid: 61cd861f2923b8b4e9bcb072f912fbdd, type: 2}
+  newsStyle: {fileID: 11400000, guid: 8aeb809251672e548a00606b7aa65121, type: 2}
   cases:
   - {fileID: 11400000, guid: 59dd8e2ccc51d09489b0212c36774432, type: 2}
   - {fileID: 11400000, guid: 539c8f05b44557945a388c7ff694897c, type: 2}
@@ -4059,6 +4060,7 @@ MonoBehaviour:
   - {fileID: 4505210945888876964, guid: 5e9f8a618b0dffa448370ab8616ce086, type: 3}
   - {fileID: 7493389791816327554, guid: aaa0b14b0a190e5498e844caf86c6e03, type: 3}
   - {fileID: 1908980133230793377, guid: 6823acef784bb114fa75908d92f4cd8e, type: 3}
+  testFirstContractor: {fileID: 0}
 --- !u!1001 &1064052642
 PrefabInstance:
   m_ObjectHideFlags: 0
