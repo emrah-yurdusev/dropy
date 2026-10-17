@@ -399,6 +399,25 @@ namespace Dropy.Gameplay
             }
         }
 
+        /// <summary>
+        /// Vakada karakter seçilmemişse, müteahhidin cinsiyetini tutan varsayılanlardan sırayla biri gelir.
+        /// Aynı cinsten önceki vakalar sayılır ki art arda gelenler farklı kişiler olsun.
+        /// </summary>
+        GameObject PickContractor(BuildingCase buildingCase, int index)
+        {
+            var gender = buildingCase.ContractorGender;
+            var matching = defaultContractors
+                .Where(p => p != null && p.TryGetComponent(out NpcController npc) && npc.Gender == gender)
+                .ToArray();
+            if (matching.Length == 0)
+                return defaultContractors[index % defaultContractors.Length];
+            int order = 0;
+            for (int i = 0; i < index; i++)
+                if (cases[i].contractorPrefab == null && cases[i].ContractorGender == gender)
+                    order++;
+            return matching[order % matching.Length];
+        }
+
         IEnumerator RunCase(BuildingCase buildingCase, int index)
         {
             submitted = false;
@@ -406,7 +425,7 @@ namespace Dropy.Gameplay
 
             var prefab = index == 0 && testFirstContractor != null ? testFirstContractor
                 : buildingCase.contractorPrefab != null ? buildingCase.contractorPrefab
-                : defaultContractors[index % defaultContractors.Length];
+                : PickContractor(buildingCase, index);
             var go = Instantiate(prefab, spawnPoint.position, spawnPoint.rotation);
             visitor = go.GetComponent<NpcController>();
             visitorHead = FindDeep(go.transform, "Head") ?? HumanBone(go, HumanBodyBones.Head) ?? go.transform;

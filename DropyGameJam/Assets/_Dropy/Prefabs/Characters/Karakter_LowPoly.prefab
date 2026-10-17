@@ -319,6 +319,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   animator: {fileID: 3188104566675614279}
   face: {fileID: 0}
+  gender: 0
   walkSpeed: 0.6
   walkAnimSpeed: 0.187
   turnSpeed: 360

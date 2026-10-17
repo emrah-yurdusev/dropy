@@ -4,6 +4,8 @@ using UnityEngine.AI;
 
 namespace Dropy.Gameplay
 {
+    public enum Gender { Erkek, Kadin }
+
     /// <summary>
     /// NavMesh üzerinde yürüyen, kapı açan, sandalyeye oturan NPC.
     /// Inspector'daki "Routine" listesi sırayla oynatılır; koddan da tek tek çağrılabilir:
@@ -49,6 +51,8 @@ namespace Dropy.Gameplay
 
         [SerializeField] Animator animator;
         [SerializeField] FaceController face;
+        [Tooltip("Masada isimle eşleşsin diye: Hanım'lı müteahhide kadın, Bey/Usta'ya erkek karakter gelir")]
+        [SerializeField] Gender gender;
 
         [Header("Hareket")]
         [SerializeField, Min(0.1f)] float walkSpeed = 0.85f;
@@ -71,6 +75,7 @@ namespace Dropy.Gameplay
         public bool IsSitting => currentChair != null;
         public bool IsRunningRoutine => routineCoroutine != null;
         public FaceController Face => face;
+        public Gender Gender => gender;
 
         void Awake()
         {

@@ -110,9 +110,9 @@ namespace Dropy.Gameplay
             fade = fadeImage.gameObject.AddComponent<CanvasGroup>();
             fade.alpha = 0f;
             fade.blocksRaycasts = false;
-            skipHint = Ui.Text(root, "SkipHint", "Geç  [Sol tık]", 22f, new Color(1f, 1f, 1f, 0.75f), TextAlignmentOptions.Bottom, FontStyles.Italic);
-            skipHint.rectTransform.Stretch(0f, 30f, 0f, 0f);
-            skipHint.outlineWidth = 0.2f;
+            skipHint = Ui.Text(root, "SkipHint", "Geç  [Sol tık]", 34f, new Color(1f, 1f, 1f, 0.85f), TextAlignmentOptions.Bottom, FontStyles.Italic);
+            skipHint.rectTransform.Stretch(0f, 110f, 0f, 0f);
+            skipHint.outlineWidth = 0.25f;
             skipHint.outlineColor = new Color32(0, 0, 0, 200);
             skipHint.gameObject.SetActive(false);
 

@@ -56,6 +56,9 @@ namespace Dropy.Gameplay
         [Tooltip("Boşsa DeskManager'daki varsayılan karakterlerden biri gelir")]
         public GameObject contractorPrefab;
 
+        /// <summary>İsimdeki hitaptan: "Hanım" kadın, gerisi (Bey, Usta) erkek.</summary>
+        public Gender ContractorGender => contractorName.TrimEnd().EndsWith("Hanım") ? Gender.Kadin : Gender.Erkek;
+
         [Header("Proje künyesi")]
         public string buildingName = "Bina";
         [Min(1)] public int floors = 3;
