@@ -42,6 +42,8 @@ namespace Dropy.Menu
         [Header("Görsel")]
         [Tooltip("Arka plan: ofisten alınmış görüntü. Boşsa düz duvar rengi kullanılır.")]
         [SerializeField] Sprite background;
+        [Tooltip("Açıksa duvar rengi ve arka plan görseli çizilmez; menü sahnedeki 3B görüntünün üstünde durur.")]
+        [SerializeField] bool liveBackground;
 
         [Header("Akış")]
         [Tooltip("Oyuna Başla'ya basınca yüklenecek sahne (Build Settings'te olmalı). " +
@@ -165,8 +167,9 @@ namespace Dropy.Menu
 
         void BuildBackground(RectTransform root)
         {
-            Ui.Image(root, "Wall", Wall, raycast: false).rectTransform.Stretch();
-            if (background != null)
+            if (!liveBackground)
+                Ui.Image(root, "Wall", Wall, raycast: false).rectTransform.Stretch();
+            if (background != null && !liveBackground)
             {
                 backgroundHolder = Ui.Rect("Background", root).Stretch();
                 var image = Ui.Image(backgroundHolder, "Image", Color.white, raycast: false);
