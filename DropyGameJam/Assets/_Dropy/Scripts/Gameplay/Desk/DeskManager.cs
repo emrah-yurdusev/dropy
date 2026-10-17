@@ -44,6 +44,8 @@ namespace Dropy.Gameplay
         const string Reconsider = "Bir daha bakayım.";
         /// <summary>Aile bağı bu değerin altındaysa Ozan Bey aileyi koz olarak kullanır.</summary>
         const int LowBond = 2;
+        /// <summary>Deprem sahnesinde en fazla bu kadar bina manşeti gösterilir; fazlası "ve N bina daha" olur.</summary>
+        const int MaxQuakeHeadlines = 3;
 
         [Header("Sahne")]
         [Tooltip("Oyuncunun gözü: karşıdaki sandalyeye bakan sabit kamera")]
@@ -87,6 +89,8 @@ namespace Dropy.Gameplay
         int finesPending;
         int hammersUsedToday;
         bool paused;
+        /// <summary>Deprem sahnesi oynarken büronun arayüzü gizli; Esc/Tab çalışmasın.</summary>
+        bool cinematicPlaying;
         /// <summary>İnceleme sırasında oyuncunun sorduğu satıra müteahhidin cevabı (bir sonraki soru öncekini keser).</summary>
         Coroutine fieldTalk;
         /// <summary>Sarsıntıdan sonra radyoda adı geçmiş çürük binalar (aynı haber iki kez okunmasın).</summary>
@@ -157,7 +161,7 @@ namespace Dropy.Gameplay
         void Update()
         {
             var keyboard = Keyboard.current;
-            if (keyboard == null)
+            if (keyboard == null || cinematicPlaying)
                 return;
             // Esc: önce eldeki mührü bırakır, elde mühür yoksa duraklatma menüsünü açar/kapar.
             if (keyboard.escapeKey.wasPressedThisFrame)
@@ -776,6 +780,28 @@ namespace Dropy.Gameplay
             Sfx.Rumble(4.5f, 1f);
             yield return Shake(4f, 0.06f);
             yield return new WaitForSeconds(0.8f);
+
+            var captions = QuakeCaptions();
+            if (captions.Count == 0)
+                yield break;
+            cinematicPlaying = true;
+            yield return EarthquakeCinematic.Play(captions);
+            cinematicPlaying = false;
+        }
+
+        /// <summary>
+        /// Deprem sahnesi yalnız oyuncunun bir hatası varsa girer: çöken bir onay (yanlış onay ya da işe yaramayan perde)
+        /// veya güçlendirilmemiş aile apartmanı. Hata yoksa boş liste döner ve sahne girmez.
+        /// </summary>
+        List<string> QuakeCaptions()
+        {
+            var collapsed = results.Where(r => r.fate == BuildingFate.Collapsed).ToList();
+            var lines = collapsed.Take(MaxQuakeHeadlines).Select(DeskHud.Headline).ToList();
+            if (collapsed.Count > MaxQuakeHeadlines)
+                lines.Add($"ve {collapsed.Count - MaxQuakeHeadlines} bina daha");
+            if (!purchased.Contains(ShopItem.Retrofit))
+                lines.Add("Ailenin oturduğu apartman güçlendirilmemişti");
+            return lines;
         }
 
         IEnumerator Shake(float seconds, float strength)
