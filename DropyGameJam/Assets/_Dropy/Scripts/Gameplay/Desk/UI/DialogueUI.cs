@@ -136,6 +136,14 @@ namespace Dropy.Gameplay
             anchor = null;
         }
 
+        /// <summary>Balonu gizler ve yarıda kalmış cevap seçeneklerini siler.</summary>
+        public void Clear()
+        {
+            HideBubble();
+            foreach (Transform child in choiceRoot)
+                Destroy(child.gameObject);
+        }
+
         /// <summary>Cevap balonlarını gösterir, oyuncu birini seçene kadar bekler.</summary>
         public IEnumerator Choose(IList<string> options, System.Action<int> onPicked)
         {

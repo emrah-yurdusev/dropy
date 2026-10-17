@@ -238,6 +238,13 @@ namespace Dropy.Gameplay
             root.gameObject.SetActive(false);
         }
 
+        /// <summary>Paneli kapatır (akış yarıda kesildiğinde).</summary>
+        public void Hide()
+        {
+            done = true;
+            root.gameObject.SetActive(false);
+        }
+
         void ShowMessages(IList<EveningMessage> messages)
         {
             foreach (Transform child in messageList)

@@ -181,6 +181,16 @@ namespace Dropy.Gameplay
 
         public void SetSkipHint(bool visible) => skipHint.gameObject.SetActive(visible);
 
+        /// <summary>Yarıda kesilen akışın ekranda bıraktıklarını (başlık, gün yazısı, kararma) kaldırır.</summary>
+        public void ResetOverlays()
+        {
+            title.SetActive(false);
+            bannerGroup.alpha = 0f;
+            bannerHint.alpha = 0f;
+            fade.alpha = 0f;
+            SetSkipHint(false);
+        }
+
         void Update()
         {
             if (skipHint.gameObject.activeSelf)

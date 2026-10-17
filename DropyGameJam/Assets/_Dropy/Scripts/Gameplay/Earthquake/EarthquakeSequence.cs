@@ -34,18 +34,13 @@ namespace Dropy.Gameplay
         public UnityEvent onQuakeStarted;
         public UnityEvent onQuakeFinished;
 
-        /// <summary>
-        /// Oyun akışı (EarthquakeCinematic) sahneyi yükleyip kendisi başlatırken true olur;
-        /// o sırada autoStart yok sayılır. Sahne tek başına açıldığında false kalır.
-        /// </summary>
-        public static bool ExternalControl { get; set; }
-
         public bool IsRunning { get; private set; }
         public float Duration => duration;
 
         void Start()
         {
-            if (autoStart && !ExternalControl)
+            // Oyun akışı sahneyi kendisi başlatıyorsa (AdditiveCinematic) otomatik başlama.
+            if (autoStart && !AdditiveCinematic.IsPlaying)
                 StartCoroutine(BeginAfterDelay());
         }
 
