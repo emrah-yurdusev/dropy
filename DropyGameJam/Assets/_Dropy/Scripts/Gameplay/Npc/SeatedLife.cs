@@ -42,6 +42,12 @@ namespace Dropy.Gameplay
                 if (t.name == "Chest") chest = t;
                 else if (t.name == "Head") head = t;
             }
+            // Kemik isimleri farklı (ör. Mixamo) Humanoid karakterler.
+            if (animator != null && animator.isHuman)
+            {
+                if (chest == null) chest = animator.GetBoneTransform(HumanBodyBones.Chest);
+                if (head == null) head = animator.GetBoneTransform(HumanBodyBones.Head);
+            }
             seed = Random.value * 100f;
         }
 

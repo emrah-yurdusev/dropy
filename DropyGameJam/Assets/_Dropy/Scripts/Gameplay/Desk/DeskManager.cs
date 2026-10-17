@@ -307,7 +307,7 @@ namespace Dropy.Gameplay
                 : defaultContractors[index % defaultContractors.Length];
             var go = Instantiate(prefab, spawnPoint.position, spawnPoint.rotation);
             visitor = go.GetComponent<NpcController>();
-            visitorHead = FindDeep(go.transform, "Head") ?? go.transform;
+            visitorHead = FindDeep(go.transform, "Head") ?? HumanBone(go, HumanBodyBones.Head) ?? go.transform;
             visitor.SetWalkSpeedMultiplier(day >= FastWalkDay ? FastWalkMultiplier : FirstDayWalkMultiplier);
             // Oyunun ilk müteahhidinde (Kemal Bey) geçiş yok: oyuncu ofisi, kapıyı ve oturuşu bir kez görsün.
             bool skippable = index > 0;
@@ -808,6 +808,16 @@ namespace Dropy.Gameplay
                 if (t.name == name)
                     return t;
             return null;
+        }
+
+        // Kemik isimleri farklı (ör. Mixamo "mixamorig:Head") Humanoid karakterler için.
+        static Transform HumanBone(GameObject go, HumanBodyBones bone)
+        {
+            var animator = go.GetComponentInChildren<Animator>();
+            if (animator == null || !animator.isHuman)
+                return null;
+            var t = animator.GetBoneTransform(bone);
+            return t != null ? t : null;
         }
     }
 }
