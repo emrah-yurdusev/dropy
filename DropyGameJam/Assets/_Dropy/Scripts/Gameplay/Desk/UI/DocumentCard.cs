@@ -33,6 +33,9 @@ namespace Dropy.Gameplay
 
         public event System.Action<DocumentCard> Dropped;
 
+        /// <summary>Elde mühür yokken bir satıra tıklanınca: oyuncu müteahhide o satırı soruyor.</summary>
+        public event System.Action<DocumentField> FieldClicked;
+
         /// <param name="stampFilter">Ana belgede mühür basılmadan önce sorulur; false dönerse basılmaz.</param>
         public static DocumentCard Create(DocumentData data, bool isMain, RectTransform parent, DeskTools tools,
             float height, System.Func<Seal, bool> stampFilter = null)
@@ -115,7 +118,9 @@ namespace Dropy.Gameplay
         /// <summary>Belgeye sonradan satır ekler (ör. çekiç ölçümü).</summary>
         public void AddField(DocumentField field, bool highlight = false)
         {
-            var row = Ui.Image(content, field.label, highlight ? new Color(1f, 0.85f, 0.3f, 0.35f) : new Color(0f, 0f, 0f, 0f), raycast: false);
+            var baseColor = highlight ? new Color(1f, 0.85f, 0.3f, 0.35f) : new Color(0f, 0f, 0f, 0f);
+            var row = Ui.Image(content, field.label, baseColor);
+            row.gameObject.AddComponent<FieldRow>().Init(this, field, row, baseColor);
             var element = row.gameObject.AddComponent<LayoutElement>();
             element.minHeight = 34f;
 
@@ -191,6 +196,10 @@ namespace Dropy.Gameplay
 
         public void OnPointerDown(PointerEventData eventData) => rect.SetAsLastSibling();
 
+        public bool ToolActive => tools != null && tools.Active != Seal.None;
+
+        public void AskField(DocumentField field) => FieldClicked?.Invoke(field);
+
         public void OnPointerClick(PointerEventData eventData)
         {
             if (eventData.dragging || tools == null)
@@ -222,6 +231,44 @@ namespace Dropy.Gameplay
             shadow.color = new Color(0f, 0f, 0f, 0.35f);
             Dropped?.Invoke(this);
         }
+    }
+
+    /// <summary>
+    /// Belgedeki tek satır. Elde mühür varsa tıklama karta geçer (mühür basılır); yoksa satır müteahhide sorulur.
+    /// Fareyle üstüne gelince hafifçe vurgulanır ki sorulabildiği belli olsun.
+    /// </summary>
+    public class FieldRow : MonoBehaviour, IPointerClickHandler, IPointerEnterHandler, IPointerExitHandler
+    {
+        static readonly Color Hover = new Color(0.2f, 0.35f, 0.6f, 0.12f);
+
+        DocumentCard card;
+        DocumentField field;
+        Image background;
+        Color baseColor;
+
+        public void Init(DocumentCard owner, DocumentField data, Image image, Color normal)
+        {
+            card = owner;
+            field = data;
+            background = image;
+            baseColor = normal;
+        }
+
+        public void OnPointerClick(PointerEventData eventData)
+        {
+            if (card.ToolActive)
+                card.OnPointerClick(eventData);
+            else if (!eventData.dragging)
+                card.AskField(field);
+        }
+
+        public void OnPointerEnter(PointerEventData eventData)
+        {
+            if (!card.ToolActive)
+                background.color = baseColor.a > 0f ? baseColor : Hover;
+        }
+
+        public void OnPointerExit(PointerEventData eventData) => background.color = baseColor;
     }
 
     /// <summary>Damga basılınca kısa bir "küt" efekti.</summary>

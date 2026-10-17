@@ -50,6 +50,9 @@ namespace Dropy.Gameplay
 
         public event System.Action SubmitRequested;
 
+        /// <summary>Oyuncu belgede bir satıra tıkladı: müteahhide o satırı soruyor.</summary>
+        public event System.Action<DocumentField> FieldAsked;
+
         public void Build(RectTransform root, RegulationData regulations, Camera camera)
         {
             deskCamera = camera;
@@ -120,6 +123,7 @@ namespace Dropy.Gameplay
             card.RectTransform.anchoredPosition = position;
             card.RectTransform.localRotation = Quaternion.Euler(0f, 0f, angle);
             card.Dropped += OnCardDropped;
+            card.FieldClicked += f => FieldAsked?.Invoke(f);
             cards.Add(card);
             return card;
         }
@@ -139,6 +143,7 @@ namespace Dropy.Gameplay
                 hammer.interactable = false;
                 report.AddField(new DocumentField
                 {
+                    key = FieldKey.Hammer,
                     label = "Çekiç ölçümü",
                     value = BuildingCase.Concrete(buildingCase.TrueConcrete)
                 }, highlight: true);
@@ -178,7 +183,7 @@ namespace Dropy.Gameplay
             submitButton.interactable = ready;
             hintText.text = ready
                 ? "Mühürlü künyeyi müteahhide sürükle ya da teslim et."
-                : "Künyeye bir mühür bas:\nONAY, RED ya da PERDE EKLE.";
+                : "Künyeye bir mühür bas: ONAY, RED ya da PERDE EKLE.\nBir satıra tıklarsan müteahhide sorarsın.";
         }
 
         public void Toggle() => SetOpen(!IsOpen);

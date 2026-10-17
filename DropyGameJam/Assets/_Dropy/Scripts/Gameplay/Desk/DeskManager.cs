@@ -87,6 +87,8 @@ namespace Dropy.Gameplay
         int finesPending;
         int hammersUsedToday;
         bool paused;
+        /// <summary>İnceleme sırasında oyuncunun sorduğu satıra müteahhidin cevabı (bir sonraki soru öncekini keser).</summary>
+        Coroutine fieldTalk;
         /// <summary>Sarsıntıdan sonra radyoda adı geçmiş çürük binalar (aynı haber iki kez okunmasın).</summary>
         readonly HashSet<BuildingCase> crackReported = new HashSet<BuildingCase>();
 
@@ -135,6 +137,7 @@ namespace Dropy.Gameplay
             inspection.SubmitRequested += () => submitted = true;
             inspection.StampFilter = CanStamp;
             inspection.HammerRequested = UseHammer;
+            inspection.FieldAsked += OnFieldAsked;
 
             dialogue = canvasGo.AddComponent<DialogueUI>();
             dialogue.Build(root, deskCamera);
@@ -338,6 +341,7 @@ namespace Dropy.Gameplay
             {
                 while (!submitted)
                     yield return null;
+                StopFieldTalk();
                 if (pressured || buildingCase.rejectPressure.Count == 0 || inspection.MainCard.Stamp != Seal.Reject)
                     break;
 
@@ -460,8 +464,25 @@ namespace Dropy.Gameplay
             foreach (var callback in buildingCase.callbacks)
                 if (callback.other != null && SealOf(callback.other) == callback.seal)
                     yield return dialogue.Say(buildingCase.contractorName, callback.line, visitorHead, waitForClick: true);
+            // Müteahhit oyuncuya bir şey sorarsa (ya da baskı yaparsa) oyuncu iki karttan biriyle cevap verir.
+            // Konuşma uzamasın diye dosya başına bir kez; geri dönüş cümleleri teşekkür olduğu için hariç.
+            bool replied = false;
+            bool honest = ContractorTalk.IsHonest(buildingCase);
             foreach (var line in buildingCase.introLines)
-                yield return dialogue.Say(buildingCase.contractorName, line, visitorHead, waitForClick: true);
+            {
+                var replies = replied ? null : ContractorTalk.RepliesTo(line);
+                // Cevap kartı gelecekse balon tıklama beklemez: kartlar hemen altında açılır.
+                yield return dialogue.Say(buildingCase.contractorName, line, visitorHead, waitForClick: replies == null);
+                if (replies == null)
+                    continue;
+                replied = true;
+                int picked = 0;
+                yield return dialogue.Choose(replies.Select(r => r.option).ToList(), i => picked = i);
+                var reply = replies[picked];
+                visitor.Face?.SetExpression(honest ? FaceExpression.Happy : FaceExpression.Suspicious);
+                yield return dialogue.Say(buildingCase.contractorName, honest ? reply.honestReaction : reply.dishonestReaction,
+                    visitorHead, waitForClick: true);
+            }
 
             // Oyuncu soru sorabilir; cevaplar karakteri açar, kuralı değiştirmez.
             var remaining = new List<CaseQuestion>(buildingCase.questions);
@@ -486,6 +507,34 @@ namespace Dropy.Gameplay
                 if (r.buildingCase == other)
                     return r.seal;
             return Seal.None;
+        }
+
+        void OnFieldAsked(DocumentField field)
+        {
+            if (!inspectAllowed || paused || visitor == null || current == null)
+                return;
+            StopFieldTalk();
+            fieldTalk = StartCoroutine(AnswerField(field));
+        }
+
+        /// <summary>Satır sorusunun cevabı: yazılır, okunacak kadar bekler, kendiliğinden kapanır (tıklama belgelere gider).</summary>
+        IEnumerator AnswerField(DocumentField field)
+        {
+            var answer = ContractorTalk.AboutField(current, field);
+            visitor.Face?.SetExpression(answer.defensive ? FaceExpression.Suspicious : FaceExpression.Happy);
+            yield return dialogue.Say(current.contractorName, answer.text, visitorHead, waitForClick: false);
+            yield return new WaitForSeconds(2f + answer.text.Length * 0.03f);
+            dialogue.HideBubble();
+            fieldTalk = null;
+        }
+
+        void StopFieldTalk()
+        {
+            if (fieldTalk == null)
+                return;
+            StopCoroutine(fieldTalk);
+            fieldTalk = null;
+            dialogue.HideBubble();
         }
 
         bool Holds(PhoneMessage message)

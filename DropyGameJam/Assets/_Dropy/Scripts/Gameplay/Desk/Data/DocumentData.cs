@@ -15,6 +15,8 @@ namespace Dropy.Gameplay
     [System.Serializable]
     public class DocumentField
     {
+        [Tooltip("Satırın ne olduğu (künye/rapor alanı); müteahhide sorulunca cevap buna göre üretilir")]
+        public string key;
         public string label;
         public string value;
         [Tooltip("Deprem güvenliğini etkileyen ölümcül hata mı? Kırmızı kalemle işaretlenirse revizyonla düzeltilir")]

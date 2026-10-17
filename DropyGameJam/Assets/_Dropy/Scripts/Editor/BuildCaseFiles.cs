@@ -66,7 +66,7 @@ namespace Dropy.EditorTools
 
         class Spec
         {
-            public string building, contractor, note;
+            public string building, contractor, note, noteAnswer;
             public int floors, claimed, lab, hammer, approveOverride;
             public GroundUse use;
             public float height = 2.8f;
@@ -150,6 +150,7 @@ namespace Dropy.EditorTools
                 .Ask("Kaç daire var?", "Sekiz. Hepsi satıldı bile, aileler taşınmayı bekliyor.")
                 .React("Doğru okudunuz. Teşekkürler.", "Künyedeki bir yazım hatası yüzünden mi? Ek raporu okumadınız mı?");
             s.note = "Numune: 3 küp, 28 günlük";
+            s.noteAnswer = "Laboratuvar üç numune almış, yirmi sekiz gün bekletmiş. Usulüne uygun.";
             list.Add(s);
 
             // ---- 2. gün: yumuşak kat, kesik kolon ----
@@ -198,6 +199,7 @@ namespace Dropy.EditorTools
                 .React("Size bir daire ayırıyorum, haberiniz olsun.", "Bu işi başka büroda hallederim, merak etmeyin.")
                 .News("Sahil Rezidans'ta enkaz: müteahhit firari");
             s.note = "Deniz kumu";
+            s.noteAnswer = "Deniz kumu tabii, sahil burası. Kumun üstüne radye, herkes öyle yapıyor.";
             list.Add(s);
 
             s = File("Palmiye Konut", "Fikret Bey", 4, 25, 25, SoilType.Kil, Seal.Approve,
@@ -314,6 +316,7 @@ namespace Dropy.EditorTools
             c.labConcrete = spec.lab;
             c.soil = spec.soil;
             c.note = spec.note;
+            c.noteAnswer = spec.noteAnswer;
             c.hammerConcrete = spec.hammer;
             c.approveFeeOverride = spec.approveOverride;
             c.introLines = new List<string>(spec.intro);

@@ -73,6 +73,8 @@ namespace Dropy.Gameplay
         public SoilType soil = SoilType.Kaya;
         [Tooltip("Ek raporun tek satırlık notu")]
         public string note;
+        [Tooltip("Oyuncu not satırını sorarsa müteahhidin cevabı. Boşsa kusur notu gibi genel bir cevap üretilir")]
+        public string noteAnswer;
 
         [Header("Çekiç (3. günden itibaren)")]
         [Tooltip("Çekicin okuduğu beton. 0 ise laboratuvar değeriyle aynı okunur")]

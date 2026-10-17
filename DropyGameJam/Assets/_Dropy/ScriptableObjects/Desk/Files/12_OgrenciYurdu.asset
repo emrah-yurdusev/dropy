@@ -25,6 +25,7 @@ MonoBehaviour:
   labConcrete: 30
   soil: 0
   note: 
+  noteAnswer: 
   hammerConcrete: 30
   approveFeeOverride: 4000
   dialogue: {fileID: 0}
