@@ -82,8 +82,8 @@ namespace Dropy.Gameplay
         [Min(1)] public int bondStart = 3;
         [Min(1)] public int bondMax = 5;
 
-        public string Radio(int day) => day - 1 < radio.Count ? radio[day - 1] : null;
+        public string Radio(int day) => day >= 1 && day <= radio.Count ? radio[day - 1] : null;
 
-        public float Tremor(int day) => day - 1 < tremors.Count ? tremors[day - 1] : 0f;
+        public float Tremor(int day) => day >= 1 && day <= tremors.Count ? tremors[day - 1] : 0f;
     }
 }

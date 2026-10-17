@@ -10,7 +10,7 @@ using UnityEngine.UI;
 namespace Dropy.Gameplay
 {
     /// <summary>Kasa, gün/dosya sayacı, "Belgeleri İncele" butonu, para bildirimi, yönetmelik uyarısı,
-    /// gün başı yazısı ve deprem sonrası rapor.</summary>
+    /// gün başı yazısı, başlık ekranı, duraklatma menüsü ve deprem sonrası gazete ile dosya karnesi.</summary>
     public class DeskHud : MonoBehaviour
     {
         static readonly Color Dark = new Color(0.1f, 0.1f, 0.12f, 0.85f);
@@ -29,10 +29,19 @@ namespace Dropy.Gameplay
         CanvasGroup bannerGroup;
         RectTransform summary;
         TextMeshProUGUI summaryText;
+        TextMeshProUGUI pageToggleLabel;
+        string newspaperPage;
+        string reportPage;
+        bool showingReport;
+        GameObject title;
+        bool started;
+        GameObject pauseMenu;
         Coroutine toastRoutine;
         Coroutine warnRoutine;
 
         public event System.Action InspectClicked;
+        public event System.Action ResumeClicked;
+        public event System.Action RestartClicked;
 
         public void Build(RectTransform root)
         {
@@ -85,12 +94,88 @@ namespace Dropy.Gameplay
             summaryText.enableAutoSizing = true;
             summaryText.fontSizeMin = 14f;
             summaryText.fontSizeMax = 30f;
-            summaryText.rectTransform.Stretch(40f, 40f, 40f, 36f);
+            summaryText.rectTransform.Stretch(40f, 110f, 40f, 36f);
             summaryText.richText = true;
+            var toggle = Ui.Button(summary, "PageToggle", "DOSYA KARNESİ", new Color(0.24f, 0.32f, 0.45f), Color.white, 22f);
+            ((RectTransform)toggle.transform).Place(new Vector2(0.5f, 0f), new Vector2(1f, 0f), new Vector2(-10f, 28f), new Vector2(300f, 64f));
+            pageToggleLabel = toggle.GetComponentInChildren<TextMeshProUGUI>();
+            toggle.onClick.AddListener(TogglePage);
+            var again = Ui.Button(summary, "Restart", "YENİDEN OYNA", new Color(0.85f, 0.6f, 0.2f), Color.white, 22f);
+            ((RectTransform)again.transform).Place(new Vector2(0.5f, 0f), new Vector2(0f, 0f), new Vector2(10f, 28f), new Vector2(300f, 64f));
+            again.onClick.AddListener(() => RestartClicked?.Invoke());
             summary.gameObject.SetActive(false);
+
+            title = BuildTitle(root);
+            pauseMenu = BuildPause(root);
         }
 
-        public void SetMoney(int amount) => moneyText.text = $"Kasa: {amount:N0} TL";
+        GameObject BuildTitle(RectTransform root)
+        {
+            var panel = Ui.Image(root, "Title", new Color(0.05f, 0.05f, 0.07f, 0.97f)).rectTransform.Stretch();
+            var text = Ui.Text(panel, "Text",
+                "<size=110><b>VİZE BÜROSU</b></size>\n\n" +
+                "<size=30>Bir deprem bölgesinde, beş günlük mesai.\nHer mühür bir binaya, her bina birilerine.</size>",
+                30f, Color.white, TextAlignmentOptions.Center);
+            text.richText = true;
+            text.rectTransform.Stretch(200f, 260f, 200f, 120f);
+            var start = Ui.Button(panel, "Start", "MESAİYE BAŞLA", new Color(0.85f, 0.6f, 0.2f), Color.white, 28f);
+            ((RectTransform)start.transform).Place(new Vector2(0.5f, 0f), new Vector2(0.5f, 0f), new Vector2(0f, 170f), new Vector2(380f, 80f));
+            start.onClick.AddListener(() => started = true);
+            var credit = Ui.Text(panel, "Credit", "Dropy  ·  CIVIL GAME JAM  ·  Afete hazırlık ve farkındalık", 18f,
+                new Color(1f, 1f, 1f, 0.45f), TextAlignmentOptions.Bottom, FontStyles.Italic);
+            credit.rectTransform.Stretch(0f, 40f, 0f, 0f);
+            panel.gameObject.SetActive(false);
+            return panel.gameObject;
+        }
+
+        GameObject BuildPause(RectTransform root)
+        {
+            var panel = Ui.Image(root, "Pause", new Color(0.03f, 0.03f, 0.05f, 0.96f)).rectTransform.Stretch();
+            var box = Ui.Rect("Box", panel);
+            box.Place(new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), Vector2.zero, new Vector2(420f, 360f));
+            var layout = box.gameObject.AddComponent<VerticalLayoutGroup>();
+            layout.spacing = 18f;
+            layout.childControlHeight = true;
+            layout.childControlWidth = true;
+            layout.childForceExpandHeight = false;
+            var head = Ui.Text(box, "Head", "DURAKLATILDI", 40f, Color.white, TextAlignmentOptions.Center, FontStyles.Bold);
+            head.gameObject.AddComponent<LayoutElement>().preferredHeight = 70f;
+            AddMenuButton(box, "DEVAM  [Esc]", new Color(0.24f, 0.32f, 0.45f), () => ResumeClicked?.Invoke());
+            AddMenuButton(box, "BAŞTAN BAŞLA", new Color(0.45f, 0.33f, 0.25f), () => RestartClicked?.Invoke());
+            AddMenuButton(box, "OYUNDAN ÇIK", new Color(0.4f, 0.15f, 0.15f), Application.Quit);
+            panel.gameObject.SetActive(false);
+            return panel.gameObject;
+        }
+
+        static void AddMenuButton(RectTransform parent, string label, Color color, UnityEngine.Events.UnityAction onClick)
+        {
+            var button = Ui.Button(parent, label, label, color, Color.white, 24f);
+            button.gameObject.AddComponent<LayoutElement>().preferredHeight = 64f;
+            button.onClick.AddListener(onClick);
+        }
+
+        /// <summary>Başlık ekranını gösterir, "Mesaiye başla"ya basılana kadar bekler.</summary>
+        public IEnumerator Title()
+        {
+            started = false;
+            title.SetActive(true);
+            title.transform.SetAsLastSibling();
+            while (!started)
+                yield return null;
+            title.SetActive(false);
+        }
+
+        public void SetPaused(bool paused)
+        {
+            pauseMenu.SetActive(paused);
+            if (paused)
+                pauseMenu.transform.SetAsLastSibling();
+        }
+
+        /// <summary>Başlık ya da duraklatma açıkken oyun içi tıklamalar sayılmaz.</summary>
+        public bool BlocksInput => title.activeSelf || pauseMenu.activeSelf;
+
+        public void SetMoney(int amount) => moneyText.text = $"Kasa: {Ui.Money(amount)}";
 
         public void SetCounter(int day, int file, int filesPerDay, string contractor) =>
             counterText.text = $"Gün {day}  ·  Dosya {file}/{filesPerDay}  ·  {contractor}";
@@ -153,8 +238,10 @@ namespace Dropy.Gameplay
             bannerGroup.alpha = 0f;
         }
 
-        static bool ContinuePressed()
+        bool ContinuePressed()
         {
+            if (BlocksInput)
+                return false;
             var mouse = Mouse.current;
             var keyboard = Keyboard.current;
             return (mouse != null && mouse.leftButton.wasPressedThisFrame)
@@ -175,7 +262,7 @@ namespace Dropy.Gameplay
         /// ayakta kalanlar ve hiç yapılmayanlar kısa listelenir. Altta evin ve ailenin durumu.
         /// </summary>
         public void ShowFinal(IList<DeskManager.CaseResult> results, ICollection<ShopItem> purchased,
-            IEnumerable<(FamilyNeed need, bool paid)> family, bool estranged, int money)
+            IEnumerable<(FamilyNeed need, bool paid)> family, bool estranged, int money, string report)
         {
             summary.GetComponent<Image>().color = new Color(0.95f, 0.93f, 0.86f, 0.98f);
             summaryText.color = new Color(0.12f, 0.11f, 0.1f);
@@ -224,10 +311,52 @@ namespace Dropy.Gameplay
             sb.AppendLine(safe ? "\n<color=#1f7a3a><b>Ailen güvende.</b></color>" : "\n<color=#a3221b><b>Ailen güvende değil.</b></color>");
             if (estranged)
                 sb.AppendLine("<color=#a3221b><b>Ailen hayatta ama seninle konuşmuyor.</b></color>");
-            sb.AppendLine($"<size=18>Kasa: {money:N0} TL</size>");
-            summaryText.text = sb.ToString();
+            sb.AppendLine($"<size=18>Kasa: {Ui.Money(money)}</size>");
+            newspaperPage = sb.ToString();
+            reportPage = report;
+            showingReport = false;
+            summaryText.text = newspaperPage;
+            pageToggleLabel.text = "DOSYA KARNESİ";
             summary.gameObject.SetActive(true);
             summary.SetAsLastSibling();
+        }
+
+        void TogglePage()
+        {
+            showingReport = !showingReport;
+            summaryText.text = showingReport ? reportPage : newspaperPage;
+            pageToggleLabel.text = showingReport ? "GAZETE" : "DOSYA KARNESİ";
+        }
+
+        /// <summary>
+        /// Dosya karnesi: her dosyada basılan ve doğru mühür; yanlışlarda kuralın kısa açıklaması.
+        /// Gazete ne olduğunu söyler, karne nedenini öğretir.
+        /// </summary>
+        public static string ReportCard(IList<DeskManager.CaseResult> results, int citations)
+        {
+            int correct = results.Count(r => r.seal == BuildingRules.CorrectSeal(r.buildingCase));
+            var sb = new StringBuilder();
+            sb.AppendLine("<size=20><b>BÜRO KAYITLARI</b>  ·  DOSYA KARNESİ</size>");
+            sb.AppendLine("<size=14>________________________________________________________________________________</size>");
+            sb.AppendLine($"<size=34><b>{results.Count} dosyadan {correct} doğru</b></size>   <size=22>Tutanak: {citations}</size>\n");
+            int day = 0;
+            foreach (var r in results)
+            {
+                if (r.day != day)
+                {
+                    day = r.day;
+                    sb.AppendLine($"<b>{day}. gün</b>");
+                }
+                var right = BuildingRules.CorrectSeal(r.buildingCase);
+                if (r.seal == right)
+                {
+                    sb.AppendLine($"<color=#1f7a3a>Doğru</color>  {r.buildingCase.buildingName}  ·  {DeskManager.SealName(r.seal)}");
+                    continue;
+                }
+                sb.AppendLine($"<color=#a3221b>Yanlış</color>  {r.buildingCase.buildingName}  ·  {DeskManager.SealName(r.seal)} bastın, doğrusu {DeskManager.SealName(right)}.");
+                sb.AppendLine($"<size=85%><i>      {BuildingRules.Explain(r.buildingCase, r.seal)}</i></size>");
+            }
+            return sb.ToString();
         }
 
         static string Headline(DeskManager.CaseResult r) =>

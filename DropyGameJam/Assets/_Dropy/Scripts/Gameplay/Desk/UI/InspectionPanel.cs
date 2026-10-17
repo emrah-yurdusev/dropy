@@ -45,6 +45,9 @@ namespace Dropy.Gameplay
         /// <summary>Künyeye mühür basılmadan önce sorulur; false dönerse mühür basılmaz.</summary>
         public System.Func<Seal, bool> StampFilter;
 
+        /// <summary>Çekiçe basılınca sorulur: günlük hak varsa düşüp true döner.</summary>
+        public System.Func<bool> HammerRequested;
+
         public event System.Action SubmitRequested;
 
         public void Build(RectTransform root, RegulationData regulations, Camera camera)
@@ -98,14 +101,15 @@ namespace Dropy.Gameplay
         public void SetDay(int day) => book.SetDay(day);
 
         /// <summary>Dosyanın künyesini ve ek raporunu sağ panelin üstüne koyar.</summary>
-        public void LoadCase(BuildingCase buildingCase, bool hammerAvailable)
+        /// <param name="hammersLeft">Çekiç geldiyse bugün kalan kullanım; -1 ise çekiç henüz yok.</param>
+        public void LoadCase(BuildingCase buildingCase, int hammersLeft)
         {
             ClearCase();
             float rightCenter = documentLayer.rect.width * (0.5f - SideWidth / 2f);
 
             var report = AddCard(CaseDocuments.Report(buildingCase), false, ReportCardHeight, new Vector2(rightCenter + 175f, 110f), -2f);
-            if (hammerAvailable)
-                AddHammer(report, buildingCase);
+            if (hammersLeft >= 0)
+                AddHammer(report, buildingCase, hammersLeft);
             MainCard = AddCard(CaseDocuments.Kunye(buildingCase), true, MainCardHeight, new Vector2(rightCenter - 165f, 40f), 1.5f);
             Sfx.Paper();
         }
@@ -120,12 +124,17 @@ namespace Dropy.Gameplay
             return card;
         }
 
-        void AddHammer(DocumentCard report, BuildingCase buildingCase)
+        void AddHammer(DocumentCard report, BuildingCase buildingCase, int left)
         {
-            var hammer = Ui.Button(report.RectTransform, "Hammer", "ÇEKİÇLE ÖLÇ", new Color(0.55f, 0.4f, 0.25f), Color.white, 20f);
-            ((RectTransform)hammer.transform).Place(new Vector2(0.5f, 0f), new Vector2(0.5f, 1f), new Vector2(0f, -12f), new Vector2(260f, 56f));
+            string label = left > 0 ? $"ÇEKİÇLE ÖLÇ  <size=75%>(bugün {left})</size>" : "ÇEKİÇ HAKKI BİTTİ";
+            var hammer = Ui.Button(report.RectTransform, "Hammer", label, new Color(0.55f, 0.4f, 0.25f), Color.white, 20f);
+            hammer.GetComponentInChildren<TextMeshProUGUI>().richText = true;
+            ((RectTransform)hammer.transform).Place(new Vector2(0.5f, 0f), new Vector2(0.5f, 1f), new Vector2(0f, -12f), new Vector2(280f, 56f));
+            hammer.interactable = left > 0;
             hammer.onClick.AddListener(() =>
             {
+                if (HammerRequested != null && !HammerRequested())
+                    return;
                 HammerUsed = true;
                 hammer.interactable = false;
                 report.AddField(new DocumentField

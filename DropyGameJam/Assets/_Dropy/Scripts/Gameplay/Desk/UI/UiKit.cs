@@ -12,6 +12,10 @@ namespace Dropy.Gameplay
     public static class Ui
     {
         static readonly Dictionary<string, Sprite> Cache = new Dictionary<string, Sprite>();
+        static readonly System.Globalization.CultureInfo Tr = new System.Globalization.CultureInfo("tr-TR");
+
+        /// <summary>Para Türkçe biçimde: 4.000 TL. Mesaj metinleriyle aynı görünsün diye her yerde bu kullanılır.</summary>
+        public static string Money(int amount) => amount.ToString("N0", Tr) + " TL";
 
         public static Sprite Rounded => RoundedRect("rounded", 64, 16, 0f, 1.5f);
         public static Sprite Frame => RoundedRect("frame", 64, 16, 5f, 1.5f);

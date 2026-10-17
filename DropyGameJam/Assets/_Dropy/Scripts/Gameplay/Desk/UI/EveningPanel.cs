@@ -209,7 +209,7 @@ namespace Dropy.Gameplay
         }
 
         /// <param name="bondChange">Dünden bu yana aile bağı farkı (ödenmeyen istekler).</param>
-        public IEnumerator Run(int day, int income, int rent, int money, ICollection<ShopItem> purchased,
+        public IEnumerator Run(int day, int income, int fine, int rent, int money, ICollection<ShopItem> purchased,
             IList<EveningMessage> messages, ICollection<FamilyNeed> paidNeeds,
             int bond, int bondMax, int bondChange, bool shopOpen)
         {
@@ -221,8 +221,9 @@ namespace Dropy.Gameplay
                 : bondChange < 0 ? $"\n<size=80%><color=#a3221b>Dün karşılanmayan istek: aile bağı {bondChange}</color></size>" : "";
             ledgerText.text =
                 $"<size=34><b>{day}. gün akşamı</b></size>\n\n" +
-                $"Bugünkü mühürler   <b>+{income:N0} TL</b>\n" +
-                $"Kira   <b>-{rent:N0} TL</b>" +
+                $"Bugünkü mühürler   <b>+{Ui.Money(income)}</b>\n" +
+                (fine > 0 ? $"<color=#a3221b>Tutanak cezası   <b>-{Ui.Money(fine)}</b></color>\n" : "") +
+                $"Kira   <b>-{Ui.Money(rent)}</b>" +
                 (rent < Economy.Rent ? "\n<size=80%><i>Kiranın tamamı ödenemedi.</i></size>" : "") +
                 bondNote +
                 "\n\n<size=80%>Eve yürünmez. Alışveriş telefondan.</size>";
@@ -273,18 +274,18 @@ namespace Dropy.Gameplay
 
         public void Refresh(int money, ICollection<ShopItem> purchased, ICollection<FamilyNeed> paidNeeds, int bond, int bondMax)
         {
-            phoneHeader.text = $"Mesajlar  ·  <color=#fad166>Kasa: {money:N0} TL</color>";
+            phoneHeader.text = $"Mesajlar  ·  <color=#fad166>Kasa: {Ui.Money(money)}</color>";
             foreach (var pair in requestRows)
             {
                 bool paid = paidNeeds.Contains(pair.Key);
-                pair.Value.label.text = paid ? "Ödendi" : $"Öde  {pair.Key.price:N0} TL";
+                pair.Value.label.text = paid ? "Ödendi" : $"Öde  {Ui.Money(pair.Key.price)}";
                 pair.Value.button.interactable = !paid && money >= pair.Key.price;
             }
             foreach (var pair in rows)
             {
                 int price = Shop.Price(pair.Key);
                 bool owned = purchased.Contains(pair.Key);
-                string state = owned ? "<color=#6fdc8c>Alındı</color>" : $"{price:N0} TL";
+                string state = owned ? "<color=#6fdc8c>Alındı</color>" : $"{Ui.Money(price)}";
                 pair.Value.label.text = $"{Shop.Name(pair.Key)}\n<size=85%>{state}</size>";
                 pair.Value.button.interactable = shopOpen && !owned && money >= price;
                 pair.Value.chip.SetActive(owned);

@@ -159,7 +159,7 @@ namespace Dropy.Gameplay
             while (picked < 0)
             {
                 var keyboard = Keyboard.current;
-                if (keyboard != null)
+                if (keyboard != null && Time.timeScale > 0f)
                 {
                     for (int i = 0; i < options.Count && i < 9; i++)
                     {
@@ -177,6 +177,8 @@ namespace Dropy.Gameplay
 
         static bool AdvancePressed()
         {
+            if (Time.timeScale == 0f) // duraklatma menüsü açık
+                return false;
             var mouse = Mouse.current;
             var keyboard = Keyboard.current;
             return (mouse != null && mouse.leftButton.wasPressedThisFrame)

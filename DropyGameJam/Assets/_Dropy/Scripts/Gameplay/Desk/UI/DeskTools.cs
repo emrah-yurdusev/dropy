@@ -8,7 +8,7 @@ namespace Dropy.Gameplay
 {
     /// <summary>
     /// Sağdaki mühürler: Onay, Red, Perde ekle. Her mührün üstünde kazandıracağı para yazar.
-    /// Mühür seçilince imleci takip eder; sağ tık veya ESC bırakır.
+    /// Mühür seçilince imleci takip eder; sağ tık bırakır (ESC'yi DeskManager yönetir).
     /// </summary>
     public class DeskTools : MonoBehaviour
     {
@@ -106,8 +106,7 @@ namespace Dropy.Gameplay
                 return;
 
             var mouse = Mouse.current;
-            var keyboard = Keyboard.current;
-            if ((mouse != null && mouse.rightButton.wasPressedThisFrame) || (keyboard != null && keyboard.escapeKey.wasPressedThisFrame))
+            if (mouse != null && mouse.rightButton.wasPressedThisFrame)
             {
                 Select(Seal.None);
                 return;

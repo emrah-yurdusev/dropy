@@ -40,6 +40,17 @@ namespace Dropy.Gameplay
         /// <summary>Kira 1–4. akşam düşer; dükkân 4. günün sonunda kapanır; 5. gün mühür para vermez.</summary>
         public const int LastPaidDay = 4;
 
+        /// <summary>
+        /// Müfettiş tutanağı: kitapta yazan bir kuralı çiğneyen onay. İlki yalnızca uyarıdır, sonrakiler
+        /// o akşam kasadan düşer. Dürüst yol tutanak yemez, yani hesabı değişmez.
+        /// </summary>
+        public const int CitationFine = 500;
+        public const int FreeCitations = 1;
+
+        /// <summary>Çekiç 3. günden itibaren gelir ve günde bu kadar kullanılabilir; hangi dosyanın ölçüleceği oyuncunun kararı.</summary>
+        public const int HammerDay = 3;
+        public const int HammerPerDay = 2;
+
         public static int Day(int fileIndex) => fileIndex / FilesPerDay + 1;
     }
 
@@ -160,6 +171,44 @@ namespace Dropy.Gameplay
                 if (RuleDay(flaw) <= day)
                     return Warning(flaw);
             return null;
+        }
+
+        /// <summary>Karnede yanlış mühürün kısa açıklaması: dosyanın kendi değerleriyle hangi kural neden geçerliydi.</summary>
+        public static string Explain(BuildingCase c, Seal played)
+        {
+            var flaws = Flaws(c);
+            if (flaws.Count == 0)
+            {
+                string why = "Yönetmelikte red sebebi yoktu.";
+                if (c.claimedConcrete != c.labConcrete)
+                    why += $" Künyede {BuildingCase.Concrete(c.claimedConcrete)} yazsa da ek rapor {BuildingCase.Concrete(c.labConcrete)} diyordu; ek rapor geçerli.";
+                if (!string.IsNullOrEmpty(c.note))
+                    why += $" \"{c.note}\" kitapta yazmayan bir kusur.";
+                return why;
+            }
+            if (played == Seal.Reject && ShearWallSaves(c))
+                return "Yumuşak kat perdeyle kurtarılabilirdi: bina yapılır, sen de 500 TL alırdın.";
+            var parts = new List<string>();
+            foreach (var flaw in flaws)
+                parts.Add(Explain(flaw, c));
+            return string.Join(" ", parts);
+        }
+
+        static string Explain(Flaw flaw, BuildingCase c)
+        {
+            switch (flaw)
+            {
+                case Flaw.BadConcrete:
+                    return c.hammerConcrete > 0 && c.hammerConcrete != c.labConcrete
+                        ? $"Çekiç {BuildingCase.Concrete(c.hammerConcrete)} okudu; kâğıtlardaki {BuildingCase.Concrete(c.labConcrete)} geçersizdi."
+                        : $"Gerçek beton {BuildingCase.Concrete(c.TrueConcrete)}: C25–C35 dışında.";
+                case Flaw.SoftStory:
+                    return $"Zemin kat market, tavan {c.groundFloorHeight.ToString("0.0#", new System.Globalization.CultureInfo("tr-TR"))} m, perde yok: yumuşak kat.";
+                case Flaw.CutColumn:
+                    return "Kolon kesik: perde de kurtarmaz, yalnız red.";
+                default:
+                    return $"Kum zemin, {c.floors} kat, radye temel: kazık şarttı.";
+            }
         }
 
         public static int Fee(BuildingCase c, Seal seal, int day)

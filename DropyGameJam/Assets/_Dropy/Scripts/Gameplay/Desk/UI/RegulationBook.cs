@@ -92,7 +92,9 @@ namespace Dropy.Gameplay
             slot = Mathf.Clamp(slot, 0, visible.Count - 1);
             var page = data.pages[visible[slot]];
             pageTitle.text = page.title;
-            pageBody.text = page.body;
+            pageBody.text = string.IsNullOrEmpty(page.why)
+                ? page.body
+                : $"{page.body}\n\n<size=85%><i><color=#6b5a45>Neden? {page.why}</color></i></size>";
             pageNumber.text = $"— {slot + 1} / {visible.Count} —";
             for (int i = 0; i < tabs.Count; i++)
                 tabs[i].color = i == slot ? TabSelected : TabColor;

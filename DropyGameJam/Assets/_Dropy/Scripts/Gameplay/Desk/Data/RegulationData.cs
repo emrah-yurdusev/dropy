@@ -10,6 +10,8 @@ namespace Dropy.Gameplay
         [Tooltip("Bu sayfanın kitaba girdiği gün")]
         [Min(1)] public int day = 1;
         [TextArea(4, 12)] public string body;
+        [Tooltip("Sayfanın altında küçük 'Neden?' notu: kuralın gerçek dünyadaki karşılığı")]
+        [TextArea(2, 6)] public string why;
     }
 
     /// <summary>Sol paneldeki mevzuat kitapçığı.</summary>

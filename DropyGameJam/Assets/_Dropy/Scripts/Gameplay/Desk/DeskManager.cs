@@ -5,6 +5,7 @@ using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.InputSystem;
 using UnityEngine.InputSystem.UI;
+using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
 namespace Dropy.Gameplay
@@ -25,9 +26,10 @@ namespace Dropy.Gameplay
             public int money;
             public BuildingFate fate;
             public string warning;
+            /// <summary>Kitapta yazan bir kuralı çiğneyen onay: müfettiş tutanağı.</summary>
+            public bool citation;
         }
 
-        const int HammerDay = 3;
         /// <summary>2. günden itibaren müteahhitler biraz daha hızlı yürür; masa temposu açılır.</summary>
         const int FastWalkDay = 2;
         const float FastWalkMultiplier = 1.3f;
@@ -72,7 +74,15 @@ namespace Dropy.Gameplay
         readonly HashSet<FamilyNeed> paidNeeds = new HashSet<FamilyNeed>();
         /// <summary>Aile bağı. Sıfıra düşerse kalıcıdır: aile küser, aileden mesaj gelmez.</summary>
         int bond;
-        int bondAtLastEvening;
+        /// <summary>Son "Sabah oldu"da ödenmeyen isteklerden giden dilim; akşam defterinde gösterilir.</summary>
+        int bondLostLastNight;
+        int citations;
+        /// <summary>Bu akşam kasadan düşecek tutanak cezası.</summary>
+        int finesPending;
+        int hammersUsedToday;
+        bool paused;
+        /// <summary>Sarsıntıdan sonra radyoda adı geçmiş çürük binalar (aynı haber iki kez okunmasın).</summary>
+        readonly HashSet<BuildingCase> crackReported = new HashSet<BuildingCase>();
 
         bool Estranged => bond <= 0;
 
@@ -82,11 +92,15 @@ namespace Dropy.Gameplay
 
         void Awake()
         {
+            // Editörde Play'den duraklatılmış çıkılırsa zaman ölçeği 0'da kalabiliyor; her açılışta sıfırla.
+            Time.timeScale = 1f;
             BuildUi();
             money = Economy.StartMoney;
             hud.SetMoney(money);
-            bond = bondAtLastEvening = story != null ? story.bondStart : 3;
+            bond = story != null ? story.bondStart : 3;
         }
+
+        void OnDestroy() => Time.timeScale = 1f;
 
         void Start() => StartCoroutine(RunWeek());
 
@@ -114,6 +128,7 @@ namespace Dropy.Gameplay
             inspection.Build(root, regulations, deskCamera);
             inspection.SubmitRequested += () => submitted = true;
             inspection.StampFilter = CanStamp;
+            inspection.HammerRequested = UseHammer;
 
             dialogue = canvasGo.AddComponent<DialogueUI>();
             dialogue.Build(root, deskCamera);
@@ -121,6 +136,8 @@ namespace Dropy.Gameplay
             hud = canvasGo.AddComponent<DeskHud>();
             hud.Build(root);
             hud.InspectClicked += ToggleInspection;
+            hud.ResumeClicked += () => SetPaused(false);
+            hud.RestartClicked += Restart;
 
             evening = canvasGo.AddComponent<EveningPanel>();
             evening.Build(root);
@@ -131,13 +148,39 @@ namespace Dropy.Gameplay
         void Update()
         {
             var keyboard = Keyboard.current;
-            if (keyboard != null && keyboard.tabKey.wasPressedThisFrame)
+            if (keyboard == null)
+                return;
+            // Esc: önce eldeki mührü bırakır, elde mühür yoksa duraklatma menüsünü açar/kapar.
+            if (keyboard.escapeKey.wasPressedThisFrame)
+            {
+                if (!paused && inspection.Tools.Active != Seal.None)
+                    inspection.Tools.Select(Seal.None);
+                else if (paused || !hud.BlocksInput)
+                    SetPaused(!paused);
+            }
+            if (keyboard.tabKey.wasPressedThisFrame && !paused)
                 ToggleInspection();
+        }
+
+        void SetPaused(bool value)
+        {
+            paused = value;
+            Time.timeScale = value ? 0f : 1f;
+            AudioListener.pause = value;
+            hud.SetPaused(value);
+        }
+
+        void Restart()
+        {
+            Time.timeScale = 1f;
+            AudioListener.pause = false;
+            Sfx.Ambience(0f);
+            SceneManager.LoadScene(SceneManager.GetActiveScene().name);
         }
 
         void ToggleInspection()
         {
-            if (!inspectAllowed)
+            if (!inspectAllowed || paused)
                 return;
             inspection.Toggle();
             hud.SetInspectOpen(inspection.IsOpen);
@@ -149,9 +192,12 @@ namespace Dropy.Gameplay
             if (cases.Length != expected)
                 Debug.LogWarning($"DeskManager: {expected} dosya bekleniyordu, {cases.Length} var. Dropy > Dosyaları Üret ile kur.");
 
+            yield return hud.Title();
+
             for (day = 1; day <= Economy.Days; day++)
             {
                 shearWallUsedToday = false;
+                hammersUsedToday = 0;
                 inspection.SetDay(day);
                 Sfx.Ambience(0.03f + 0.035f * day);
                 yield return hud.DayBanner(day, Morning(day));
@@ -179,7 +225,7 @@ namespace Dropy.Gameplay
             var family = story != null
                 ? story.needs.Select(n => (n, paidNeeds.Contains(n)))
                 : Enumerable.Empty<(FamilyNeed, bool)>();
-            hud.ShowFinal(results, purchased, family, Estranged, money);
+            hud.ShowFinal(results, purchased, family, Estranged, money, DeskHud.ReportCard(results, citations));
         }
 
         string Morning(int forDay)
@@ -194,7 +240,38 @@ namespace Dropy.Gameplay
             if (forDay > Economy.LastPaidDay)
                 rules += "\n<b>Bugün harç yok: mühürler para getirmez, binalar yine yapılır.</b>";
             string radio = story != null ? story.Radio(forDay) : null;
+            string cracks = CrackNews(forDay);
+            if (!string.IsNullOrEmpty(cracks))
+                radio = string.IsNullOrEmpty(radio) ? cracks : radio + "\n" + cracks;
             return string.IsNullOrEmpty(radio) ? rules : $"<i>{radio}</i>\n\n{rules}";
+        }
+
+        /// <summary>
+        /// Dünkü sarsıntıda çatlayan binalar: yalnız oyuncunun hatalı onayladığı (depremde çökecek) binalar.
+        /// Oyuncu hatasını depremden önce sezsin diye en fazla iki haber.
+        /// </summary>
+        string CrackNews(int forDay)
+        {
+            if (story == null || story.Tremor(forDay - 1) <= 0f)
+                return null;
+            var news = results
+                .Where(r => r.fate == BuildingFate.Collapsed && r.day < forDay && !crackReported.Contains(r.buildingCase))
+                .OrderByDescending(r => r.day)
+                .Take(2)
+                .ToList();
+            foreach (var r in news)
+                crackReported.Add(r.buildingCase);
+            return news.Count == 0 ? null
+                : string.Join("\n", news.Select(r => $"Radyo: Dünkü sarsıntıda {r.buildingCase.buildingName} binasında derin çatlaklar görüldü."));
+        }
+
+        /// <summary>Çekiç günde sınırlı: hak varsa birini düşer.</summary>
+        bool UseHammer()
+        {
+            if (hammersUsedToday >= Economy.HammerPerDay)
+                return false;
+            hammersUsedToday++;
+            return true;
         }
 
         /// <summary>Günün ilk müteahhidinden önce gelen telefonlar (1. gün müdürün tanıtımı, 5. gün harç yok).</summary>
@@ -237,7 +314,7 @@ namespace Dropy.Gameplay
                 yield return Tremor(tremor);
 
             RefreshSeals(buildingCase);
-            inspection.LoadCase(buildingCase, day >= HammerDay);
+            inspection.LoadCase(buildingCase, day >= Economy.HammerDay ? Economy.HammerPerDay - hammersUsedToday : -1);
             yield return Talk(buildingCase);
 
             inspectAllowed = true;
@@ -275,9 +352,13 @@ namespace Dropy.Gameplay
             results.Add(result);
             money += result.money;
             hud.SetMoney(money);
-            string paid = day > Economy.LastPaidDay ? "harç yok" : $"+{result.money:N0} TL";
+            string paid = day > Economy.LastPaidDay ? "harç yok" : $"+{Ui.Money(result.money)}";
             hud.Toast($"{SealName(result.seal)}   {paid}", new Color(0.98f, 0.82f, 0.4f));
-            if (result.warning != null)
+            if (result.citation)
+                hud.Warn(citations <= Economy.FreeCitations
+                    ? $"Müfettiş tutanağı: {result.warning} · ilk uyarı"
+                    : $"Müfettiş tutanağı: {result.warning} · akşam -{Ui.Money(Economy.CitationFine)}");
+            else if (result.warning != null)
                 hud.Warn("Yönetmelik: " + result.warning);
 
             if (inspection.IsOpen)
@@ -382,7 +463,7 @@ namespace Dropy.Gameplay
         {
             if (day > Economy.LastPaidDay)
                 return "harç yok";
-            return fee > 0 ? $"+{fee:N0} TL" : "0 TL";
+            return fee > 0 ? $"+{Ui.Money(fee)}" : "0 TL";
         }
 
         /// <summary>Perde mührü yalnız yumuşak katı kurtarır; işe yaramıyorsa basılmaz ve hak harcanmaz.</summary>
@@ -397,7 +478,7 @@ namespace Dropy.Gameplay
             }
             if (!BuildingRules.ShearWallSaves(current))
             {
-                hud.Warn("Perde bunu kurtarmaz");
+                hud.Warn(BuildingRules.Flaws(current).Count == 0 ? "Bu binada perde gerekmiyor" : "Perde bunu kurtarmaz");
                 return false;
             }
             return true;
@@ -408,7 +489,7 @@ namespace Dropy.Gameplay
             var seal = inspection.MainCard != null ? inspection.MainCard.Stamp : Seal.Reject;
             if (seal == Seal.ShearWall)
                 shearWallUsedToday = true;
-            return new CaseResult
+            var result = new CaseResult
             {
                 buildingCase = buildingCase,
                 day = day,
@@ -417,6 +498,15 @@ namespace Dropy.Gameplay
                 fate = BuildingRules.Fate(buildingCase, seal),
                 warning = BuildingRules.KnownViolation(buildingCase, seal, day)
             };
+            // Gereksiz red zaten harcı kaybettirir; tutanak yalnız tehlikeli onaya yazılır.
+            result.citation = seal == Seal.Approve && result.warning != null;
+            if (result.citation)
+            {
+                citations++;
+                if (citations > Economy.FreeCitations && day <= Economy.LastPaidDay)
+                    finesPending += Economy.CitationFine;
+            }
+            return result;
         }
 
         IEnumerator React(BuildingCase buildingCase, Seal seal)
@@ -440,11 +530,19 @@ namespace Dropy.Gameplay
             }
             visitor.Face?.SetExpression(expression);
             yield return dialogue.Say(buildingCase.contractorName, line, visitorHead, waitForClick: true);
+            // Haksız red: dürüst müteahhit dosyasını savunur; oyuncu neyi kaçırdığını buradan da öğrenir.
+            if (seal == Seal.Reject && BuildingRules.Flaws(buildingCase).Count == 0)
+                yield return dialogue.Say(buildingCase.contractorName,
+                    $"Beton {BuildingCase.Concrete(buildingCase.TrueConcrete)}, kolon tam, temel yerinde. Yönetmelikte reddettirecek ne var?",
+                    visitorHead, waitForClick: true);
             dialogue.HideBubble();
         }
 
         IEnumerator Evening(int income)
         {
+            int fine = Mathf.Min(money, finesPending);
+            money -= fine;
+            finesPending = 0;
             int rent = Mathf.Min(money, Economy.Rent);
             money -= rent;
             hud.SetMoney(money);
@@ -472,15 +570,15 @@ namespace Dropy.Gameplay
             if (messages.Count > 0)
                 Sfx.Buzz();
 
-            int bondChange = bond - bondAtLastEvening;
-            yield return evening.Run(day, income, rent, money, purchased, messages, paidNeeds,
-                bond, BondMax, bondChange, shopOpen: day <= Economy.LastPaidDay);
+            yield return evening.Run(day, income, fine, rent, money, purchased, messages, paidNeeds,
+                bond, BondMax, -bondLostLastNight, shopOpen: day <= Economy.LastPaidDay);
 
             // "Sabah oldu": karşılanmayan her istek aile bağından bir dilim götürür.
+            int before = bond;
             foreach (var need in requests)
                 if (!paidNeeds.Contains(need))
                     bond = Mathf.Max(0, bond - 1);
-            bondAtLastEvening = bond;
+            bondLostLastNight = before - bond;
         }
 
         int BondMax => story != null ? story.bondMax : 5;
@@ -492,7 +590,7 @@ namespace Dropy.Gameplay
         IEnumerator Pressure(BuildingCase buildingCase, System.Action<bool> onDecided)
         {
             int rentTonight = day <= Economy.LastPaidDay ? Economy.Rent : 0;
-            int afterRent = Mathf.Max(0, money - rentTonight);
+            int afterRent = Mathf.Max(0, money - finesPending - rentTonight);
             int retrofit = Shop.Price(ShopItem.Retrofit);
             bool retrofitShort = !purchased.Contains(ShopItem.Retrofit) && afterRent < retrofit;
             bool lowBond = bond <= LowBond;
@@ -507,8 +605,8 @@ namespace Dropy.Gameplay
             foreach (var line in lines)
             {
                 string text = line.text
-                    .Replace("{kasa}", afterRent.ToString("N0"))
-                    .Replace("{eksik}", Mathf.Max(0, retrofit - afterRent).ToString("N0"));
+                    .Replace("{kasa}", Ui.Money(afterRent))
+                    .Replace("{eksik}", Ui.Money(Mathf.Max(0, retrofit - afterRent)));
                 yield return dialogue.Say(buildingCase.contractorName, text, visitorHead, waitForClick: true);
             }
             int picked = 0;

@@ -48,8 +48,8 @@ MonoBehaviour:
   - condition: 0
     text: "Bir dakika. Acele etmeyin, bir daha d\xFC\u015F\xFCn\xFCn."
   - condition: 1
-    text: "Kira d\xFC\u015F\xFCnce kasan\u0131zda {kasa} TL kalacak. Apartman g\xFC\xE7lendirmesi
-      4,000. Eksi\u011Finiz {eksik}."
+    text: "Kira d\xFC\u015F\xFCnce kasan\u0131zda {kasa} kalacak. Apartman g\xFC\xE7lendirmesi
+      4.000 TL. Eksi\u011Finiz {eksik}."
   - condition: 1
     text: "Bu d\xF6rt bin o a\xE7\u0131\u011F\u0131 kapat\u0131r. Aileniz o binada
       oturuyor, de\u011Fil mi?"

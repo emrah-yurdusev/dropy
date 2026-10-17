@@ -247,7 +247,7 @@ namespace Dropy.EditorTools
             s.approveOverride = 4000;
             // Yalan yok: yalnızca oyuncunun gerçek durumunu kullanır ({kasa}, {eksik} kira sonrası hesaplanır).
             s.Press(PressureCondition.Always, "Bir dakika. Acele etmeyin, bir daha düşünün.")
-                .Press(PressureCondition.RetrofitShort, "Kira düşünce kasanızda {kasa} TL kalacak. Apartman güçlendirmesi 4,000. Eksiğiniz {eksik}.")
+                .Press(PressureCondition.RetrofitShort, "Kira düşünce kasanızda {kasa} kalacak. Apartman güçlendirmesi 4.000 TL. Eksiğiniz {eksik}.")
                 .Press(PressureCondition.RetrofitShort, "Bu dört bin o açığı kapatır. Aileniz o binada oturuyor, değil mi?")
                 .Press(PressureCondition.BondLow, "Kızınızın doğum günü yaklaşıyormuş... Fikret söyledi. Bir baba eli boş gitmez.")
                 .Press(PressureCondition.Otherwise, "Bu şehirde herkes beni tanır. Bugün reddedersiniz, yarın kapınızı kimse çalmaz.");
@@ -499,27 +499,38 @@ namespace Dropy.EditorTools
                     body = "<b>ONAY</b>: +1000 TL. Bina yapılır.\n\n" +
                            "<b>RED</b>: 0 TL. Bina yapılmaz.\n\n" +
                            "<b>PERDE EKLE</b>: +500 TL, günde bir kez. Binaya deprem perdesi (taşıyıcı duvar) eklenir, " +
-                           "sonra onaylanır."
+                           "sonra onaylanır.\n\n" +
+                           "Kitapta yazan bir kuralı çiğneyen onay <b>müfettiş tutanağı</b> yer: ilki uyarı, " +
+                           "sonrakiler akşam 500 TL ceza."
                 },
                 new RegulationPage
                 {
                     day = 1, title = "Beton",
                     body = "Gerçek beton yalnız <b>C25, C30 ya da C35</b> olabilir. Başka her beton: RED.\n\n" +
                            "Künye ile ek rapor farklıysa <b>ek rapor</b> geçerlidir.\n\n" +
-                           "Kitapta yazmayan kusur (balkon, boya, kapı rengi, korkuluk) reddettirmez: ONAY."
+                           "Kitapta yazmayan kusur (balkon, boya, kapı rengi, korkuluk) reddettirmez: ONAY.",
+                    why = "Zayıf beton deprem yükünü taşıyamaz. Büyük depremlerden sonraki incelemelerde yıkılan " +
+                          "pek çok binada betonun projede yazandan çok daha zayıf çıktığı görüldü."
                 },
                 new RegulationPage
                 {
                     day = 2, title = "Yumuşak kat",
                     body = "Zemin kat <b>market</b> ve tavanı <b>4 m ya da daha yüksek</b>, perde yoksa: yumuşak kat. " +
                            "PERDE EKLE ya da RED.\n\n" +
-                           "Kolon <b>kesik</b> ise yalnız RED. Perde kesik kolonu kurtarmaz."
+                           "Kolon <b>kesik</b> ise yalnız RED. Perde kesik kolonu kurtarmaz.",
+                    why = "Zemin katı dükkân olup duvarları kaldırılan binalarda deprem yükü o katta toplanır ve kat " +
+                          "çöker; 1999 ve 2023 depremlerinde en sık görülen yıkılma biçimlerinden biri buydu. Kolon " +
+                          "binanın taşıyıcısıdır; yer açmak için kesilen kolon bütün binayı riske atar."
                 },
                 new RegulationPage
                 {
                     day = 3, title = "Zemin ve çekiç",
                     body = "<b>Kum</b> zemin ve <b>5 ya da daha fazla kat</b>: kazık temel şart. Radye temel: RED.\n\n" +
-                           "<b>Çekiç</b> betonun gerçek dayanımını ölçer. Çekicin okuduğu beton iki kâğıdı da geçersiz kılar."
+                           "<b>Çekiç</b> betonun gerçek dayanımını ölçer. Çekicin okuduğu beton iki kâğıdı da geçersiz kılar. " +
+                           "Çekiç <b>günde 2 kez</b> kullanılabilir: hangi dosyayı ölçeceğini sen seçersin.",
+                    why = "Suya doygun kum depremde sıvılaşıp taşıma gücünü yitirebilir; kazık temel yükü alttaki " +
+                          "sağlam katmana indirir. Schmidt çekici beton yüzeyinin sertliğinden dayanımını tahmin eder; " +
+                          "kâğıttaki değeri sahada doğrulamanın hızlı yolu."
                 },
             };
             EditorUtility.SetDirty(data);
@@ -570,29 +581,36 @@ namespace Dropy.EditorTools
         static void VerifyFamilyPaths(List<BuildingCase> cases, StoryData story)
         {
             bool ok = true;
-            ok &= Expect("Dürüst, hiçbir isteği ödemez", Simulate(cases, story, false, new int[0],
+            System.Func<BuildingCase, Seal> honest = BuildingRules.CorrectSeal;
+            System.Func<BuildingCase, Seal> bribe = c => c.approveFeeOverride > 0 ? Seal.Approve : BuildingRules.CorrectSeal(c);
+            System.Func<BuildingCase, Seal> approveAll = c => Seal.Approve;
+            ok &= Expect("Dürüst, hiçbir isteği ödemez", Simulate(cases, story, honest, new int[0],
                     Plan((1, ShopItem.Bag), (2, ShopItem.Fixing), (4, ShopItem.Retrofit))),
                 r => r.estrangedDay == 3 && r.bought.Count == 3);
-            ok &= Expect("Dürüst, çantayı almaz, geziyi öder", Simulate(cases, story, false, new[] { 1 },
+            ok &= Expect("Dürüst, çantayı almaz, geziyi öder", Simulate(cases, story, honest, new[] { 1 },
                     Plan((2, ShopItem.Fixing), (4, ShopItem.Retrofit))),
                 r => r.bond == 1 && r.estrangedDay == 0 && r.bought.Contains(ShopItem.Retrofit));
-            ok &= Expect("Dürüst, bütün istekleri öder", Simulate(cases, story, false, new[] { 1, 2, 3, 4 },
+            ok &= Expect("Dürüst, bütün istekleri öder", Simulate(cases, story, honest, new[] { 1, 2, 3, 4 },
                     Plan((1, ShopItem.Bag), (2, ShopItem.Fixing), (3, ShopItem.Retrofit), (4, ShopItem.Retrofit))),
                 r => r.bond == story.bondMax && !r.bought.Contains(ShopItem.Retrofit));
-            ok &= Expect("Rüşvet alır, her şeyi öder", Simulate(cases, story, true, new[] { 1, 2, 3, 4 },
+            ok &= Expect("Rüşvet alır, her şeyi öder", Simulate(cases, story, bribe, new[] { 1, 2, 3, 4 },
                     Plan((1, ShopItem.Bag), (2, ShopItem.Fixing), (4, ShopItem.Retrofit))),
-                r => r.bond == story.bondMax && r.bought.Count == 3);
+                r => r.bond == story.bondMax && r.bought.Count == 3 && r.citations == 1 && r.fines == 0);
+            // Her şeyi onaylayan: tutanaklar sömürüyü keser (ilki bedava, 5. günün cezası kesilmez).
+            ok &= Expect("Her şeyi onaylar, hiçbir şey almaz", Simulate(cases, story, approveAll, new int[0],
+                    Plan()),
+                r => r.citations == 6 && r.fines == 3 * Economy.CitationFine);
             if (ok)
-                Debug.Log("Aile bağı: dört yol da tasarımdaki gibi.");
+                Debug.Log("Aile bağı ve tutanak: bütün yollar tasarımdaki gibi.");
         }
 
         class PathResult
         {
-            public int money, bond, estrangedDay;
+            public int money, bond, estrangedDay, citations, fines;
             public readonly HashSet<ShopItem> bought = new HashSet<ShopItem>();
 
             public override string ToString() =>
-                $"kasa {money}, bağ {bond}, küs {(estrangedDay > 0 ? estrangedDay + ". akşam" : "hayır")}, alınan: {string.Join(", ", bought)}";
+                $"kasa {money}, bağ {bond}, küs {(estrangedDay > 0 ? estrangedDay + ". akşam" : "hayır")}, tutanak {citations} (ceza {fines}), alınan: {string.Join(", ", bought)}";
         }
 
         static Dictionary<int, List<ShopItem>> Plan(params (int day, ShopItem item)[] buys)
@@ -607,18 +625,30 @@ namespace Dropy.EditorTools
             return plan;
         }
 
-        static PathResult Simulate(List<BuildingCase> cases, StoryData story, bool bribe, int[] payDays,
-            Dictionary<int, List<ShopItem>> buys)
+        static PathResult Simulate(List<BuildingCase> cases, StoryData story, System.Func<BuildingCase, Seal> policy,
+            int[] payDays, Dictionary<int, List<ShopItem>> buys)
         {
             var r = new PathResult { money = Economy.StartMoney, bond = story.bondStart };
-            for (int day = 1; day <= Economy.LastPaidDay; day++)
+            for (int day = 1; day <= Economy.Days; day++)
             {
+                int fine = 0;
                 for (int k = 0; k < Economy.FilesPerDay; k++)
                 {
                     var c = cases[(day - 1) * Economy.FilesPerDay + k];
-                    var seal = bribe && c.approveFeeOverride > 0 ? Seal.Approve : BuildingRules.CorrectSeal(c);
+                    var seal = policy(c);
                     r.money += BuildingRules.Fee(c, seal, day);
+                    if (seal == Seal.Approve && BuildingRules.KnownViolation(c, seal, day) != null)
+                    {
+                        r.citations++;
+                        if (r.citations > Economy.FreeCitations && day <= Economy.LastPaidDay)
+                            fine += Economy.CitationFine;
+                    }
                 }
+                if (day > Economy.LastPaidDay)
+                    break;
+                fine = Mathf.Min(r.money, fine);
+                r.money -= fine;
+                r.fines += fine;
                 r.money -= Mathf.Min(r.money, Economy.Rent);
 
                 bool estranged = r.bond <= 0;
