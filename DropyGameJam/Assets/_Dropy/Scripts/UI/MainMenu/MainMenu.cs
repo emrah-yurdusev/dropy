@@ -15,6 +15,7 @@ namespace Dropy.Menu
     /// Giriş ekranı: ofis arka planı, ikaz şeritli logo, Oyuna Başla / Ayarlar / Çıkış butonları ve
     /// müzik + ses efekti ayarlarını içeren panel. Arayüzü (Canvas, EventSystem) kendisi kurar;
     /// sahnede yalnızca bu bileşen ve isteğe bağlı arka plan görseli / sesler gerekir.
+    /// main sahnesinde oyunun önüne konur: DeskManager kapalı bekler, Oyuna Başla'da açılır.
     /// </summary>
     public class MainMenu : MonoBehaviour
     {
@@ -43,8 +44,17 @@ namespace Dropy.Menu
         [SerializeField] Sprite background;
 
         [Header("Akış")]
-        [Tooltip("Oyuna Başla'ya basınca yüklenecek sahne (Build Settings'te olmalı)")]
-        [SerializeField] string gameScene = "main";
+        [Tooltip("Oyuna Başla'ya basınca yüklenecek sahne (Build Settings'te olmalı). " +
+                 "Boşsa menü aynı sahnede kalır: aşağıdaki nesneler açılır ve menü kapanır.")]
+        [SerializeField] string gameScene = "";
+        [Tooltip("Aynı sahnede başlatırken açılacak, oyun boyunca kapalı bekleyen nesneler (ör. DeskManager)")]
+        [SerializeField] GameObject[] enableOnStart;
+
+        // Menü oyun açılışında bir kez gösterilir; sahne yeniden yüklenince (yeniden başla vb.) atlanır.
+        static bool shown;
+
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
+        static void ResetShown() => shown = false;
 
         [Header("Ses")]
         [SerializeField] AudioClip menuMusic;
@@ -63,6 +73,15 @@ namespace Dropy.Menu
 
         void Awake()
         {
+            if (shown)
+            {
+                enabled = false;
+                EnableGame();
+                Destroy(gameObject);
+                return;
+            }
+            shown = true;
+
             Cursor.lockState = CursorLockMode.None;
             Cursor.visible = true;
             Time.timeScale = 1f;
@@ -80,6 +99,8 @@ namespace Dropy.Menu
 
         void Start()
         {
+            if (!enabled)
+                return;
             if (menuMusic != null)
             {
                 musicSource.clip = menuMusic;
@@ -121,7 +142,8 @@ namespace Dropy.Menu
             canvasGo.transform.SetParent(transform, false);
             var canvas = canvasGo.AddComponent<Canvas>();
             canvas.renderMode = RenderMode.ScreenSpaceOverlay;
-            canvas.sortingOrder = 10;
+            // Oyunun arayüzünün (sortingOrder 10) üstünde kalsın; geçişte kararma her şeyi örtsün
+            canvas.sortingOrder = 100;
             var scaler = canvasGo.AddComponent<CanvasScaler>();
             scaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
             scaler.referenceResolution = new Vector2(1920f, 1080f);
@@ -486,7 +508,35 @@ namespace Dropy.Menu
                 yield return null;
             }
             fade.color = Color.black;
-            SceneManager.LoadScene(gameScene);
+
+            if (!string.IsNullOrEmpty(gameScene))
+            {
+                SceneManager.LoadScene(gameScene);
+                yield break;
+            }
+
+            // Aynı sahnede başlat: menüyü gizle, oyunu aç, karanlıktan aç
+            foreach (Transform child in fade.transform.parent)
+                if (child != fade.transform)
+                    child.gameObject.SetActive(false);
+            musicSource.Stop();
+            EnableGame();
+            yield return null;
+            for (float t = 0f; t < 0.6f; t += Time.unscaledDeltaTime)
+            {
+                fade.color = new Color(0f, 0f, 0f, 1f - t / 0.6f);
+                yield return null;
+            }
+            Destroy(gameObject);
+        }
+
+        void EnableGame()
+        {
+            if (enableOnStart == null)
+                return;
+            foreach (var go in enableOnStart)
+                if (go != null)
+                    go.SetActive(true);
         }
 
         void Quit()
