@@ -69,6 +69,8 @@ namespace Dropy.Gameplay
         [SerializeField] BuildingCase[] cases;
         [Tooltip("Vakada karakter seçilmemişse sırayla bunlar kullanılır")]
         [SerializeField] GameObject[] defaultContractors;
+        [Tooltip("Test için: doluysa ilk gelen müteahhit vakadan bağımsız olarak bu karakter olur")]
+        [SerializeField] GameObject testFirstContractor;
 
         DialogueUI dialogue;
         InspectionPanel inspection;
@@ -359,8 +361,8 @@ namespace Dropy.Gameplay
             submitted = false;
             bribeAccepted = false;
 
-            var prefab = buildingCase.contractorPrefab != null
-                ? buildingCase.contractorPrefab
+            var prefab = index == 0 && testFirstContractor != null ? testFirstContractor
+                : buildingCase.contractorPrefab != null ? buildingCase.contractorPrefab
                 : defaultContractors[index % defaultContractors.Length];
             var go = Instantiate(prefab, spawnPoint.position, spawnPoint.rotation);
             visitor = go.GetComponent<NpcController>();
