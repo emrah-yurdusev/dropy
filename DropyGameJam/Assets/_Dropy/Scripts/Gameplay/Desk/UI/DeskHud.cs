@@ -393,7 +393,7 @@ namespace Dropy.Gameplay
             return sb.ToString();
         }
 
-        static string Headline(DeskManager.CaseResult r) =>
+        public static string Headline(DeskManager.CaseResult r) =>
             string.IsNullOrEmpty(r.buildingCase.collapseHeadline) ? r.buildingCase.buildingName + " çöktü" : r.buildingCase.collapseHeadline;
 
         /// <summary>Onay anında müteahhidin söylediği söz, şimdi enkazın altına yazılır.</summary>
