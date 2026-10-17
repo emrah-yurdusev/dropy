@@ -49,45 +49,34 @@ MonoBehaviour:
   messages:
   - day: 1
     sender: "E\u015Fin"
-    text: "Kira bu ak\u015Fam kesiliyor, unutma. Elif okulda deprem tatbikat\u0131
-      yapm\u0131\u015F, \xE7ok korkmu\u015F."
-    condition: 0
-    item: 0
-    other: {fileID: 0}
-    seal: 0
-  - day: 1
-    sender: Elif
-    text: "Baba \xF6\u011Fretmen deprem \xE7antas\u0131 haz\u0131rlay\u0131n dedi.
-      Bizde var m\u0131?"
+    family: 1
+    text: "Kira bu ak\u015Fam kesiliyor, unutma. Bir de deprem \xE7antas\u0131 i\u015Fini
+      konu\u015Fal\u0131m; Elif okulda tatbikat yapm\u0131\u015F, \xE7ok korkmu\u015F."
     condition: 0
     item: 0
     other: {fileID: 0}
     seal: 0
   - day: 2
     sender: "E\u015Fin"
-    text: "\xC7anta geldi, kap\u0131n\u0131n yan\u0131na koydum. Elif'in ast\u0131m
-      ilac\u0131n\u0131 da i\xE7ine koydum."
+    family: 1
+    text: "\xC7anta geldi, kap\u0131n\u0131n yan\u0131na koydum. Bir de Elif'in odas\u0131ndaki
+      dolap \xE7ok uzun, \xF6\u011Fretmen duvara vidalay\u0131n demi\u015F."
     condition: 1
     item: 0
     other: {fileID: 0}
     seal: 0
   - day: 2
     sender: "E\u015Fin"
-    text: "\xC7anta i\u015Fini konu\u015Fmad\u0131k. Elif yine sordu."
+    family: 1
+    text: "\xC7anta i\u015Fini konu\u015Fmad\u0131k, Elif yine sordu. Bir de odas\u0131ndaki
+      dolap \xE7ok uzun, \xF6\u011Fretmen duvara vidalay\u0131n demi\u015F."
     condition: 2
     item: 0
     other: {fileID: 0}
     seal: 0
   - day: 2
-    sender: Elif
-    text: "Baba \xF6\u011Fretmen dolaplar\u0131 duvara vidalamam\u0131z laz\u0131m
-      dedi. Benim odadaki dolap \xE7ok uzun."
-    condition: 0
-    item: 0
-    other: {fileID: 0}
-    seal: 0
-  - day: 2
     sender: Bilinmeyen numara
+    family: 0
     text: "Yak\u0131nda bir dosya gelecek. Yard\u0131mc\u0131 olursan\u0131z unutmam.
       -O"
     condition: 0
@@ -96,6 +85,7 @@ MonoBehaviour:
     seal: 0
   - day: 3
     sender: "E\u015Fin"
+    family: 1
     text: "Usta geldi, dolaplar\u0131 duvara sabitledi. Elif rahat uyudu."
     condition: 1
     item: 1
@@ -103,6 +93,7 @@ MonoBehaviour:
     seal: 0
   - day: 3
     sender: "E\u015Fin"
+    family: 1
     text: "Gece Elif'in odas\u0131ndaki dolap salland\u0131, \xE7ok korktuk."
     condition: 2
     item: 1
@@ -110,6 +101,7 @@ MonoBehaviour:
     seal: 0
   - day: 3
     sender: Ev sahibi
+    family: 0
     text: "Bina eski, kom\u015Fular g\xFC\xE7lendirme i\xE7in para topluyor. Sizin
       pay\u0131n\u0131z 4.000 TL. Telefondaki d\xFCkk\xE2ndan \xF6denebiliyor, yar\u0131n
       ak\u015Fam son g\xFCn."
@@ -119,6 +111,7 @@ MonoBehaviour:
     seal: 0
   - day: 4
     sender: "E\u015Fin"
+    family: 1
     text: "G\xFC\xE7lendirme paras\u0131 yetiyor mu? Ev sahibi bu ak\u015Fam son
       g\xFCn dedi."
     condition: 0
@@ -127,6 +120,7 @@ MonoBehaviour:
     seal: 0
   - day: 4
     sender: Bilinmeyen numara
+    family: 0
     text: "Te\u015Fekk\xFCrler. Kimse bir \u015Fey demez. -O"
     condition: 3
     item: 0
@@ -134,6 +128,7 @@ MonoBehaviour:
     seal: 1
   - day: 4
     sender: Bilinmeyen numara
+    family: 0
     text: "Pi\u015Fman olacaks\u0131n. -O"
     condition: 3
     item: 0
@@ -144,6 +139,8 @@ MonoBehaviour:
     name: Elif'in okul gezisi
     price: 300
     sender: Elif
+    request: "Baba yar\u0131n m\xFCzeye gezi var! 300 TL laz\u0131m, herkes gidiyor.
+      Gidebilir miyim? L\xFCtfen l\xFCtfen!"
     paidReply: "Baba gezi \xE7ok g\xFCzeldi! M\xFCzede deprem sim\xFClat\xF6r\xFCne
       bindik."
     unpaidReply: "Herkes geziye gitti, ben s\u0131n\u0131fta kald\u0131m."
@@ -153,6 +150,8 @@ MonoBehaviour:
     name: "Annenin ilac\u0131"
     price: 500
     sender: Annen
+    request: "Evlad\u0131m ilac\u0131m bitti, eczane 500 TL istiyor. Maa\u015F yetmedi,
+      utanarak yaz\u0131yorum."
     paidReply: "\u0130lac\u0131m geldi, Allah raz\u0131 olsun evlad\u0131m."
     unpaidReply: "\u0130lac\u0131 bu ay alamad\u0131m, idare ederim, sen dert etme."
     endingPaid: "Annenin ilac\u0131 aksamad\u0131."
@@ -161,6 +160,8 @@ MonoBehaviour:
     name: "Do\u011Falgaz faturas\u0131"
     price: 400
     sender: "E\u015Fin"
+    request: "Do\u011Falgaz faturas\u0131 geldi, 400 TL. Yar\u0131n son g\xFCn, yatmazsa
+      kesecekler."
     paidReply: "Fatura yatm\u0131\u015F, ev s\u0131cac\u0131k."
     unpaidReply: "Do\u011Falgaz kesildi. Elif'le battaniyeye sar\u0131nd\u0131k."
     endingPaid: "Ev hafta boyunca s\u0131cak kald\u0131."
@@ -169,7 +170,11 @@ MonoBehaviour:
     name: "Elif'in do\u011Fum g\xFCn\xFC pastas\u0131"
     price: 300
     sender: Elif
+    request: "Baba yar\u0131n do\u011Fum g\xFCn\xFCm! Pasta olacak m\u0131? Arkada\u015Flar\u0131m\u0131
+      \xE7a\u011F\u0131rd\u0131m."
     paidReply: 
     unpaidReply: 
     endingPaid: "Elif do\u011Fum g\xFCn\xFCnde mumlar\u0131n\u0131 \xFCfledi."
     endingUnpaid: "Elif'in do\u011Fum g\xFCn\xFC pastas\u0131z ge\xE7ti."
+  bondStart: 3
+  bondMax: 5

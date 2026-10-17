@@ -16,6 +16,25 @@ namespace Dropy.Gameplay
         [TextArea(2, 4)] public string answer;
     }
 
+    public enum PressureCondition
+    {
+        [Tooltip("Her zaman, en başta")] Always,
+        [Tooltip("Kira düşünce kasa güçlendirmeye yetmiyorsa")] RetrofitShort,
+        [Tooltip("Aile bağı 2 ya da altındaysa")] BondLow,
+        [Tooltip("Yukarıdakilerin hiçbiri tutmadıysa")] Otherwise
+    }
+
+    /// <summary>
+    /// Rüşvet dosyasında RED basılınca müteahhidin araya girmesi. {kasa} ve {eksik} kira sonrası
+    /// kasa ve güçlendirmeye kalan açıkla değişir. Yalan söylemez: yalnızca oyuncunun gerçek durumunu kullanır.
+    /// </summary>
+    [System.Serializable]
+    public class PressureLine
+    {
+        public PressureCondition condition;
+        [TextArea(2, 4)] public string text;
+    }
+
     /// <summary>Önceki bir dosyaya hangi mühür basıldıysa müteahhidin ona değinmesi.</summary>
     [System.Serializable]
     public class CaseCallback
@@ -76,6 +95,8 @@ namespace Dropy.Gameplay
         [TextArea] public string approvedLine = "Sağ olun, hayırlı işler.";
         [TextArea] public string shearWallLine = "Perde mi? Masraf ama... peki, ekletiriz.";
         [TextArea] public string rejectedLine = "Bu iş burada bitmez!";
+        [Tooltip("Boş değilse RED teslim edilince bir kez araya girer, oyuncu kararını gözden geçirebilir")]
+        public List<PressureLine> rejectPressure = new List<PressureLine>();
 
         [Header("Deprem sonrası gazete")]
         [Tooltip("Bina çökerse manşet. Boşsa '<bina> çöktü'")]

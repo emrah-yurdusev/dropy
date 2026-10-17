@@ -41,5 +41,6 @@ MonoBehaviour:
   approvedLine: "Size bir daire ay\u0131r\u0131yorum, haberiniz olsun."
   shearWallLine: Perde mi? Masraf ama... peki, ekletiriz.
   rejectedLine: "Bu i\u015Fi ba\u015Fka b\xFCroda hallederim, merak etmeyin."
+  rejectPressure: []
   collapseHeadline: "Sahil Rezidans'ta enkaz: m\xFCteahhit firari"
   standingLine: 

@@ -40,5 +40,6 @@ MonoBehaviour:
   approvedLine: "Vin\xE7 kurtuldu, sa\u011F olun!"
   shearWallLine: Perde mi? Masraf ama... peki, ekletiriz.
   rejectedLine: "Vin\xE7 paras\u0131n\u0131 siz mi \xF6deyeceksiniz?"
+  rejectPressure: []
   collapseHeadline: 
   standingLine: 

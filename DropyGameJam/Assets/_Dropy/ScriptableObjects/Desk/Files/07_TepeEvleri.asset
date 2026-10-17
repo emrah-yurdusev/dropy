@@ -40,5 +40,6 @@ MonoBehaviour:
   approvedLine: "\xC7eki\xE7 de do\u011Frulad\u0131 ya, bitti bu i\u015F."
   shearWallLine: Perde mi? Masraf ama... peki, ekletiriz.
   rejectedLine: "\xC7eki\xE7 bile sa\u011Flam dedi, daha ne istiyorsunuz?"
+  rejectPressure: []
   collapseHeadline: 
   standingLine: 

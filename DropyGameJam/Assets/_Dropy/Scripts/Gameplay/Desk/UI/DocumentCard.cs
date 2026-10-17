@@ -153,6 +153,15 @@ namespace Dropy.Gameplay
             Sfx.Stamp();
         }
 
+        /// <summary>Basılmış mühürleri siler; oyuncu kararını gözden geçirirken kullanılır.</summary>
+        public void ClearStamp()
+        {
+            foreach (Transform child in stampLayer)
+                Destroy(child.gameObject);
+            stampMark = null;
+            Stamp = Seal.None;
+        }
+
         public static RectTransform CreateStampGraphic(Transform parent, Seal seal)
         {
             Color color;

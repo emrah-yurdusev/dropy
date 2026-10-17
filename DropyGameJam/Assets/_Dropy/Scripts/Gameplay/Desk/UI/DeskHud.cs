@@ -175,7 +175,7 @@ namespace Dropy.Gameplay
         /// ayakta kalanlar ve hiç yapılmayanlar kısa listelenir. Altta evin ve ailenin durumu.
         /// </summary>
         public void ShowFinal(IList<DeskManager.CaseResult> results, ICollection<ShopItem> purchased,
-            IEnumerable<(FamilyNeed need, bool paid)> family, int money)
+            IEnumerable<(FamilyNeed need, bool paid)> family, bool estranged, int money)
         {
             summary.GetComponent<Image>().color = new Color(0.95f, 0.93f, 0.86f, 0.98f);
             summaryText.color = new Color(0.12f, 0.11f, 0.1f);
@@ -222,6 +222,8 @@ namespace Dropy.Gameplay
             }
             bool safe = Shop.Items.All(purchased.Contains);
             sb.AppendLine(safe ? "\n<color=#1f7a3a><b>Ailen güvende.</b></color>" : "\n<color=#a3221b><b>Ailen güvende değil.</b></color>");
+            if (estranged)
+                sb.AppendLine("<color=#a3221b><b>Ailen hayatta ama seninle konuşmuyor.</b></color>");
             sb.AppendLine($"<size=18>Kasa: {money:N0} TL</size>");
             summaryText.text = sb.ToString();
             summary.gameObject.SetActive(true);

@@ -40,6 +40,7 @@ MonoBehaviour:
   approvedLine: Esnafa haber vereyim.
   shearWallLine: "Peki, perdeyi ekletiriz. \u0130\xE7im rahatlad\u0131 a\xE7\u0131k\xE7as\u0131."
   rejectedLine: "Esnaf ne yapacak \u015Fimdi?"
+  rejectPressure: []
   collapseHeadline: "\xC7ar\u015F\u0131 \xDCst\xFC Konut'ta zemin kat g\xF6\xE7t\xFC"
   standingLine: "\xC7ar\u015F\u0131 \xDCst\xFC Konut ayakta: esnaf d\xFCkk\xE2nlar\u0131n
     \xF6n\xFCnde topland\u0131."

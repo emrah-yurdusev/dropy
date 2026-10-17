@@ -17,6 +17,8 @@ namespace Dropy.Gameplay
     {
         [Min(1)] public int day = 1;
         public string sender;
+        [Tooltip("Aileden mi (eşin, Elif, annen)? Aile küserse bu mesajlar gelmez")]
+        public bool family;
         [TextArea(2, 4)] public string text;
         public MessageCondition condition;
         [Tooltip("Bought / NotBought için")]
@@ -36,8 +38,8 @@ namespace Dropy.Gameplay
     }
 
     /// <summary>
-    /// Akşam telefonda çıkan isteğe bağlı aile masrafı. Ödenmezse bedeli hikâyede ödenir:
-    /// ertesi akşam bir mesaj, depremden sonra gazetede bir satır.
+    /// Akşam aileden biri bir şey ister; mesajın içinde "Öde" düğmesi olur. Ödenirse aile bağı artar,
+    /// ödenmeden sabah olursa azalır; ertesi akşam bir cevap, depremden sonra gazetede bir satır gelir.
     /// </summary>
     [System.Serializable]
     public class FamilyNeed
@@ -45,8 +47,10 @@ namespace Dropy.Gameplay
         [Min(1)] public int day = 1;
         public string name;
         [Min(0)] public int price;
-        [Tooltip("Ertesi akşamki cevabı yazan kişi")]
+        [Tooltip("İsteyen ve ertesi akşam cevap yazan kişi")]
         public string sender;
+        [Tooltip("İsteğin mesajı; altında Öde düğmesi çıkar")]
+        [TextArea(2, 4)] public string request;
         [TextArea(2, 4)] public string paidReply;
         [TextArea(2, 4)] public string unpaidReply;
         [TextArea(1, 3)] public string endingPaid;
@@ -72,6 +76,11 @@ namespace Dropy.Gameplay
         [Header("Akşam")]
         public List<PhoneMessage> messages = new List<PhoneMessage>();
         public List<FamilyNeed> needs = new List<FamilyNeed>();
+
+        [Header("Aile bağı")]
+        [Tooltip("Başlangıç. Dürüst oyuncu hiçbir isteği ödemezse 3. akşamın sonunda sıfıra düşer")]
+        [Min(1)] public int bondStart = 3;
+        [Min(1)] public int bondMax = 5;
 
         public string Radio(int day) => day - 1 < radio.Count ? radio[day - 1] : null;
 

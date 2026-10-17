@@ -32,6 +32,10 @@ namespace Dropy.Gameplay
         const int FastWalkDay = 2;
         const float FastWalkMultiplier = 1.3f;
         const string EndQuestions = "Tamam, dosyaya bakayım.";
+        const string KeepReject = "Kararım belli, red.";
+        const string Reconsider = "Bir daha bakayım.";
+        /// <summary>Aile bağı bu değerin altındaysa Ozan Bey aileyi koz olarak kullanır.</summary>
+        const int LowBond = 2;
 
         [Header("Sahne")]
         [Tooltip("Oyuncunun gözü: karşıdaki sandalyeye bakan sabit kamera")]
@@ -66,6 +70,11 @@ namespace Dropy.Gameplay
         readonly List<CaseResult> results = new List<CaseResult>();
         readonly HashSet<ShopItem> purchased = new HashSet<ShopItem>();
         readonly HashSet<FamilyNeed> paidNeeds = new HashSet<FamilyNeed>();
+        /// <summary>Aile bağı. Sıfıra düşerse kalıcıdır: aile küser, aileden mesaj gelmez.</summary>
+        int bond;
+        int bondAtLastEvening;
+
+        bool Estranged => bond <= 0;
 
         public IReadOnlyList<CaseResult> Results => results;
         public int Money => money;
@@ -76,6 +85,7 @@ namespace Dropy.Gameplay
             BuildUi();
             money = Economy.StartMoney;
             hud.SetMoney(money);
+            bond = bondAtLastEvening = story != null ? story.bondStart : 3;
         }
 
         void Start() => StartCoroutine(RunWeek());
@@ -169,7 +179,7 @@ namespace Dropy.Gameplay
             var family = story != null
                 ? story.needs.Select(n => (n, paidNeeds.Contains(n)))
                 : Enumerable.Empty<(FamilyNeed, bool)>();
-            hud.ShowFinal(results, purchased, family, money);
+            hud.ShowFinal(results, purchased, family, Estranged, money);
         }
 
         string Morning(int forDay)
@@ -235,8 +245,31 @@ namespace Dropy.Gameplay
             if (!inspection.IsOpen)
                 ToggleInspection();
 
-            while (!submitted)
-                yield return null;
+            // Rüşvet dosyasında RED teslim edilince müteahhit bir kez araya girer; oyuncu dönebilir.
+            bool pressured = false;
+            while (true)
+            {
+                while (!submitted)
+                    yield return null;
+                if (pressured || buildingCase.rejectPressure.Count == 0 || inspection.MainCard.Stamp != Seal.Reject)
+                    break;
+
+                pressured = true;
+                if (inspection.IsOpen)
+                    ToggleInspection();
+                inspectAllowed = false;
+                hud.SetInspectAvailable(false);
+                bool keep = true;
+                yield return Pressure(buildingCase, k => keep = k);
+                if (keep)
+                    break;
+
+                inspection.MainCard.ClearStamp();
+                submitted = false;
+                inspectAllowed = true;
+                hud.SetInspectAvailable(true);
+                ToggleInspection();
+            }
 
             var result = Decide(buildingCase);
             results.Add(result);
@@ -415,24 +448,73 @@ namespace Dropy.Gameplay
             int rent = Mathf.Min(money, Economy.Rent);
             money -= rent;
             hud.SetMoney(money);
-            var messages = new List<PhoneMessage>();
-            var needs = new List<FamilyNeed>();
+
+            // Sıra: dünkü isteğe cevap, o akşamın mesajları, sonda bugünkü istek (Öde düğmeli).
+            // Aile küstüyse aileden hiçbir şey gelmez; ev sahibi ve bilinmeyen numara yine yazar.
+            var messages = new List<EveningMessage>();
+            var requests = new List<FamilyNeed>();
             if (story != null)
             {
-                // Dünkü aile masrafının cevabı önce gelir: ödendiyse teşekkür, ödenmediyse sitem.
-                foreach (var need in story.needs.Where(n => n.day == day - 1))
-                {
-                    string reply = paidNeeds.Contains(need) ? need.paidReply : need.unpaidReply;
-                    if (!string.IsNullOrEmpty(reply))
-                        messages.Add(new PhoneMessage { day = day, sender = need.sender, text = reply });
-                }
-                messages.AddRange(story.messages.Where(m => m.day == day && Holds(m)));
-                needs.AddRange(story.needs.Where(n => n.day == day));
+                if (!Estranged)
+                    foreach (var need in story.needs.Where(n => n.day == day - 1))
+                    {
+                        string reply = paidNeeds.Contains(need) ? need.paidReply : need.unpaidReply;
+                        if (!string.IsNullOrEmpty(reply))
+                            messages.Add(new EveningMessage { sender = need.sender, text = reply });
+                    }
+                foreach (var m in story.messages.Where(m => m.day == day && Holds(m) && !(m.family && Estranged)))
+                    messages.Add(new EveningMessage { sender = m.sender, text = m.text });
+                if (!Estranged)
+                    requests.AddRange(story.needs.Where(n => n.day == day));
+                foreach (var need in requests)
+                    messages.Add(new EveningMessage { sender = need.sender, text = need.request, request = need });
             }
             if (messages.Count > 0)
                 Sfx.Buzz();
-            yield return evening.Run(day, income, rent, money, purchased, messages, needs, paidNeeds,
-                shopOpen: day <= Economy.LastPaidDay);
+
+            int bondChange = bond - bondAtLastEvening;
+            yield return evening.Run(day, income, rent, money, purchased, messages, paidNeeds,
+                bond, BondMax, bondChange, shopOpen: day <= Economy.LastPaidDay);
+
+            // "Sabah oldu": karşılanmayan her istek aile bağından bir dilim götürür.
+            foreach (var need in requests)
+                if (!paidNeeds.Contains(need))
+                    bond = Mathf.Max(0, bond - 1);
+            bondAtLastEvening = bond;
+        }
+
+        int BondMax => story != null ? story.bondMax : 5;
+
+        /// <summary>
+        /// Müteahhidin RED'e itirazı. Satırlar oyuncunun gerçek durumuna göre seçilir:
+        /// kira sonrası kasa güçlendirmeye yetmiyorsa para, aile bağı düşükse aile; hiçbiri değilse tehdit.
+        /// </summary>
+        IEnumerator Pressure(BuildingCase buildingCase, System.Action<bool> onDecided)
+        {
+            int rentTonight = day <= Economy.LastPaidDay ? Economy.Rent : 0;
+            int afterRent = Mathf.Max(0, money - rentTonight);
+            int retrofit = Shop.Price(ShopItem.Retrofit);
+            bool retrofitShort = !purchased.Contains(ShopItem.Retrofit) && afterRent < retrofit;
+            bool lowBond = bond <= LowBond;
+
+            var lines = buildingCase.rejectPressure.Where(p => p.condition == PressureCondition.Always).ToList();
+            var specific = buildingCase.rejectPressure.Where(p =>
+                (p.condition == PressureCondition.RetrofitShort && retrofitShort) ||
+                (p.condition == PressureCondition.BondLow && lowBond)).ToList();
+            lines.AddRange(specific.Count > 0 ? specific : buildingCase.rejectPressure.Where(p => p.condition == PressureCondition.Otherwise));
+
+            visitor.Face?.SetExpression(FaceExpression.Suspicious);
+            foreach (var line in lines)
+            {
+                string text = line.text
+                    .Replace("{kasa}", afterRent.ToString("N0"))
+                    .Replace("{eksik}", Mathf.Max(0, retrofit - afterRent).ToString("N0"));
+                yield return dialogue.Say(buildingCase.contractorName, text, visitorHead, waitForClick: true);
+            }
+            int picked = 0;
+            yield return dialogue.Choose(new List<string> { KeepReject, Reconsider }, i => picked = i);
+            dialogue.HideBubble();
+            onDecided(picked == 0);
         }
 
         /// <summary>İsteğe bağlı aile masrafı. Para güvenlik alışverişiyle aynı kasadan çıkar.</summary>
@@ -442,8 +524,9 @@ namespace Dropy.Gameplay
                 return;
             money -= need.price;
             paidNeeds.Add(need);
+            bond = Mathf.Min(BondMax, bond + 1);
             hud.SetMoney(money);
-            evening.Refresh(money, purchased, paidNeeds);
+            evening.Refresh(money, purchased, paidNeeds, bond, BondMax);
         }
 
         void Buy(ShopItem item)
@@ -454,7 +537,7 @@ namespace Dropy.Gameplay
             money -= price;
             purchased.Add(item);
             hud.SetMoney(money);
-            evening.Refresh(money, purchased, paidNeeds);
+            evening.Refresh(money, purchased, paidNeeds, bond, BondMax);
         }
 
         /// <summary>Depremden önceki küçük sarsıntı: kamera titrer, uğultu gelir.</summary>

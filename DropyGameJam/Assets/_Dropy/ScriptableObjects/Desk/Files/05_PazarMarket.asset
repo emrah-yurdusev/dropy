@@ -42,5 +42,6 @@ MonoBehaviour:
   approvedLine: "Market a\xE7\u0131l\u0131\u015F\u0131na beklerim!"
   shearWallLine: "Perde mi? Vitrin k\xFC\xE7\xFCl\xFCr ama... peki, ekletiriz."
   rejectedLine: "Bir market i\xE7in bu kadar zorluk mu?"
+  rejectPressure: []
   collapseHeadline: "Pazar Market'in zemin kat\u0131 \xE7\xF6kt\xFC"
   standingLine: "Pazar Market ayakta: perde zemin kat\u0131 tuttu."

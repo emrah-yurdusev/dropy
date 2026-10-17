@@ -50,5 +50,6 @@ MonoBehaviour:
   approvedLine: Kolay gelsin, kendinize dikkat edin.
   shearWallLine: Perde mi? Masraf ama... peki, ekletiriz.
   rejectedLine: Ne eksik ki? Neyse, siz bilirsiniz.
+  rejectPressure: []
   collapseHeadline: 
   standingLine: 

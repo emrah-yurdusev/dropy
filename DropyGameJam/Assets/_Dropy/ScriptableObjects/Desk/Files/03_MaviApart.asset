@@ -44,5 +44,6 @@ MonoBehaviour:
   shearWallLine: Perde mi? Masraf ama... peki, ekletiriz.
   rejectedLine: "K\xFCnyedeki bir yaz\u0131m hatas\u0131 y\xFCz\xFCnden mi? Ek raporu
     okumad\u0131n\u0131z m\u0131?"
+  rejectPressure: []
   collapseHeadline: 
   standingLine: 

@@ -48,5 +48,6 @@ MonoBehaviour:
   approvedLine: "G\xF6rd\xFCn\xFCz m\xFC? Bo\u015Funa u\u011Fra\u015Fmad\u0131n\u0131z."
   shearWallLine: Perde mi? Masraf ama... peki, ekletiriz.
   rejectedLine: "Bir aletin dedi\u011Fine mi inan\u0131yorsunuz \u015Fimdi?"
+  rejectPressure: []
   collapseHeadline: "Deniz Rezidans'\u0131n betonu un ufak oldu"
   standingLine: 

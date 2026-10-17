@@ -40,5 +40,6 @@ MonoBehaviour:
   approvedLine: "Ba\u015Fkana iletirim, memnun kalacak."
   shearWallLine: Perde mi? Masraf ama... peki, ekletiriz.
   rejectedLine: "Ba\u015Fkan bunu duyunca hi\xE7 ho\u015Flanmayacak."
+  rejectPressure: []
   collapseHeadline: 
   standingLine: 

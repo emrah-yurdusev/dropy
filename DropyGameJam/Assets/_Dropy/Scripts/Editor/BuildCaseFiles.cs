@@ -56,6 +56,7 @@ namespace Dropy.EditorTools
             AssetDatabase.SaveAssets();
 
             Verify(cases);
+            VerifyFamilyPaths(cases, story);
             int family = 0;
             foreach (var need in story.needs)
                 family += need.price;
@@ -78,6 +79,13 @@ namespace Dropy.EditorTools
             public Seal expected;
             public readonly List<CaseQuestion> questions = new List<CaseQuestion>();
             public readonly List<(int other, Seal seal, string line)> callbacks = new List<(int, Seal, string)>();
+            public readonly List<PressureLine> pressure = new List<PressureLine>();
+
+            public Spec Press(PressureCondition condition, string text)
+            {
+                pressure.Add(new PressureLine { condition = condition, text = text });
+                return this;
+            }
 
             public Spec Ask(string question, string answer)
             {
@@ -237,6 +245,12 @@ namespace Dropy.EditorTools
             s.foundation = Foundation.Kazik;
             s.columns = ColumnState.Kesik;
             s.approveOverride = 4000;
+            // Yalan yok: yalnızca oyuncunun gerçek durumunu kullanır ({kasa}, {eksik} kira sonrası hesaplanır).
+            s.Press(PressureCondition.Always, "Bir dakika. Acele etmeyin, bir daha düşünün.")
+                .Press(PressureCondition.RetrofitShort, "Kira düşünce kasanızda {kasa} TL kalacak. Apartman güçlendirmesi 4,000. Eksiğiniz {eksik}.")
+                .Press(PressureCondition.RetrofitShort, "Bu dört bin o açığı kapatır. Aileniz o binada oturuyor, değil mi?")
+                .Press(PressureCondition.BondLow, "Kızınızın doğum günü yaklaşıyormuş... Fikret söyledi. Bir baba eli boş gitmez.")
+                .Press(PressureCondition.Otherwise, "Bu şehirde herkes beni tanır. Bugün reddedersiniz, yarın kapınızı kimse çalmaz.");
             list.Add(s);
 
             // ---- 5. gün: para yok ----
@@ -308,6 +322,7 @@ namespace Dropy.EditorTools
             c.rejectedLine = spec.rejected ?? defaults.rejectedLine;
             c.shearWallLine = spec.shearWall ?? defaults.shearWallLine;
             c.collapseHeadline = spec.headline;
+            c.rejectPressure = new List<PressureLine>(spec.pressure);
             c.standingLine = spec.standing;
             Object.DestroyImmediate(defaults);
             EditorUtility.SetDirty(c);
@@ -369,15 +384,13 @@ namespace Dropy.EditorTools
             // 1–2. gün sakin, sonra gittikçe sertleşen sarsıntılar.
             story.tremors = new List<float> { 0f, 0f, 0.012f, 0.02f, 0.03f };
 
-            const string Wife = "Eşin", Child = "Elif", Landlord = "Ev sahibi", Unknown = "Bilinmeyen numara";
+            // Her akşam aileden bir kişi bir şey ister (mesajın içinde Öde düğmesi), diğer mesajlar onu kalabalıklaştırmaz.
             story.messages = new List<PhoneMessage>
             {
-                Msg(1, Wife, "Kira bu akşam kesiliyor, unutma. Elif okulda deprem tatbikatı yapmış, çok korkmuş."),
-                Msg(1, Child, "Baba öğretmen deprem çantası hazırlayın dedi. Bizde var mı?"),
+                Msg(1, Wife, "Kira bu akşam kesiliyor, unutma. Bir de deprem çantası işini konuşalım; Elif okulda tatbikat yapmış, çok korkmuş."),
 
-                Bought(2, Wife, "Çanta geldi, kapının yanına koydum. Elif'in astım ilacını da içine koydum.", ShopItem.Bag),
-                NotBought(2, Wife, "Çanta işini konuşmadık. Elif yine sordu.", ShopItem.Bag),
-                Msg(2, Child, "Baba öğretmen dolapları duvara vidalamamız lazım dedi. Benim odadaki dolap çok uzun."),
+                Bought(2, Wife, "Çanta geldi, kapının yanına koydum. Bir de Elif'in odasındaki dolap çok uzun, öğretmen duvara vidalayın demiş.", ShopItem.Bag),
+                NotBought(2, Wife, "Çanta işini konuşmadık, Elif yine sordu. Bir de odasındaki dolap çok uzun, öğretmen duvara vidalayın demiş.", ShopItem.Bag),
                 Msg(2, Unknown, "Yakında bir dosya gelecek. Yardımcı olursanız unutmam. -O"),
 
                 Bought(3, Wife, "Usta geldi, dolapları duvara sabitledi. Elif rahat uyudu.", ShopItem.Fixing),
@@ -390,13 +403,15 @@ namespace Dropy.EditorTools
             };
 
             // İsteğe bağlı aile masrafları. Dürüst yol üç güvenlik alışverişine tam yeter (kasa 0'da biter),
-            // yani her ödenen masraf ya bir güvenlik önleminden ya da rüşvetten gelir. İkilem burada.
-            const string Mother = "Annen";
+            // yani her ödenen istek ya bir güvenlik önleminden ya da rüşvetten çıkar. İkilem burada.
+            story.bondStart = 3;
+            story.bondMax = 5;
             story.needs = new List<FamilyNeed>
             {
                 new FamilyNeed
                 {
                     day = 1, name = "Elif'in okul gezisi", price = 300, sender = Child,
+                    request = "Baba yarın müzeye gezi var! 300 TL lazım, herkes gidiyor. Gidebilir miyim? Lütfen lütfen!",
                     paidReply = "Baba gezi çok güzeldi! Müzede deprem simülatörüne bindik.",
                     unpaidReply = "Herkes geziye gitti, ben sınıfta kaldım.",
                     endingPaid = "Elif okul gezisini hâlâ anlatıyor.",
@@ -405,6 +420,7 @@ namespace Dropy.EditorTools
                 new FamilyNeed
                 {
                     day = 2, name = "Annenin ilacı", price = 500, sender = Mother,
+                    request = "Evladım ilacım bitti, eczane 500 TL istiyor. Maaş yetmedi, utanarak yazıyorum.",
                     paidReply = "İlacım geldi, Allah razı olsun evladım.",
                     unpaidReply = "İlacı bu ay alamadım, idare ederim, sen dert etme.",
                     endingPaid = "Annenin ilacı aksamadı.",
@@ -413,6 +429,7 @@ namespace Dropy.EditorTools
                 new FamilyNeed
                 {
                     day = 3, name = "Doğalgaz faturası", price = 400, sender = Wife,
+                    request = "Doğalgaz faturası geldi, 400 TL. Yarın son gün, yatmazsa kesecekler.",
                     paidReply = "Fatura yatmış, ev sıcacık.",
                     unpaidReply = "Doğalgaz kesildi. Elif'le battaniyeye sarındık.",
                     endingPaid = "Ev hafta boyunca sıcak kaldı.",
@@ -420,7 +437,9 @@ namespace Dropy.EditorTools
                 },
                 new FamilyNeed
                 {
+                    // Deprem 5. gün oluyor: Elif'in doğum günü.
                     day = 4, name = "Elif'in doğum günü pastası", price = 300, sender = Child,
+                    request = "Baba yarın doğum günüm! Pasta olacak mı? Arkadaşlarımı çağırdım.",
                     endingPaid = "Elif doğum gününde mumlarını üfledi.",
                     endingUnpaid = "Elif'in doğum günü pastasız geçti."
                 },
@@ -430,17 +449,38 @@ namespace Dropy.EditorTools
             return story;
         }
 
+        const string Wife = "Eşin", Child = "Elif", Mother = "Annen", Landlord = "Ev sahibi", Unknown = "Bilinmeyen numara";
+
+        /// <summary>Aile küserse bu kişilerden mesaj gelmez.</summary>
+        static bool IsFamily(string sender) => sender == Wife || sender == Child || sender == Mother;
+
         static PhoneMessage Msg(int day, string sender, string text) =>
-            new PhoneMessage { day = day, sender = sender, text = text };
+            new PhoneMessage { day = day, sender = sender, family = IsFamily(sender), text = text };
 
-        static PhoneMessage Bought(int day, string sender, string text, ShopItem item) =>
-            new PhoneMessage { day = day, sender = sender, text = text, condition = MessageCondition.Bought, item = item };
+        static PhoneMessage Bought(int day, string sender, string text, ShopItem item)
+        {
+            var m = Msg(day, sender, text);
+            m.condition = MessageCondition.Bought;
+            m.item = item;
+            return m;
+        }
 
-        static PhoneMessage NotBought(int day, string sender, string text, ShopItem item) =>
-            new PhoneMessage { day = day, sender = sender, text = text, condition = MessageCondition.NotBought, item = item };
+        static PhoneMessage NotBought(int day, string sender, string text, ShopItem item)
+        {
+            var m = Msg(day, sender, text);
+            m.condition = MessageCondition.NotBought;
+            m.item = item;
+            return m;
+        }
 
-        static PhoneMessage Sealed(int day, string sender, string text, BuildingCase other, Seal seal) =>
-            new PhoneMessage { day = day, sender = sender, text = text, condition = MessageCondition.SealWas, other = other, seal = seal };
+        static PhoneMessage Sealed(int day, string sender, string text, BuildingCase other, Seal seal)
+        {
+            var m = Msg(day, sender, text);
+            m.condition = MessageCondition.SealWas;
+            m.other = other;
+            m.seal = seal;
+            return m;
+        }
 
         static void WriteRegulations()
         {
@@ -521,6 +561,102 @@ namespace Dropy.EditorTools
                 Debug.Log("15 dosya yazıldı. Mühürler tasarımla aynı, dürüst tam yol kasayı 0'da bitiriyor.");
             else
                 Debug.LogError($"Dosyalar tasarımla tutmuyor. Dürüst yol sonu kasa: {money}");
+        }
+
+        /// <summary>
+        /// Aile bağı ve kasanın dört örnek yolda tasarımdaki gibi çıktığını denetler. DeskManager'ın akşam
+        /// kurallarını taklit eder: önce kira, sonra istek ve alışveriş, sabah ödenmeyen istek −1 bağ.
+        /// </summary>
+        static void VerifyFamilyPaths(List<BuildingCase> cases, StoryData story)
+        {
+            bool ok = true;
+            ok &= Expect("Dürüst, hiçbir isteği ödemez", Simulate(cases, story, false, new int[0],
+                    Plan((1, ShopItem.Bag), (2, ShopItem.Fixing), (4, ShopItem.Retrofit))),
+                r => r.estrangedDay == 3 && r.bought.Count == 3);
+            ok &= Expect("Dürüst, çantayı almaz, geziyi öder", Simulate(cases, story, false, new[] { 1 },
+                    Plan((2, ShopItem.Fixing), (4, ShopItem.Retrofit))),
+                r => r.bond == 1 && r.estrangedDay == 0 && r.bought.Contains(ShopItem.Retrofit));
+            ok &= Expect("Dürüst, bütün istekleri öder", Simulate(cases, story, false, new[] { 1, 2, 3, 4 },
+                    Plan((1, ShopItem.Bag), (2, ShopItem.Fixing), (3, ShopItem.Retrofit), (4, ShopItem.Retrofit))),
+                r => r.bond == story.bondMax && !r.bought.Contains(ShopItem.Retrofit));
+            ok &= Expect("Rüşvet alır, her şeyi öder", Simulate(cases, story, true, new[] { 1, 2, 3, 4 },
+                    Plan((1, ShopItem.Bag), (2, ShopItem.Fixing), (4, ShopItem.Retrofit))),
+                r => r.bond == story.bondMax && r.bought.Count == 3);
+            if (ok)
+                Debug.Log("Aile bağı: dört yol da tasarımdaki gibi.");
+        }
+
+        class PathResult
+        {
+            public int money, bond, estrangedDay;
+            public readonly HashSet<ShopItem> bought = new HashSet<ShopItem>();
+
+            public override string ToString() =>
+                $"kasa {money}, bağ {bond}, küs {(estrangedDay > 0 ? estrangedDay + ". akşam" : "hayır")}, alınan: {string.Join(", ", bought)}";
+        }
+
+        static Dictionary<int, List<ShopItem>> Plan(params (int day, ShopItem item)[] buys)
+        {
+            var plan = new Dictionary<int, List<ShopItem>>();
+            foreach (var (day, item) in buys)
+            {
+                if (!plan.ContainsKey(day))
+                    plan[day] = new List<ShopItem>();
+                plan[day].Add(item);
+            }
+            return plan;
+        }
+
+        static PathResult Simulate(List<BuildingCase> cases, StoryData story, bool bribe, int[] payDays,
+            Dictionary<int, List<ShopItem>> buys)
+        {
+            var r = new PathResult { money = Economy.StartMoney, bond = story.bondStart };
+            for (int day = 1; day <= Economy.LastPaidDay; day++)
+            {
+                for (int k = 0; k < Economy.FilesPerDay; k++)
+                {
+                    var c = cases[(day - 1) * Economy.FilesPerDay + k];
+                    var seal = bribe && c.approveFeeOverride > 0 ? Seal.Approve : BuildingRules.CorrectSeal(c);
+                    r.money += BuildingRules.Fee(c, seal, day);
+                }
+                r.money -= Mathf.Min(r.money, Economy.Rent);
+
+                bool estranged = r.bond <= 0;
+                foreach (var need in story.needs)
+                {
+                    if (need.day != day || estranged)
+                        continue;
+                    if (System.Array.IndexOf(payDays, day) >= 0 && r.money >= need.price)
+                    {
+                        r.money -= need.price;
+                        r.bond = Mathf.Min(story.bondMax, r.bond + 1);
+                    }
+                    else
+                    {
+                        r.bond = Mathf.Max(0, r.bond - 1);
+                        if (r.bond == 0 && r.estrangedDay == 0)
+                            r.estrangedDay = day;
+                    }
+                }
+                if (buys.TryGetValue(day, out var items))
+                    foreach (var item in items)
+                        if (!r.bought.Contains(item) && r.money >= Shop.Price(item))
+                        {
+                            r.money -= Shop.Price(item);
+                            r.bought.Add(item);
+                        }
+            }
+            return r;
+        }
+
+        static bool Expect(string name, PathResult result, System.Func<PathResult, bool> check)
+        {
+            bool ok = check(result);
+            if (ok)
+                Debug.Log($"Yol \"{name}\": {result}");
+            else
+                Debug.LogError($"Yol \"{name}\" tasarımla tutmuyor: {result}");
+            return ok;
         }
 
         static void AssignToScene(List<BuildingCase> cases, StoryData story)

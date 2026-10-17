@@ -40,5 +40,6 @@ MonoBehaviour:
   approvedLine: "Torunlara m\xFCjdeyi vereyim!"
   shearWallLine: Perde mi? Masraf ama... peki, ekletiriz.
   rejectedLine: "Kap\u0131 rengi y\xFCz\xFCnden mi? Ger\xE7ekten mi?"
+  rejectPressure: []
   collapseHeadline: 
   standingLine: 

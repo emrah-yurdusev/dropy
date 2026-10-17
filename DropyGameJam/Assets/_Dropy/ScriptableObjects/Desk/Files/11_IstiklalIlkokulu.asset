@@ -41,5 +41,6 @@ MonoBehaviour:
   approvedLine: "\xC7ocuklar ad\u0131na te\u015Fekk\xFCrler."
   shearWallLine: "Perde mi? Tamam, \xE7ocuklar i\xE7in ne gerekiyorsa."
   rejectedLine: "Bu mahallenin \xE7ocuklar\u0131 nerede okuyacak \u015Fimdi?"
+  rejectPressure: []
   collapseHeadline: "\u0130stiklal \u0130lkokulu'nun zemin kat\u0131 \xE7\xF6kt\xFC"
   standingLine: "\u0130stiklal \u0130lkokulu ayakta: \xE7ocuklar bah\xE7ede topland\u0131."

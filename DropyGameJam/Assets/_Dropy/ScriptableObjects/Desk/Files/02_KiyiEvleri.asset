@@ -41,5 +41,6 @@ MonoBehaviour:
   approvedLine: "Ger\xE7ekten mi? Allah raz\u0131 olsun!"
   shearWallLine: Perde mi? Masraf ama... peki, ekletiriz.
   rejectedLine: "Ama... her \u015Fey yazd\u0131\u011F\u0131 gibiydi."
+  rejectPressure: []
   collapseHeadline: 
   standingLine: 

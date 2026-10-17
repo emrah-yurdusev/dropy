@@ -6,9 +6,17 @@ using UnityEngine.UI;
 
 namespace Dropy.Gameplay
 {
+    /// <summary>Akşam telefonunda tek bir mesaj. İstek ise balonun içinde "Öde" düğmesi çıkar.</summary>
+    public struct EveningMessage
+    {
+        public string sender;
+        public string text;
+        public FamilyNeed request;
+    }
+
     /// <summary>
-    /// Akşam: masada günün hesabı, aile fotoğrafı ve telefon. Telefonda o akşamın mesajları,
-    /// isteğe bağlı aile masrafı (EV) ve deprem dükkânı var. İkisi aynı kasadan ödenir.
+    /// Akşam: masada günün hesabı, aile fotoğrafı ve aile bağı, bir de telefon. Telefonda o akşamın
+    /// mesajları (aileden gelen istekler Öde düğmesiyle) ve deprem dükkânı var; ikisi aynı kasadan ödenir.
     /// Eve gidilmez; "Sabah oldu"ya basınca sıradaki gün başlar.
     /// </summary>
     public class EveningPanel : MonoBehaviour
@@ -19,8 +27,11 @@ namespace Dropy.Gameplay
         static readonly Color PhoneBody = new Color(0.08f, 0.08f, 0.1f);
         static readonly Color Screen = new Color(0.16f, 0.2f, 0.27f);
         static readonly Color Bubble = new Color(0.26f, 0.32f, 0.42f);
+        static readonly Color RequestBubble = new Color(0.4f, 0.3f, 0.4f);
+        static readonly Color PayColor = new Color(0.85f, 0.6f, 0.2f);
         static readonly Color Owned = new Color(0.36f, 0.7f, 0.45f);
-        static readonly Color HomeColor = new Color(0.45f, 0.33f, 0.42f);
+        static readonly Color BondOn = new Color(0.95f, 0.58f, 0.45f);
+        static readonly Color BondOff = new Color(0.25f, 0.24f, 0.26f);
         const float RowHeight = 56f;
 
         class ItemRow
@@ -35,10 +46,15 @@ namespace Dropy.Gameplay
         TextMeshProUGUI phoneHeader;
         TextMeshProUGUI phoneFooter;
         RectTransform messageList;
-        RectTransform shopList;
-        GameObject homeTitle;
+        RectTransform bondRow;
+        TextMeshProUGUI bondLabel;
+        readonly List<Image> bondSegments = new List<Image>();
+        GameObject picture;
+        GameObject caption;
+        GameObject photoBack;
+        Image photoFade;
         readonly Dictionary<ShopItem, ItemRow> rows = new Dictionary<ShopItem, ItemRow>();
-        readonly Dictionary<FamilyNeed, ItemRow> needRows = new Dictionary<FamilyNeed, ItemRow>();
+        readonly Dictionary<FamilyNeed, ItemRow> requestRows = new Dictionary<FamilyNeed, ItemRow>();
         bool shopOpen;
         bool done;
 
@@ -50,15 +66,17 @@ namespace Dropy.Gameplay
             root = Ui.Image(canvas, "Evening", Dim).rectTransform.Stretch();
 
             var ledger = Ui.Image(root, "Ledger", Paper, Ui.Rounded).rectTransform;
-            ledger.Place(new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(-440f, 190f), new Vector2(540f, 340f));
+            ledger.Place(new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(-440f, 200f), new Vector2(540f, 340f));
             Ui.DropShadow(ledger, 16f, new Vector2(4f, -6f), 0.4f);
-            ledgerText = Ui.Text(ledger, "Text", "", 26f, Ink);
-            ledgerText.rectTransform.Stretch(36f, 26f, 36f, 26f);
+            ledgerText = Ui.Text(ledger, "Text", "", 24f, Ink);
+            ledgerText.rectTransform.Stretch(36f, 22f, 36f, 24f);
             ledgerText.richText = true;
 
             BuildPhoto(root);
+            BuildBond(root);
+
             var chips = Ui.Rect("Purchased", root);
-            chips.Place(new Vector2(0.5f, 0.5f), new Vector2(0.5f, 1f), new Vector2(-440f, -400f), new Vector2(540f, 60f));
+            chips.Place(new Vector2(0.5f, 0.5f), new Vector2(0.5f, 1f), new Vector2(-440f, -440f), new Vector2(540f, 56f));
             var chipLayout = chips.gameObject.AddComponent<HorizontalLayoutGroup>();
             chipLayout.spacing = 10f;
             chipLayout.childAlignment = TextAnchor.MiddleCenter;
@@ -79,7 +97,7 @@ namespace Dropy.Gameplay
             messageList.anchorMin = new Vector2(0f, 1f);
             messageList.anchorMax = new Vector2(1f, 1f);
             messageList.pivot = new Vector2(0.5f, 1f);
-            messageList.offsetMin = new Vector2(16f, -376f);
+            messageList.offsetMin = new Vector2(16f, -470f);
             messageList.offsetMax = new Vector2(-16f, -76f);
             var messageLayout = messageList.gameObject.AddComponent<VerticalLayoutGroup>();
             messageLayout.spacing = 8f;
@@ -87,15 +105,14 @@ namespace Dropy.Gameplay
             messageLayout.childControlWidth = true;
             messageLayout.childForceExpandHeight = false;
 
-            shopList = Ui.Rect("Shop", screen).Stretch(16f, 186f, 16f, 388f);
-            var list = shopList;
+            var list = Ui.Rect("Shop", screen).Stretch(16f, 186f, 16f, 480f);
             var layout = list.gameObject.AddComponent<VerticalLayoutGroup>();
             layout.spacing = 8f;
             layout.childControlHeight = true;
             layout.childControlWidth = true;
             layout.childForceExpandHeight = false;
-            homeTitle = SectionTitle(list, "EV");
-            SectionTitle(list, "DEPREM DÜKKÂNI");
+            var shopTitle = Ui.Text(list, "Title", "DEPREM DÜKKÂNI", 18f, new Color(1f, 1f, 1f, 0.7f), TextAlignmentOptions.Left, FontStyles.Bold);
+            shopTitle.gameObject.AddComponent<LayoutElement>().preferredHeight = 24f;
             foreach (var item in Shop.Items)
             {
                 var button = Ui.Button(list, item.ToString(), "", new Color(0.24f, 0.32f, 0.45f), Color.white, 20f);
@@ -117,55 +134,28 @@ namespace Dropy.Gameplay
             phoneFooter.rectTransform.offsetMin = new Vector2(16f, 112f);
             phoneFooter.rectTransform.offsetMax = new Vector2(-16f, 176f);
 
-            var morning = Ui.Button(screen, "Morning", "SABAH OLDU", new Color(0.85f, 0.6f, 0.2f), Color.white, 24f);
+            var morning = Ui.Button(screen, "Morning", "SABAH OLDU", PayColor, Color.white, 24f);
             ((RectTransform)morning.transform).Place(new Vector2(0.5f, 0f), new Vector2(0.5f, 0f), new Vector2(0f, 24f), new Vector2(300f, 72f));
             morning.onClick.AddListener(() => done = true);
 
             root.gameObject.SetActive(false);
         }
 
-        static GameObject SectionTitle(RectTransform list, string text)
-        {
-            var title = Ui.Text(list, text, text, 18f, new Color(1f, 1f, 1f, 0.7f), TextAlignmentOptions.Left, FontStyles.Bold);
-            title.gameObject.AddComponent<LayoutElement>().preferredHeight = 24f;
-            return title.gameObject;
-        }
-
-        /// <summary>O akşamın aile masraflarını "EV" başlığının altına koyar.</summary>
-        void ShowNeeds(IList<FamilyNeed> needs)
-        {
-            foreach (var row in needRows.Values)
-                Destroy(row.button.gameObject);
-            needRows.Clear();
-            homeTitle.SetActive(needs.Count > 0);
-            int index = homeTitle.transform.GetSiblingIndex();
-            foreach (var need in needs)
-            {
-                var button = Ui.Button(shopList, "Need", "", HomeColor, Color.white, 20f);
-                button.gameObject.AddComponent<LayoutElement>().preferredHeight = RowHeight;
-                button.transform.SetSiblingIndex(++index);
-                var label = button.GetComponentInChildren<TextMeshProUGUI>();
-                label.richText = true;
-                var captured = need;
-                button.onClick.AddListener(() => PayClicked?.Invoke(captured));
-                needRows[need] = new ItemRow { button = button, label = label };
-            }
-        }
-
-        /// <summary>Masadaki aile fotoğrafı: iki yetişkin, bir çocuk, arkada ev.</summary>
-        static void BuildPhoto(RectTransform parent)
+        /// <summary>Masadaki aile fotoğrafı: iki yetişkin, bir çocuk, arkada ev. Aile bağı düştükçe solar, sıfırda ters kapanır.</summary>
+        void BuildPhoto(RectTransform parent)
         {
             var frame = Ui.Image(parent, "FamilyPhoto", new Color(0.96f, 0.94f, 0.9f), Ui.Rounded).rectTransform;
-            frame.Place(new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(-440f, -200f), new Vector2(340f, 300f));
+            frame.Place(new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(-440f, -190f), new Vector2(340f, 300f));
             frame.localRotation = Quaternion.Euler(0f, 0f, 3f);
             Ui.DropShadow(frame, 12f, new Vector2(3f, -5f), 0.4f);
 
-            var picture = Ui.Image(frame, "Picture", new Color(0.62f, 0.78f, 0.9f), raycast: false).rectTransform.Stretch(16f, 56f, 16f, 16f);
-            var ground = Ui.Image(picture, "Ground", new Color(0.5f, 0.68f, 0.42f), raycast: false).rectTransform;
+            var pic = Ui.Image(frame, "Picture", new Color(0.62f, 0.78f, 0.9f), raycast: false).rectTransform.Stretch(16f, 56f, 16f, 16f);
+            picture = pic.gameObject;
+            var ground = Ui.Image(pic, "Ground", new Color(0.5f, 0.68f, 0.42f), raycast: false).rectTransform;
             ground.anchorMin = Vector2.zero;
             ground.anchorMax = new Vector2(1f, 0.3f);
             ground.offsetMin = ground.offsetMax = Vector2.zero;
-            var house = Ui.Image(picture, "House", new Color(0.86f, 0.74f, 0.58f), raycast: false).rectTransform;
+            var house = Ui.Image(pic, "House", new Color(0.86f, 0.74f, 0.58f), raycast: false).rectTransform;
             house.Place(new Vector2(0.78f, 0.3f), new Vector2(0.5f, 0f), Vector2.zero, new Vector2(80f, 110f));
             for (int w = 0; w < 4; w++)
             {
@@ -173,15 +163,41 @@ namespace Dropy.Gameplay
                 window.Place(new Vector2(w % 2 == 0 ? 0.3f : 0.7f, w < 2 ? 0.75f : 0.4f), new Vector2(0.5f, 0.5f), Vector2.zero, new Vector2(18f, 18f));
             }
 
-            Person(picture, 0.2f, 1f, new Color(0.32f, 0.42f, 0.6f));
-            Person(picture, 0.38f, 0.93f, new Color(0.72f, 0.35f, 0.38f));
-            Person(picture, 0.53f, 0.62f, new Color(0.95f, 0.7f, 0.25f));
+            Person(pic, 0.2f, 1f, new Color(0.32f, 0.42f, 0.6f));
+            Person(pic, 0.38f, 0.93f, new Color(0.72f, 0.35f, 0.38f));
+            Person(pic, 0.53f, 0.62f, new Color(0.95f, 0.7f, 0.25f));
+            photoFade = Ui.Image(pic, "Fade", new Color(0.55f, 0.53f, 0.5f, 0f), raycast: false);
+            photoFade.rectTransform.Stretch();
 
-            var caption = Ui.Text(frame, "Caption", "Biz, geçen bayram", 20f, new Color(0.35f, 0.3f, 0.25f), TextAlignmentOptions.Center, FontStyles.Italic);
-            caption.rectTransform.anchorMin = Vector2.zero;
-            caption.rectTransform.anchorMax = new Vector2(1f, 0f);
-            caption.rectTransform.offsetMin = new Vector2(10f, 8f);
-            caption.rectTransform.offsetMax = new Vector2(-10f, 52f);
+            var cap = Ui.Text(frame, "Caption", "Biz, geçen bayram", 20f, new Color(0.35f, 0.3f, 0.25f), TextAlignmentOptions.Center, FontStyles.Italic);
+            cap.rectTransform.anchorMin = Vector2.zero;
+            cap.rectTransform.anchorMax = new Vector2(1f, 0f);
+            cap.rectTransform.offsetMin = new Vector2(10f, 8f);
+            cap.rectTransform.offsetMax = new Vector2(-10f, 52f);
+            caption = cap.gameObject;
+
+            // Fotoğrafın arkası: aile küsünce masaya ters kapanır.
+            var back = Ui.Image(frame, "Back", new Color(0.62f, 0.52f, 0.4f), Ui.Rounded, raycast: false);
+            back.rectTransform.Stretch();
+            Ui.Text(back.transform, "Note", "Elif, 7 yaşında", 18f, new Color(0.35f, 0.28f, 0.2f), TextAlignmentOptions.BottomRight, FontStyles.Italic)
+                .rectTransform.Stretch(20f, 16f, 20f, 16f);
+            photoBack = back.gameObject;
+            photoBack.SetActive(false);
+        }
+
+        void BuildBond(RectTransform parent)
+        {
+            bondRow = Ui.Rect("Bond", parent);
+            bondRow.Place(new Vector2(0.5f, 0.5f), new Vector2(0.5f, 1f), new Vector2(-440f, -360f), new Vector2(420f, 64f));
+            bondLabel = Ui.Text(bondRow, "Label", "", 20f, Color.white, TextAlignmentOptions.Top, FontStyles.Bold);
+            bondLabel.rectTransform.Stretch(0f, 30f, 0f, 0f);
+            bondLabel.richText = true;
+            var bar = Ui.Rect("Segments", bondRow).Stretch(40f, 0f, 40f, 36f);
+            var layout = bar.gameObject.AddComponent<HorizontalLayoutGroup>();
+            layout.spacing = 8f;
+            layout.childControlWidth = true;
+            layout.childControlHeight = true;
+            layout.childForceExpandWidth = true;
         }
 
         static void Person(RectTransform picture, float x, float scale, Color shirt)
@@ -192,24 +208,28 @@ namespace Dropy.Gameplay
             head.Place(new Vector2(x, 0.18f), new Vector2(0.5f, 0f), new Vector2(0f, 88f * scale), new Vector2(36f, 36f) * scale);
         }
 
+        /// <param name="bondChange">Dünden bu yana aile bağı farkı (ödenmeyen istekler).</param>
         public IEnumerator Run(int day, int income, int rent, int money, ICollection<ShopItem> purchased,
-            IList<PhoneMessage> messages, IList<FamilyNeed> needs, ICollection<FamilyNeed> paidNeeds, bool shopOpen)
+            IList<EveningMessage> messages, ICollection<FamilyNeed> paidNeeds,
+            int bond, int bondMax, int bondChange, bool shopOpen)
         {
             this.shopOpen = shopOpen;
             // Önce aç: TextMeshPro kapalı nesnede yazı boyutunu ölçemiyor (mesaj balonları ölçülüyor).
             root.gameObject.SetActive(true);
             root.SetAsLastSibling();
+            string bondNote = bond <= 0 ? "\n<color=#a3221b>Ailen seninle konuşmuyor.</color>"
+                : bondChange < 0 ? $"\n<size=80%><color=#a3221b>Dün karşılanmayan istek: aile bağı {bondChange}</color></size>" : "";
             ledgerText.text =
-                $"<size=36><b>{day}. gün akşamı</b></size>\n\n" +
+                $"<size=34><b>{day}. gün akşamı</b></size>\n\n" +
                 $"Bugünkü mühürler   <b>+{income:N0} TL</b>\n" +
-                $"Kira   <b>-{rent:N0} TL</b>\n" +
-                (rent < Economy.Rent ? "<size=80%><i>Kiranın tamamı ödenemedi.</i></size>\n" : "") +
-                "\n<size=80%>Eve yürünmez. Alışveriş telefondan.</size>";
+                $"Kira   <b>-{rent:N0} TL</b>" +
+                (rent < Economy.Rent ? "\n<size=80%><i>Kiranın tamamı ödenemedi.</i></size>" : "") +
+                bondNote +
+                "\n\n<size=80%>Eve yürünmez. Alışveriş telefondan.</size>";
             phoneFooter.text = !shopOpen ? "Dükkân kapandı."
                 : day == Economy.LastPaidDay ? "Dükkân bu akşam son kez açık." : "";
             ShowMessages(messages);
-            ShowNeeds(needs);
-            Refresh(money, purchased, paidNeeds);
+            Refresh(money, purchased, paidNeeds, bond, bondMax);
 
             done = false;
             while (!done)
@@ -217,10 +237,11 @@ namespace Dropy.Gameplay
             root.gameObject.SetActive(false);
         }
 
-        void ShowMessages(IList<PhoneMessage> messages)
+        void ShowMessages(IList<EveningMessage> messages)
         {
             foreach (Transform child in messageList)
                 Destroy(child.gameObject);
+            requestRows.Clear();
             if (messages.Count == 0)
             {
                 var empty = Ui.Text(messageList, "Empty", "Yeni mesaj yok.", 18f, new Color(1f, 1f, 1f, 0.5f), TextAlignmentOptions.Center, FontStyles.Italic);
@@ -229,25 +250,36 @@ namespace Dropy.Gameplay
             }
             foreach (var message in messages)
             {
-                var bubble = Ui.Image(messageList, "Message", Bubble, Ui.Rounded, raycast: false);
+                bool request = message.request != null;
+                var bubble = Ui.Image(messageList, request ? "Request" : "Message", request ? RequestBubble : Bubble, Ui.Rounded);
                 string body = $"<b>{message.sender}</b>\n{message.text}";
                 var text = Ui.Text(bubble.transform, "Text", body, 18f, Color.white);
                 text.richText = true;
-                text.rectTransform.Stretch(14f, 8f, 14f, 8f);
-                bubble.gameObject.AddComponent<LayoutElement>().preferredHeight = text.GetPreferredValues(body, 400f, 0f).y + 18f;
+                float buttonRow = request ? 50f : 0f;
+                text.rectTransform.Stretch(14f, 8f + buttonRow, 14f, 8f);
+                bubble.gameObject.AddComponent<LayoutElement>().preferredHeight = text.GetPreferredValues(body, 400f, 0f).y + 18f + buttonRow;
+                if (!request)
+                    continue;
+
+                var pay = Ui.Button(bubble.transform, "Pay", "", PayColor, Color.white, 18f);
+                ((RectTransform)pay.transform).Place(new Vector2(1f, 0f), new Vector2(1f, 0f), new Vector2(-12f, 10f), new Vector2(190f, 42f));
+                var label = pay.GetComponentInChildren<TextMeshProUGUI>();
+                label.richText = true;
+                var need = message.request;
+                pay.onClick.AddListener(() => PayClicked?.Invoke(need));
+                requestRows[need] = new ItemRow { button = pay, label = label };
             }
         }
 
-        public void Refresh(int money, ICollection<ShopItem> purchased, ICollection<FamilyNeed> paidNeeds)
+        public void Refresh(int money, ICollection<ShopItem> purchased, ICollection<FamilyNeed> paidNeeds, int bond, int bondMax)
         {
-            foreach (var pair in needRows)
+            phoneHeader.text = $"Mesajlar  ·  <color=#fad166>Kasa: {money:N0} TL</color>";
+            foreach (var pair in requestRows)
             {
                 bool paid = paidNeeds.Contains(pair.Key);
-                string state = paid ? "<color=#6fdc8c>Ödendi</color>" : $"{pair.Key.price:N0} TL";
-                pair.Value.label.text = $"{pair.Key.name}\n<size=85%>{state}</size>";
-                pair.Value.button.interactable = shopOpen && !paid && money >= pair.Key.price;
+                pair.Value.label.text = paid ? "Ödendi" : $"Öde  {pair.Key.price:N0} TL";
+                pair.Value.button.interactable = !paid && money >= pair.Key.price;
             }
-            phoneHeader.text = $"Mesajlar  ·  <color=#fad166>Kasa: {money:N0} TL</color>";
             foreach (var pair in rows)
             {
                 int price = Shop.Price(pair.Key);
@@ -257,6 +289,25 @@ namespace Dropy.Gameplay
                 pair.Value.button.interactable = shopOpen && !owned && money >= price;
                 pair.Value.chip.SetActive(owned);
             }
+            ShowBond(bond, bondMax);
+        }
+
+        void ShowBond(int bond, int bondMax)
+        {
+            var bar = bondRow.Find("Segments");
+            while (bondSegments.Count < bondMax)
+                bondSegments.Add(Ui.Image(bar, "Segment", BondOff, Ui.Rounded, raycast: false));
+            for (int i = 0; i < bondSegments.Count; i++)
+                bondSegments[i].color = i < bond ? BondOn : BondOff;
+
+            bool estranged = bond <= 0;
+            bondLabel.text = estranged ? "AİLE BAĞI  ·  <color=#ff8a80>küs</color>" : $"AİLE BAĞI  ·  {bond}/{bondMax}";
+            photoBack.SetActive(estranged);
+            picture.SetActive(!estranged);
+            caption.SetActive(!estranged);
+            // 5–4 tam renk, 3–2 hafif soluk, 1 iyice soluk.
+            float fade = bond >= 4 ? 0f : bond >= 2 ? 0.3f : 0.6f;
+            photoFade.color = new Color(0.55f, 0.53f, 0.5f, fade);
         }
     }
 }
