@@ -88,6 +88,11 @@ namespace Dropy.Gameplay
         bool paused;
         /// <summary>Deprem sahnesi oynarken büronun arayüzü gizli; Esc/Tab çalışmasın.</summary>
         bool cinematicPlaying;
+        /// <summary>Haftayı yürüten ana akış; geliştirici paneli atlarken durdurup başka noktadan yeniden başlatır.</summary>
+        Coroutine week;
+        /// <summary>Akşam paneli açık; bu akşamın aile istekleri sabah karşılanmamışsa bağdan düşer.</summary>
+        bool inEvening;
+        readonly List<FamilyNeed> eveningRequests = new List<FamilyNeed>();
         /// <summary>İnceleme sırasında oyuncunun sorduğu satıra müteahhidin cevabı (bir sonraki soru öncekini keser).</summary>
         Coroutine fieldTalk;
         /// <summary>Sarsıntıdan sonra radyoda adı geçmiş çürük binalar (aynı haber iki kez okunmasın).</summary>
@@ -111,7 +116,7 @@ namespace Dropy.Gameplay
 
         void OnDestroy() => Time.timeScale = 1f;
 
-        void Start() => StartCoroutine(RunWeek());
+        void Start() => week = StartCoroutine(RunWeek(0, eveningFirst: false));
 
         void BuildUi()
         {
@@ -196,25 +201,44 @@ namespace Dropy.Gameplay
             hud.SetInspectOpen(inspection.IsOpen);
         }
 
-        IEnumerator RunWeek()
+        /// <param name="startIndex">Kaçıncı dosyadan başlanacağı (0 = oyunun başı, başlık ekranıyla).</param>
+        /// <param name="eveningFirst">Önceki günün akşamı henüz yaşanmadıysa önce o akşam açılır.</param>
+        IEnumerator RunWeek(int startIndex, bool eveningFirst)
         {
             int expected = Economy.Days * Economy.FilesPerDay;
             if (cases.Length != expected)
                 Debug.LogWarning($"DeskManager: {expected} dosya bekleniyordu, {cases.Length} var. Dropy > Dosyaları Üret ile kur.");
 
-            yield return hud.Title();
+            if (startIndex == 0)
+                yield return hud.Title();
 
-            for (day = 1; day <= Economy.Days; day++)
+            int startDay = Economy.Day(startIndex);
+            if (eveningFirst && startDay > 1)
             {
-                shearWallUsedToday = false;
-                hammersUsedToday = 0;
+                day = startDay - 1;
+                if (Economy.IsQuakeDay(day))
+                {
+                    yield return Earthquake(day);
+                    if (jailed)
+                        yield break;
+                }
+                yield return Evening(IncomeOf(day));
+            }
+
+            for (day = startDay; day <= Economy.Days; day++)
+            {
+                int firstFile = day == startDay ? startIndex % Economy.FilesPerDay : 0;
                 inspection.SetDay(day);
                 Sfx.Ambience(0.03f + 0.035f * day);
-                yield return hud.DayBanner(day, Morning(day));
-                yield return MorningCalls();
+                if (firstFile == 0)
+                {
+                    shearWallUsedToday = false;
+                    hammersUsedToday = 0;
+                    yield return hud.DayBanner(day, Morning(day));
+                    yield return MorningCalls();
+                }
 
-                int income = 0;
-                for (int k = 0; k < Economy.FilesPerDay; k++)
+                for (int k = firstFile; k < Economy.FilesPerDay; k++)
                 {
                     int index = (day - 1) * Economy.FilesPerDay + k;
                     if (index >= cases.Length)
@@ -222,7 +246,6 @@ namespace Dropy.Gameplay
                     current = cases[index];
                     hud.SetCounter(day, k + 1, Economy.FilesPerDay, current.contractorName);
                     yield return RunCase(current, index);
-                    income += results[results.Count - 1].money;
                 }
 
                 if (Economy.IsQuakeDay(day))
@@ -232,10 +255,26 @@ namespace Dropy.Gameplay
                         yield break;
                 }
                 if (day < Economy.Days)
-                    yield return Evening(income);
+                    yield return Evening(IncomeOf(day));
             }
-            day = Economy.Days;
+            yield return Finale();
+        }
 
+        int IncomeOf(int forDay) => results.Where(r => r.day == forDay).Sum(r => r.money);
+
+        /// <summary>
+        /// 6. günün sonu: gazete ve karne. Deprem normalde haftanın akışında oynar; geliştirici paneli doğrudan
+        /// sona atlarsa <paramref name="quakeFirst"/> ile önce 6. gün depremi (ve gerekirse hapis) oynatılır.
+        /// </summary>
+        IEnumerator Finale(bool quakeFirst = false)
+        {
+            day = Economy.Days;
+            if (quakeFirst)
+            {
+                yield return Earthquake(day);
+                if (jailed)
+                    yield break;
+            }
             Sfx.Ambience(0f);
             var family = story != null
                 ? story.needs.Select(n => (n, paidNeeds.Contains(n)))
@@ -606,9 +645,11 @@ namespace Dropy.Gameplay
             return true;
         }
 
-        CaseResult Decide(BuildingCase buildingCase)
+        CaseResult Decide(BuildingCase buildingCase) =>
+            Decide(buildingCase, inspection.MainCard != null ? inspection.MainCard.Stamp : Seal.Reject);
+
+        CaseResult Decide(BuildingCase buildingCase, Seal seal)
         {
-            var seal = inspection.MainCard != null ? inspection.MainCard.Stamp : Seal.Reject;
             if (seal == Seal.ShearWall)
                 shearWallUsedToday = true;
             var result = new CaseResult
@@ -682,11 +723,19 @@ namespace Dropy.Gameplay
             if (messages.Count > 0)
                 Sfx.Buzz();
 
+            inEvening = true;
+            eveningRequests.Clear();
+            eveningRequests.AddRange(requests);
             yield return evening.Run(day, income, rent, money, purchased, messages, paidNeeds,
                 bond, BondMax, bondNote, shopOpen: day <= Economy.LastPaidDay);
             bondNote = null;
+            inEvening = false;
+            ApplyMorning(eveningRequests);
+        }
 
-            // "Sabah oldu": karşılanmayan her istek aile bağından bir dilim götürür.
+        /// <summary>"Sabah oldu": karşılanmayan her istek aile bağından bir dilim götürür.</summary>
+        void ApplyMorning(IEnumerable<FamilyNeed> requests)
+        {
             int before = bond;
             foreach (var need in requests)
                 if (!paidNeeds.Contains(need))
@@ -772,22 +821,12 @@ namespace Dropy.Gameplay
             yield return Shake(4f, 0.06f);
             yield return new WaitForSeconds(0.8f);
 
-            int previousQuake = Economy.QuakeDays.Where(d => d < quakeDay).DefaultIfEmpty(0).Max();
-            var fallen = results.Where(r => r.fate == BuildingFate.Collapsed && r.day > previousQuake && r.day <= quakeDay).ToList();
-            bool firstQuake = quakeDay == Economy.QuakeDays[0];
-
-            var captions = fallen.Take(MaxQuakeHeadlines).Select(DeskHud.Headline).ToList();
-            if (fallen.Count > MaxQuakeHeadlines)
-                captions.Add($"ve {fallen.Count - MaxQuakeHeadlines} bina daha");
-            if (firstQuake)
-                captions.Add(purchased.Contains(ShopItem.Fixing)
-                    ? "Ailenin evi hasar aldı; dolaplar sabitti, kimse yaralanmadı"
-                    : "Ailenin evi hasar aldı; sabitlenmemiş dolap Elif'in üstüne devrildi");
-            else if (!purchased.Contains(ShopItem.Retrofit))
-                captions.Add("Onarılmayan aile evi ikinci depremde yıkıldı");
-
+            var fallen = Fallen(quakeDay);
             cinematicPlaying = true;
-            yield return EarthquakeCinematic.Play(captions);
+            yield return EarthquakeCinematic.Play(QuakeCaptions(quakeDay, fallen));
+            // Onayladığı bir bina çöktüyse mühendis tutuklanır: hapishane sahnesi, ardından mahkeme kararı ve karne.
+            if (fallen.Count > 0)
+                yield return PrisonCinematic.Play(PrisonCaptions(fallen));
             cinematicPlaying = false;
 
             if (fallen.Count > 0)
@@ -797,13 +836,50 @@ namespace Dropy.Gameplay
                 hud.ShowJail(results, fallen, quakeDay);
                 yield break;
             }
+            ApplyQuakeToFamily(quakeDay);
+        }
 
-            if (firstQuake && !purchased.Contains(ShopItem.Fixing))
-            {
-                int before = bond;
-                bond = Mathf.Max(0, bond - FixingQuakeBondLoss);
-                bondNote = $"Depremde dolap Elif'in üstüne devrildi: aile bağı -{before - bond}";
-            }
+        /// <summary>Bu depremin bölümünde (önceki depremden bu yana) onaylanıp çöken binalar.</summary>
+        List<CaseResult> Fallen(int quakeDay)
+        {
+            int previousQuake = Economy.QuakeDays.Where(d => d < quakeDay).DefaultIfEmpty(0).Max();
+            return results.Where(r => r.fate == BuildingFate.Collapsed && r.day > previousQuake && r.day <= quakeDay).ToList();
+        }
+
+        /// <summary>Deprem sahnesinin manşetleri: çöken binalar ve aile evinin durumu.</summary>
+        List<string> QuakeCaptions(int quakeDay, IList<CaseResult> fallen)
+        {
+            var captions = fallen.Take(MaxQuakeHeadlines).Select(DeskHud.Headline).ToList();
+            if (fallen.Count > MaxQuakeHeadlines)
+                captions.Add($"ve {fallen.Count - MaxQuakeHeadlines} bina daha");
+            if (quakeDay == Economy.QuakeDays[0])
+                captions.Add(purchased.Contains(ShopItem.Fixing)
+                    ? "Ailenin evi hasar aldı; dolaplar sabitti, kimse yaralanmadı"
+                    : "Ailenin evi hasar aldı; sabitlenmemiş dolap Elif'in üstüne devrildi");
+            else if (!purchased.Contains(ShopItem.Retrofit))
+                captions.Add("Onarılmayan aile evi ikinci depremde yıkıldı");
+            return captions;
+        }
+
+        /// <summary>Hapishane sahnesinin yazıları; çöken bina yoksa boş liste.</summary>
+        static List<string> PrisonCaptions(IList<CaseResult> fallen)
+        {
+            if (fallen.Count == 0)
+                return new List<string>();
+            string what = fallen.Count == 1
+                ? $"Çöken {fallen[0].buildingCase.buildingName} binasının onayında senin imzan vardı"
+                : $"Çöken {fallen.Count} binanın onayında senin imzan vardı";
+            return new List<string> { what, "Yapı denetim mühendisi tutuklandı" };
+        }
+
+        /// <summary>1. depremde eşya sabitlenmemişse dolap Elif'in üstüne devrilir: aile bağı düşer.</summary>
+        void ApplyQuakeToFamily(int quakeDay)
+        {
+            if (quakeDay != Economy.QuakeDays[0] || purchased.Contains(ShopItem.Fixing))
+                return;
+            int before = bond;
+            bond = Mathf.Max(0, bond - FixingQuakeBondLoss);
+            bondNote = $"Depremde dolap Elif'in üstüne devrildi: aile bağı -{before - bond}";
         }
 
         IEnumerator Shake(float seconds, float strength)
@@ -819,6 +895,160 @@ namespace Dropy.Gameplay
             }
             cam.localPosition = origin;
         }
+
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
+        // Geliştirici paneli (F1) kısayolları. Yayın derlemesine girmez.
+
+        public enum DebugSeal
+        {
+            Correct,
+            ApproveAll,
+            RejectAll
+        }
+
+        /// <summary>Üzerinde çalışılan (ya da sıradaki) dosyanın sırası; bitmiş dosya sayısına eşittir.</summary>
+        public int DebugFileIndex => results.Count;
+        public int DebugFileCount => cases.Length;
+        public bool DebugCanJump => !cinematicPlaying && !AdditiveCinematic.IsPlaying && results.Count < cases.Length;
+        public bool DebugHasRetrofit => purchased.Contains(ShopItem.Retrofit);
+        public int DebugBond => bond;
+        public int DebugCollapsedCount => results.Count(r => r.fate == BuildingFate.Collapsed);
+        /// <summary>Sıradaki deprem günü (paneldeki "deprem sahnesini oynat" önizlemesi bunu gösterir).</summary>
+        int DebugQuakeDay
+        {
+            get
+            {
+                foreach (var d in Economy.QuakeDays)
+                    if (d >= Mathf.Max(day, 1))
+                        return d;
+                return Economy.Days;
+            }
+        }
+        public IList<string> DebugQuakeCaptions => QuakeCaptions(DebugQuakeDay, Fallen(DebugQuakeDay));
+        public IList<string> DebugPrisonCaptions =>
+            PrisonCaptions(results.Where(r => r.fate == BuildingFate.Collapsed).ToList());
+
+        public bool DebugCinematicPlaying
+        {
+            get => cinematicPlaying;
+            set => cinematicPlaying = value;
+        }
+
+        /// <summary>
+        /// Akışı keser ve <paramref name="targetIndex"/>. dosyadan devam eder. Aradaki dosyalara <paramref name="mode"/>'a göre
+        /// mühür basılır; aradaki akşamların kirası ve aile bağı sessizce işlenir. Atlanan 3. gün depremi sessizce
+        /// geçer (aile evine etkisi işlenir, hapis aranmaz: panel test aracıdır). Hedef bir günün ilk dosyasıysa önce
+        /// önceki günün (deprem günüyse önce depremi, sonra) akşamı açılır. Hedef dosya sayısıysa 6. gün depremine gidilir.
+        /// </summary>
+        public void DebugJumpTo(int targetIndex, DebugSeal mode)
+        {
+            if (!DebugCanJump)
+                return;
+            targetIndex = Mathf.Clamp(targetIndex, results.Count, cases.Length);
+            InterruptWeek();
+
+            bool eveningPending = false;
+            while (results.Count < targetIndex)
+            {
+                int index = results.Count;
+                if (index % Economy.FilesPerDay == 0)
+                {
+                    shearWallUsedToday = false;
+                    hammersUsedToday = 0;
+                }
+                day = Economy.Day(index);
+                var result = Decide(cases[index], AutoSeal(cases[index], mode));
+                results.Add(result);
+                money += result.money;
+
+                bool dayEnds = (index + 1) % Economy.FilesPerDay == 0;
+                if (dayEnds && day < Economy.Days)
+                {
+                    if (index + 1 < targetIndex)
+                    {
+                        ApplyQuakeToFamily(day);
+                        SimulateEvening();
+                    }
+                    else
+                        eveningPending = true;
+                }
+            }
+            hud.SetMoney(money);
+            week = StartCoroutine(targetIndex >= cases.Length ? Finale(quakeFirst: true) : RunWeek(targetIndex, eveningPending));
+        }
+
+        public void DebugAddMoney(int amount)
+        {
+            money = Mathf.Max(0, money + amount);
+            hud.SetMoney(money);
+        }
+
+        public void DebugSetRetrofit(bool on)
+        {
+            if (on)
+                purchased.Add(ShopItem.Retrofit);
+            else
+                purchased.Remove(ShopItem.Retrofit);
+        }
+
+        public void DebugFillBond() => bond = BondMax;
+
+        Seal AutoSeal(BuildingCase buildingCase, DebugSeal mode)
+        {
+            switch (mode)
+            {
+                case DebugSeal.ApproveAll:
+                    return Seal.Approve;
+                case DebugSeal.RejectAll:
+                    return Seal.Reject;
+                default:
+                    var seal = BuildingRules.CorrectSeal(buildingCase);
+                    // Günde tek perde hakkı: ikincisi gerekirse red, yine kimse ölmez.
+                    return seal == Seal.ShearWall && shearWallUsedToday ? Seal.Reject : seal;
+            }
+        }
+
+        /// <summary>Atlanan akşam: kira düşer, karşılanmayan aile istekleri sabah bağdan gider.</summary>
+        void SimulateEvening()
+        {
+            money -= Mathf.Min(money, Economy.Rent);
+            var requests = story != null && !Estranged ? story.needs.Where(n => n.day == day).ToList() : new List<FamilyNeed>();
+            ApplyMorning(requests);
+        }
+
+        /// <summary>Haftanın akışını o anki yerinde keser ve ekranda yarım kalan her şeyi toplar.</summary>
+        void InterruptWeek()
+        {
+            StopAllCoroutines();
+            week = null;
+            fieldTalk = null;
+            if (visitor != null)
+            {
+                visitorChair.Release(visitor);
+                Destroy(visitor.gameObject);
+                visitor = null;
+            }
+            if (door != null)
+                door.SnapClosed();
+            dialogue.Clear();
+            inspection.SetOpen(false);
+            hud.SetInspectOpen(false);
+            inspection.ClearCase();
+            inspectAllowed = false;
+            hud.SetInspectAvailable(false);
+            hud.ResetOverlays();
+            evening.Hide();
+            if (inEvening)
+            {
+                inEvening = false;
+                ApplyMorning(eveningRequests);
+            }
+            submitted = false;
+            current = null;
+            if (paused)
+                SetPaused(false);
+        }
+#endif
 
         public static string SealName(Seal seal)
         {

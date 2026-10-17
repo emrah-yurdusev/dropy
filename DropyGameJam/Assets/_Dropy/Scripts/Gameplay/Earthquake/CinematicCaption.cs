@@ -7,10 +7,10 @@ using UnityEngine.UI;
 namespace Dropy.Gameplay
 {
     /// <summary>
-    /// Deprem sahnesinin kendi arayüzü: siyaha geçiş ve çöküş sırasında alt alta beliren manşet satırları.
+    /// Ara sahnelerin (deprem, hapishane) kendi arayüzü: siyaha geçiş ve alt alta beliren yazı satırları.
     /// Kendi Canvas'ını kurar; sahne tek başına açılınca boş ve görünmez kalır.
     /// </summary>
-    public class EarthquakeCaption : MonoBehaviour
+    public class CinematicCaption : MonoBehaviour
     {
         [Tooltip("Satırlar arası süre (saniye)")]
         [SerializeField, Min(0f)] float lineInterval = 1.4f;
