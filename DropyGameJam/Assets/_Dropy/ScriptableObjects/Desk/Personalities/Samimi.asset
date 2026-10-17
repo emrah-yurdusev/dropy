@@ -1,0 +1,56 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f3fcd023ca25f0e469d4a301ff89633e, type: 3}
+  m_Name: Samimi
+  m_EditorClassIdentifier: 
+  typeName: Samimi
+  description: "S\u0131cak, geveze esnaf. \xC7ay \u0131smarlar, han\u0131m\u0131ndan
+    bahseder; kural\u0131 bilmez ama iyi niyetlidir."
+  lines:
+    address: hocam
+    typingSpeed: 1.15
+    greetings:
+    - "Hay\u0131rl\u0131 sabahlar {hitap}!"
+    - "Selam\xFCnaleyk\xFCm {hitap}, kolay gelsin!"
+    firmHonest:
+    - "Kitap kitap... Siz bilirsiniz {hitap}, bak\u0131n bakal\u0131m."
+    firmDishonest:
+    - "Kitap da bizim kitap {hitap}, bir g\xF6z at\u0131n yeter."
+    softHonest:
+    - Eyvallah {hitap}, buyurun.
+    softDishonest:
+    - "Eyvallah, eyvallah. K\xE2\u011F\u0131tlar tertemiz zaten."
+    fields:
+    - field: claimed
+      defensive: 0
+      text: "{kunye} d\xF6kt\xFCk {hitap}. Han\u0131m\u0131n \xE7eyizini satsam bundan
+        iyisini d\xF6kemezdim."
+    - field: lab
+      defensive: 0
+      text: Laboratuvar da {rapor} dedi, ikisi bir.
+    - field: note
+      defensive: 0
+      text: "\"{not}\" m\u0131? G\xF6r\xFCnt\xFC meselesi {hitap}, binaya bir zarar\u0131
+        yok."
+    tics:
+    - "\xC7ay s\xF6yleyeyim mi?"
+    - "Han\u0131m da selam s\xF6yledi."
+    - "Otuz y\u0131l\u0131n ustas\u0131y\u0131m ben."
+    approved:
+    - "Eksik olmay\u0131n {hitap}! \xC7ay\u0131n\u0131z benden, bir g\xFCn mutlaka."
+    rejected:
+    - "Otuz y\u0131lda ilk kez ba\u015F\u0131ma geliyor {hitap}... Hay\u0131rl\u0131s\u0131."
+    shearWall:
+    - "Perde mi? Eh, siz diyorsan\u0131z ekletiriz."
+    unjustReject:
+    - "Beton {rapor}, kolon tam {hitap}. Kitapta reddettirecek ne var, g\xF6sterin
+      de \xF6\u011Frenelim."

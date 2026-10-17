@@ -9,10 +9,18 @@ namespace Dropy.Gameplay
         Always,
         Bought,
         NotBought,
-        SealWas
+        SealWas,
+        [Tooltip("Kasa eşik değerin altındaysa")] MoneyBelow,
+        [Tooltip("Aile bağı eşik değerin altındaysa")] BondBelow
     }
 
-    /// <summary>Akşam telefona düşen mesaj. Koşul tutmazsa gelmez.</summary>
+    public enum MessageTiming
+    {
+        [Tooltip("Akşam telefonunda")] Evening,
+        [Tooltip("Gün içinde, belli bir dosya masadayken telefon titrer")] DuringFile
+    }
+
+    /// <summary>Telefona düşen mesaj: akşam ya da gün içinde bir dosya masadayken. Koşul tutmazsa gelmez. Metinde {kasa} gibi yer tutucular olabilir.</summary>
     [System.Serializable]
     public class PhoneMessage
     {
@@ -27,6 +35,11 @@ namespace Dropy.Gameplay
         [Tooltip("SealWas için: bu dosyaya bu mühür basıldıysa")]
         public BuildingCase other;
         public Seal seal;
+        [Tooltip("MoneyBelow / BondBelow için eşik")]
+        public int threshold;
+        public MessageTiming timing;
+        [Tooltip("DuringFile için: günün kaçıncı dosyası (0 = ilk)")]
+        public int fileOfDay;
     }
 
     /// <summary>Gün başında, ilk müteahhitten önce gelen telefon.</summary>
@@ -50,6 +63,8 @@ namespace Dropy.Gameplay
         [TextArea(1, 3)] public string headline;
         [Tooltip("Ekranın altında kayan satırlar")]
         public List<string> ticker = new List<string>();
+        [Tooltip("Sağ üstteki gün göstergesinde o günün üstüne gelince görünen uyarı (deprem bekleniyor...)")]
+        [TextArea(1, 2)] public string forecast;
         [Tooltip("Ekranın sağındaki görselin üstüne yazılan kısa etiket (görsel yoksa yer tutucuda görünür)")]
         public string graphicLabel;
         [Tooltip("Ekranın sağındaki haber görseli (harita, fotoğraf...)")]

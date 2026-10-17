@@ -120,14 +120,29 @@ namespace Dropy.Gameplay
         {
             var baseColor = highlight ? new Color(1f, 0.85f, 0.3f, 0.35f) : new Color(0f, 0f, 0f, 0f);
             var row = Ui.Image(content, field.label, baseColor);
-            row.gameObject.AddComponent<FieldRow>().Init(this, field, row, baseColor);
+            // Kitapta kuralı açılmış konunun satırı: solda konu rengi şerit ve harfli rozet.
+            var topic = RuleTopics.OfField(field.key);
+            bool coded = RuleTopics.IsActive(topic);
+            row.gameObject.AddComponent<FieldRow>().Init(this, field, row, baseColor, coded ? topic : RuleTopic.None);
             var element = row.gameObject.AddComponent<LayoutElement>();
             element.minHeight = 34f;
 
-            var label = Ui.Text(row.transform, "Label", field.label, 17f, Faded);
-            label.rectTransform.Stretch();
+            var label = Ui.Text(row.transform, "Label", field.label, 17f, coded ? RuleTopics.Color(topic) * 0.85f : Faded);
+            label.rectTransform.Stretch(coded ? 32f : 0f, 0f, 0f, 0f);
             label.rectTransform.anchorMax = new Vector2(0.48f, 1f);
             label.alignment = TextAlignmentOptions.MidlineLeft;
+            if (coded)
+            {
+                label.fontStyle = FontStyles.Bold;
+                var bar = Ui.Image(row.transform, "TopicBar", RuleTopics.Color(topic), raycast: false).rectTransform;
+                bar.anchorMin = Vector2.zero;
+                bar.anchorMax = new Vector2(0f, 1f);
+                bar.pivot = new Vector2(0f, 0.5f);
+                bar.sizeDelta = new Vector2(4f, -6f);
+                var badge = RuleTopics.Badge(row.transform, topic, 22f);
+                badge.anchorMin = badge.anchorMax = new Vector2(0f, 0.5f);
+                badge.anchoredPosition = new Vector2(19f, 0f);
+            }
             var value = Ui.Text(row.transform, "Value", field.value, 19f, Ink, TextAlignmentOptions.MidlineLeft, FontStyles.Bold);
             value.rectTransform.Stretch();
             value.rectTransform.anchorMin = new Vector2(0.5f, 0f);
@@ -245,13 +260,32 @@ namespace Dropy.Gameplay
         DocumentField field;
         Image background;
         Color baseColor;
+        RuleTopic topic;
 
-        public void Init(DocumentCard owner, DocumentField data, Image image, Color normal)
+        /// <summary>Satırın alan anahtarı (FieldKey).</summary>
+        public string Key => field != null ? field.key : null;
+
+        public void Init(DocumentCard owner, DocumentField data, Image image, Color normal, RuleTopic ruleTopic = RuleTopic.None)
         {
             card = owner;
             field = data;
             background = image;
             baseColor = normal;
+            topic = ruleTopic;
+            if (topic != RuleTopic.None)
+                RuleTopics.Highlighted += OnTopicHighlighted;
+        }
+
+        void OnDestroy() => RuleTopics.Highlighted -= OnTopicHighlighted;
+
+        /// <summary>Yönetmelikte bu satırın konusu üzerine gelindi: satır konu rengiyle parlar.</summary>
+        void OnTopicHighlighted(RuleTopic highlighted)
+        {
+            if (background == null)
+                return;
+            var glow = RuleTopics.Color(topic);
+            glow.a = 0.28f;
+            background.color = highlighted == topic ? glow : baseColor;
         }
 
         public void OnPointerClick(PointerEventData eventData)
@@ -266,9 +300,16 @@ namespace Dropy.Gameplay
         {
             if (!card.ToolActive)
                 background.color = baseColor.a > 0f ? baseColor : Hover;
+            if (topic != RuleTopic.None)
+                RuleTopics.Highlight(topic);
         }
 
-        public void OnPointerExit(PointerEventData eventData) => background.color = baseColor;
+        public void OnPointerExit(PointerEventData eventData)
+        {
+            background.color = baseColor;
+            if (topic != RuleTopic.None)
+                RuleTopics.Highlight(RuleTopic.None);
+        }
     }
 
     /// <summary>Damga basılınca kısa bir "küt" efekti.</summary>

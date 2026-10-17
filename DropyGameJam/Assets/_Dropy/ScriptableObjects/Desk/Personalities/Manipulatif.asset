@@ -1,0 +1,43 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f3fcd023ca25f0e469d4a301ff89633e, type: 3}
+  m_Name: Manipulatif
+  m_EditorClassIdentifier: 
+  typeName: Manipulatif
+  description: "Kibar ama tehditk\xE2r. Aileyi, paray\u0131 ve tan\u0131d\u0131klar\u0131n\u0131
+    koz olarak kullan\u0131r."
+  lines:
+    address: beyim
+    typingSpeed: 0.95
+    greetings:
+    - "Merhaba {hitap}. Ad\u0131m\u0131 duymu\u015Fsunuzdur."
+    firmHonest:
+    - "Kitaba ba\u011Fl\u0131 adam... Sayg\u0131 duyar\u0131m."
+    firmDishonest:
+    - "Kitap... Kitab\u0131 yazanlar da benim gibi insanlar {hitap}."
+    softHonest:
+    - "Anla\u015Faca\u011F\u0131z, belli."
+    softDishonest:
+    - "Ak\u0131ll\u0131 adams\u0131n\u0131z. Anla\u015Faca\u011F\u0131z."
+    fields:
+    - field: columns
+      defensive: 1
+      text: "Biraz a\xE7t\u0131k, odalar ferah olsun. Ta\u015F\u0131r {hitap}, ta\u015F\u0131r."
+    tics:
+    - "Herkesin bir ailesi var, de\u011Fil mi?"
+    - "Bu \u015Fehirde herkes beni tan\u0131r."
+    approved:
+    - "Ak\u0131ll\u0131 adams\u0131n\u0131z. Kimse bir \u015Fey demez."
+    rejected:
+    - "Pi\u015Fman olacaks\u0131n\u0131z {hitap}. Bunu unutmam."
+    shearWall: []
+    unjustReject: []

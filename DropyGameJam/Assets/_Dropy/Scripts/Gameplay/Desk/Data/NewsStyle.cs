@@ -143,21 +143,17 @@ namespace Dropy.Gameplay
         public string contractorQuote = "Müteahhit {0}, iskân günü: \"{1}\"";
 
         [Header("Evde")]
-        public string bagEarly = "Çanta iki depremde de hazırdı: fener, su, düdük.";
-        public string bagLate = "Çanta ilk depremde yoktu; ikincide hazırdı.";
+        public string bagReady = "Çanta hazırdı: fener, su, düdük.";
         public string bagNone = "Karanlıkta ne su vardı ne fener.";
-        public string fixingYes = "Dolaplar sabitti; ilk depremde kimse yaralanmadı.";
-        public string fixingNo = "Sabitlenmemiş dolap Elif'in üstüne devrildi, kolu incindi.";
-        public string retrofitYes = "Onarılan ev ikinci depremde ayakta kaldı.";
-        public string retrofitNo = "Hasarlı ev onarılmadı; ikinci depremde yıkıldı.";
+        public string fixingDone = "Dolaplar sabitti; depremde kimse yaralanmadı.";
+        public string fixingMissing = "Sabitlenmemiş dolap Elif'in üstüne devrildi, kolu kırıldı.";
 
         [Header("Ailenin sonu")]
         public string verdictSafe = "AİLEN GÜVENDE";
-        public string verdictStandingUnprepared = "Ev ayakta, ailen hayatta; ama hazırlık eksikti.";
-        public string verdictCollapsedBag = "Ev yıkıldı. Ailen enkazdan yaralı çıkarıldı; çantadaki düdük ve fener kurtarıcılara yol gösterdi.";
-        public string verdictCollapsedNoBag = "Ev yıkıldı. Ailene ancak ertesi sabah ulaşılabildi; eşin ve Elif yoğun bakımda.";
+        public string verdictNoBag = "Kimse yaralanmadı; ama gece karanlıkta ve susuz geçti.";
+        public string verdictNoFixing = "Elif yaralandı. Çantadaki ilk yardım ve düdük sayesinde yardım çabuk geldi.";
+        public string verdictNone = "Elif yaralandı. Karanlıkta ne su vardı ne fener; yardım ancak sabaha karşı geldi.";
         public string estrangedHouse = "Ailen seninle konuşmuyor.";
-        public string estrangedHospital = "Hastanede yanında olmanı istemediler.";
 
         [Header("Alt şerit")]
         [Tooltip("{0} = doğru, {1} = toplam dosya")]
@@ -166,8 +162,6 @@ namespace Dropy.Gameplay
         public string footerCash = "KASA: {0}";
         [Tooltip("{0} = borç")]
         public string footerDebt = "BORÇ: {0} · İCRAYA VERİLDİ";
-        [Tooltip("{0} = kasa")]
-        public string footerCashNoHouse = "KASADA {0} KALDI; EV ONARILMADI";
     }
 
     /// <summary>Bir sabahın televizyon yayını: manşet, kayan yazı, ekrandaki görsel ve televizyonun altındaki notlar.</summary>

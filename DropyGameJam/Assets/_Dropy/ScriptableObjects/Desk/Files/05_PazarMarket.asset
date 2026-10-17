@@ -13,6 +13,7 @@ MonoBehaviour:
   m_Name: 05_PazarMarket
   m_EditorClassIdentifier: 
   contractorName: Cengiz Bey
+  contractor: {fileID: 11400000, guid: b4908d20eb6e26047932068124d893f6, type: 2}
   contractorPrefab: {fileID: 0}
   buildingName: Pazar Market
   floors: 4
@@ -36,18 +37,14 @@ MonoBehaviour:
   dialogue: {fileID: 0}
   callbacks: []
   introLines:
-  - Zemine zincir market giriyor, kira garantili.
-  - "Tavan\u0131 y\xFCksek tuttuk, raflar s\u0131\u011Fs\u0131n diye. Kolonlar kal\u0131n,
-    dengeler."
+  - "Zemine zincir market giriyor, kira garantili. Tavan\u0131 y\xFCksek tuttuk,
+    raflar s\u0131\u011Fs\u0131n diye."
   questions:
   - question: "Zemin katta duvar var m\u0131?"
-    answer: "Market bu, duvar olur mu? A\xE7\u0131k alan, ba\u015Ftan ba\u015Fa cam
-      vitrin."
-  - question: "Kolonlar ne kadar kal\u0131n?"
-    answer: "Elli elli. M\xFChendisimiz yeter dedi."
-  approvedLine: "Market a\xE7\u0131l\u0131\u015F\u0131na beklerim!"
-  shearWallLine: "Perde mi? Vitrin k\xFC\xE7\xFCl\xFCr ama... peki, ekletiriz."
-  rejectedLine: "Bir market i\xE7in bu kadar zorluk mu?"
+    answer: "Market bu {hitap}, duvar olur mu? Ba\u015Ftan ba\u015Fa cam vitrin."
+  approvedLine: 
+  shearWallLine: 
+  rejectedLine: 
   rejectPressure: []
   collapseHeadline: "Pazar Market'in zemin kat\u0131 \xE7\xF6kt\xFC"
   standingLine: "Pazar Market ayakta: perde zemin kat\u0131 tuttu."

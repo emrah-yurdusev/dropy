@@ -18,7 +18,7 @@ namespace Dropy.Gameplay
         static readonly Color Gold = new Color(0.98f, 0.82f, 0.4f);
 
         TextMeshProUGUI moneyText;
-        TextMeshProUGUI counterText;
+        DayTracker tracker;
         Button inspectButton;
         TextMeshProUGUI inspectLabel;
         TextMeshProUGUI toastText;
@@ -37,6 +37,9 @@ namespace Dropy.Gameplay
         TextMeshProUGUI skipHint;
         Coroutine toastRoutine;
         Coroutine warnRoutine;
+        CanvasGroup phoneGroup;
+        TextMeshProUGUI phoneText;
+        Coroutine phoneRoutine;
 
         public event System.Action InspectClicked;
         public event System.Action ResumeClicked;
@@ -50,10 +53,7 @@ namespace Dropy.Gameplay
             moneyText = Ui.Text(money, "Text", "", 26f, Gold, TextAlignmentOptions.Center, FontStyles.Bold);
             moneyText.rectTransform.Stretch();
 
-            var counter = Ui.Image(root, "Counter", Dark, Ui.Rounded).rectTransform;
-            counter.Place(new Vector2(1f, 1f), new Vector2(1f, 1f), new Vector2(-20f, -20f), new Vector2(460f, 56f));
-            counterText = Ui.Text(counter, "Text", "", 22f, Color.white, TextAlignmentOptions.Center);
-            counterText.rectTransform.Stretch();
+            tracker = gameObject.AddComponent<DayTracker>();
 
             inspectButton = Ui.Button(root, "Inspect", "BELGELERİ İNCELE  [Tab]", new Color(0.2f, 0.45f, 0.75f), Color.white, 22f);
             ((RectTransform)inspectButton.transform).Place(new Vector2(0f, 0f), new Vector2(0f, 0f), new Vector2(20f, 20f), new Vector2(340f, 64f));
@@ -77,6 +77,18 @@ namespace Dropy.Gameplay
             warnGroup.blocksRaycasts = false;
             warnText = Ui.Text(warn, "Text", "", 22f, Color.white, TextAlignmentOptions.Center, FontStyles.Bold);
             warnText.rectTransform.Stretch(12f, 0f, 12f, 0f);
+
+            // Gün içinde gelen mesaj: sağ altta telefon bildirimi.
+            var phone = Ui.Image(root, "PhoneToast", new Color(0.08f, 0.09f, 0.12f, 0.95f), Ui.Rounded).rectTransform;
+            phone.Place(new Vector2(1f, 0f), new Vector2(1f, 0f), new Vector2(-24f, 150f), new Vector2(430f, 130f));
+            phoneGroup = phone.gameObject.AddComponent<CanvasGroup>();
+            phoneGroup.alpha = 0f;
+            phoneGroup.blocksRaycasts = false;
+            var phoneHead = Ui.Text(phone, "Head", "TELEFON  ·  yeni mesaj", 16f, new Color(0.98f, 0.82f, 0.4f), TextAlignmentOptions.TopLeft, FontStyles.Bold);
+            phoneHead.rectTransform.Stretch(18f, 0f, 18f, 12f);
+            phoneText = Ui.Text(phone, "Text", "", 20f, Color.white, TextAlignmentOptions.TopLeft);
+            phoneText.richText = true;
+            phoneText.rectTransform.Stretch(18f, 12f, 18f, 38f);
 
             tv = gameObject.AddComponent<TvNewsView>();
             tv.Build(root, style, () => BlocksInput);
@@ -130,7 +142,7 @@ namespace Dropy.Gameplay
                 "<size=30>Bu ilçenin iskân memurusun. Binalar bitti; aileler taşınmak için senin mührünü bekliyor.\n" +
                 "Onay basarsan aileler taşınır. Red basarsan bina boş kalır.\n\n" +
                 "İlçe bir fay hattının üstünde. Senin ailen de burada yaşıyor.\n" +
-                "Altı günlük mesai. Her mühür bir binaya, her bina birilerine.</size>",
+                "Üç günlük mesai. Her mühür bir binaya, her bina birilerine.</size>",
                 30f, Color.white, TextAlignmentOptions.Center);
             text.richText = true;
             text.rectTransform.Stretch(200f, 260f, 200f, 120f);
@@ -227,8 +239,11 @@ namespace Dropy.Gameplay
             moneyText.color = amount < 0 ? new Color(1f, 0.45f, 0.4f) : Gold;
         }
 
-        public void SetCounter(int day, int file, int filesPerDay, string contractor) =>
-            counterText.text = $"Gün {day}  ·  Dosya {file}/{filesPerDay}  ·  {contractor}";
+        /// <summary>Sağ üstteki gün göstergesini kurar (hangi gün deprem, hangi gün sarsıntı, üstüne gelince ne yazacak).</summary>
+        public void BuildTracker(RectTransform root, System.Func<int, string> forecast, System.Func<int, bool> isQuakeDay, System.Func<int, bool> isTremorDay) =>
+            tracker.Build(root, Economy.Days, Economy.FilesPerDay, forecast, isQuakeDay, isTremorDay);
+
+        public void SetCounter(int day, int file, int filesPerDay, string contractor) => tracker.Set(day, file, contractor);
 
         public void SetInspectAvailable(bool available) => inspectButton.gameObject.SetActive(available);
 
@@ -242,6 +257,16 @@ namespace Dropy.Gameplay
             toastText.text = message;
             toastText.color = color;
             toastRoutine = StartCoroutine(Fade(toastGroup, 3f));
+        }
+
+        /// <summary>Gün içinde telefona düşen mesaj: sağ altta birkaç saniye görünür.</summary>
+        public void PhoneToast(string sender, string text)
+        {
+            if (phoneRoutine != null)
+                StopCoroutine(phoneRoutine);
+            phoneText.text = $"<b>{sender}</b>\n{text}";
+            phoneGroup.transform.SetAsLastSibling();
+            phoneRoutine = StartCoroutine(Fade(phoneGroup, 7f));
         }
 
         /// <summary>Kitapta yazan bir kural çiğnenince ya da mühür basılamayınca kısa kırmızı uyarı.</summary>

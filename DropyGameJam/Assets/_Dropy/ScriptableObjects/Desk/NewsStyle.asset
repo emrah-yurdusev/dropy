@@ -97,23 +97,18 @@ MonoBehaviour:
     investigation: "M\xFCteahhitlerin r\xFC\u015Fvet defteri ele ge\xE7irildi. {0}
       sayfas\u0131nda senin ad\u0131n da yaz\u0131yor. G\xF6revden uzakla\u015Ft\u0131r\u0131ld\u0131n."
     contractorQuote: "M\xFCteahhit {0}, isk\xE2n g\xFCn\xFC: \"{1}\""
-    bagEarly: "\xC7anta iki depremde de haz\u0131rd\u0131: fener, su, d\xFCd\xFCk."
-    bagLate: "\xC7anta ilk depremde yoktu; ikincide haz\u0131rd\u0131."
+    bagReady: "\xC7anta haz\u0131rd\u0131: fener, su, d\xFCd\xFCk."
     bagNone: "Karanl\u0131kta ne su vard\u0131 ne fener."
-    fixingYes: "Dolaplar sabitti; ilk depremde kimse yaralanmad\u0131."
-    fixingNo: "Sabitlenmemi\u015F dolap Elif'in \xFCst\xFCne devrildi, kolu incindi."
-    retrofitYes: "Onar\u0131lan ev ikinci depremde ayakta kald\u0131."
-    retrofitNo: "Hasarl\u0131 ev onar\u0131lmad\u0131; ikinci depremde y\u0131k\u0131ld\u0131."
+    fixingDone: "Dolaplar sabitti; depremde kimse yaralanmad\u0131."
+    fixingMissing: "Sabitlenmemi\u015F dolap Elif'in \xFCst\xFCne devrildi, kolu
+      k\u0131r\u0131ld\u0131."
     verdictSafe: "A\u0130LEN G\xDCVENDE"
-    verdictStandingUnprepared: "Ev ayakta, ailen hayatta; ama haz\u0131rl\u0131k
-      eksikti."
-    verdictCollapsedBag: "Ev y\u0131k\u0131ld\u0131. Ailen enkazdan yaral\u0131 \xE7\u0131kar\u0131ld\u0131;
-      \xE7antadaki d\xFCd\xFCk ve fener kurtar\u0131c\u0131lara yol g\xF6sterdi."
-    verdictCollapsedNoBag: "Ev y\u0131k\u0131ld\u0131. Ailene ancak ertesi sabah
-      ula\u015F\u0131labildi; e\u015Fin ve Elif yo\u011Fun bak\u0131mda."
+    verdictNoBag: "Kimse yaralanmad\u0131; ama gece karanl\u0131kta ve susuz ge\xE7ti."
+    verdictNoFixing: "Elif yaraland\u0131. \xC7antadaki ilk yard\u0131m ve d\xFCd\xFCk
+      sayesinde yard\u0131m \xE7abuk geldi."
+    verdictNone: "Elif yaraland\u0131. Karanl\u0131kta ne su vard\u0131 ne fener;
+      yard\u0131m ancak sabaha kar\u015F\u0131 geldi."
     estrangedHouse: "Ailen seninle konu\u015Fmuyor."
-    estrangedHospital: "Hastanede yan\u0131nda olman\u0131 istemediler."
     footerReport: "KARNE: {1} DOSYADAN {0} DO\u011ERU"
     footerCash: 'KASA: {0}'
     footerDebt: "BOR\xC7: {0} \xB7 \u0130CRAYA VER\u0130LD\u0130"
-    footerCashNoHouse: KASADA {0} KALDI; EV ONARILMADI

@@ -19,7 +19,7 @@ namespace Dropy.Gameplay
     public enum PressureCondition
     {
         [Tooltip("Her zaman, en başta")] Always,
-        [Tooltip("Kira düşünce kasa güçlendirmeye yetmiyorsa")] RetrofitShort,
+        [Tooltip("Kira düşünce kasa eksik hazırlığa (çanta, sabitleme) yetmiyorsa")] PrepShort,
         [Tooltip("Aile bağı 2 ya da altındaysa")] BondLow,
         [Tooltip("Oyuncu daha önce bir dosyada rüşvet aldıysa")] TookBribe,
         [Tooltip("Yukarıdakilerin hiçbiri tutmadıysa")] Otherwise
@@ -27,7 +27,7 @@ namespace Dropy.Gameplay
 
     /// <summary>
     /// Rüşvet dosyasında RED basılınca müteahhidin araya girmesi. {kasa} ve {eksik} kira sonrası
-    /// kasa ve güçlendirmeye kalan açıkla değişir. Yalan söylemez: yalnızca oyuncunun gerçek durumunu kullanır.
+    /// kasa ve eksik hazırlığa (çanta, sabitleme) kalan açıkla değişir. Yalan söylemez: yalnızca oyuncunun gerçek durumunu kullanır.
     /// </summary>
     [System.Serializable]
     public class PressureLine
@@ -53,7 +53,9 @@ namespace Dropy.Gameplay
     public class BuildingCase : ScriptableObject
     {
         public string contractorName = "Müteahhit";
-        [Tooltip("Boşsa DeskManager'daki varsayılan karakterlerden biri gelir")]
+        [Tooltip("Müteahhidin kendisi: konuşma tarzı (kişilik), modeli ve ona özel cümleler. Boşsa yalnız dosyadaki cümleler kullanılır")]
+        public ContractorProfile contractor;
+        [Tooltip("Boşsa müteahhidin modeli, o da yoksa DeskManager'daki varsayılan karakterlerden biri gelir")]
         public GameObject contractorPrefab;
 
         /// <summary>İsimdeki hitaptan: "Hanım" kadın, gerisi (Bey, Usta) erkek.</summary>

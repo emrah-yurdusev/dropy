@@ -1,0 +1,52 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f3fcd023ca25f0e469d4a301ff89633e, type: 3}
+  m_Name: IsAdami
+  m_EditorClassIdentifier: 
+  typeName: IsAdami
+  description: "Pratik, aceleci, her \u015Feyi parayla \xF6l\xE7er. Kural tan\u0131r
+    ama pazarl\u0131k eder."
+  lines:
+    address: beyefendi
+    typingSpeed: 1.25
+    greetings:
+    - "Vakit nakit {hitap}, k\u0131sa keselim."
+    firmHonest:
+    - "Kural kurald\u0131r, sayg\u0131 duyar\u0131m. Buyurun."
+    firmDishonest:
+    - Kural da hesap da ortada. Bir yolunu buluruz.
+    softHonest:
+    - "G\xFCzel. H\u0131zl\u0131ca bakarsan\u0131z sevinirim."
+    softDishonest:
+    - "Bak\u0131n, eksik ne varsa hallederiz. Para sorun de\u011Fil."
+    fields:
+    - field: use
+      defensive: 1
+      text: "Alt\u0131 market, kira getirir. Ticaret olmadan bina d\xF6nmez {hitap}."
+    - field: height
+      defensive: 1
+      text: "{tavan} metre. Raflar s\u0131\u011Facak, m\xFC\u015Fteri ferah g\xF6rmek
+        ister."
+    - field: shearwall
+      defensive: 1
+      text: "Perde koysak vitrin kapan\u0131r. Vitrin kapan\u0131rsa kira d\xFC\u015Fer."
+    tics:
+    - "Hesab\u0131 ben yapar\u0131m."
+    - "Zaman parad\u0131r."
+    approved:
+    - "Anla\u015Ft\u0131k. A\xE7\u0131l\u0131\u015Fa davetlisiniz."
+    rejected:
+    - "Bu karar\u0131n bana maliyeti ne, biliyor musunuz?"
+    shearWall:
+    - "Perde mi? Vitrin k\xFC\xE7\xFCl\xFCr ama... tamam, ekletiriz. Masraf benden."
+    unjustReject:
+    - "Rakamlar ortada: beton {rapor}. Gerek\xE7eyi yaz\u0131l\u0131 isterim."

@@ -3,10 +3,22 @@ using UnityEngine;
 
 namespace Dropy.Gameplay
 {
+    /// <summary>Kuralın konusu: yönetmelik sayfası ile belgedeki ilgili satırlar aynı renk ve simgeyle eşleşir.</summary>
+    public enum RuleTopic
+    {
+        None,
+        Beton,
+        YumusakKat,
+        Kolon,
+        Cekic
+    }
+
     [System.Serializable]
     public class RegulationPage
     {
         public string title;
+        [Tooltip("Bu sayfanın konusu; belgede aynı konudaki satırlar aynı renkle işaretlenir")]
+        public RuleTopic topic;
         [Tooltip("Bu sayfanın kitaba girdiği gün")]
         [Min(1)] public int day = 1;
         [TextArea(4, 12)] public string body;

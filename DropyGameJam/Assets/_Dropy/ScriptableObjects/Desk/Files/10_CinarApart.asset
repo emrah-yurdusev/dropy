@@ -13,6 +13,7 @@ MonoBehaviour:
   m_Name: 10_CinarApart
   m_EditorClassIdentifier: 
   contractorName: "G\xFCl Han\u0131m"
+  contractor: {fileID: 11400000, guid: e6e614dc207704d4091642a3e6f8c11e, type: 2}
   contractorPrefab: {fileID: 0}
   buildingName: "\xC7\u0131nar Apart"
   floors: 3
@@ -25,8 +26,8 @@ MonoBehaviour:
   labConcrete: 30
   soil: 0
   note: "Numune: 1 k\xFCp, 7 g\xFCnl\xFCk"
-  noteAnswer: "Laboratuvar acele etti, bir k\xFCp yeter dediler. Sonu\xE7 ayn\u0131
-    \xE7\u0131kar."
+  noteAnswer: "Laboratuvar acele etti {hitap}, bir k\xFCp yeter dediler. Sonu\xE7
+    ayn\u0131 \xE7\u0131kar."
   damage: 0
   hammerConcrete: 18
   approveFeeOverride: 0
@@ -37,18 +38,15 @@ MonoBehaviour:
   dialogue: {fileID: 0}
   callbacks: []
   introLines:
-  - "Kap\u0131lar\u0131 ye\u015Fil boyad\u0131k, projede kahverengi yaz\u0131yordu."
-  - "Torunum ye\u015Fil sever. Sorun olur mu bilmiyorum."
+  - "Kap\u0131lar\u0131 ye\u015Fil boyad\u0131k, projede kahverengi yaz\u0131yordu.
+    Torunum ye\u015Fil sever; sorun olur mu?"
   questions:
-  - question: "Neden projeden sapt\u0131n\u0131z?"
-    answer: "Sadece renk. Ba\u015Fka hi\xE7bir \u015Feye dokunmad\u0131k, yemin ederim."
   - question: "Ne zaman ta\u015F\u0131nacaklar?"
-    answer: "Bu hafta. Torunlar bayram\u0131 orada ge\xE7irsin istiyorum."
-  approvedLine: "Torunlara m\xFCjdeyi vereyim!"
-  shearWallLine: Perde mi? Masraf ama... peki, ekletiriz.
-  rejectedLine: "Beton mu? Betoncu bana C30 diye yemin etmi\u015Fti... Torunlara
-    ne diyece\u011Fim?"
+    answer: "Bu hafta {hitap}. Torunlar bayram\u0131 orada ge\xE7irsin istiyorum."
+  approvedLine: 
+  shearWallLine: 
+  rejectedLine: 
   rejectPressure: []
   collapseHeadline: "\xC7\u0131nar Apart \xE7\xF6kt\xFC: betonu k\xE2\u011F\u0131ttakinin
     yar\u0131s\u0131 \xE7\u0131kt\u0131"
-  standingLine: 
+  standingLine: "\xC7\u0131nar Apart ayakta."

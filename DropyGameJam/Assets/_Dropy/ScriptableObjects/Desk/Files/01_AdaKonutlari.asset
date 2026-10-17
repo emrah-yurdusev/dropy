@@ -13,7 +13,8 @@ MonoBehaviour:
   m_Name: 01_AdaKonutlari
   m_EditorClassIdentifier: 
   contractorName: Veysel Bey
-  contractorPrefab: {fileID: 257129419783892725, guid: cc600f087f0763b489417a813e88df4a, type: 3}
+  contractor: {fileID: 11400000, guid: df4bea463ad980e4ebce10dea79db0f7, type: 2}
+  contractorPrefab: {fileID: 0}
   buildingName: "Ada Konutlar\u0131"
   floors: 3
   claimedConcrete: 30
@@ -36,18 +37,17 @@ MonoBehaviour:
   dialogue: {fileID: 0}
   callbacks: []
   introLines:
-  - "G\xFCnayd\u0131n! Yeni gelen siz misiniz? Hay\u0131rl\u0131 olsun."
-  - "Ada Konutlar\u0131, \xFC\xE7 kat. Otuz y\u0131ld\u0131r bu i\u015Fi yapar\u0131m,
-    tek bir \u015Fik\xE2yet gelmedi."
+  - "Ada Konutlar\u0131, \xFC\xE7 kat. Balkonu biraz ta\u015F\u0131rd\u0131k, han\u0131m
+    geni\u015F olsun dedi."
   questions:
   - question: "Balkon neden ta\u015Fm\u0131\u015F?"
-    answer: "Han\u0131m biraz geni\u015F olsun dedi. On be\u015F santim, g\xF6r\xFCnt\xFC
-      meselesi."
+    answer: "Han\u0131m \xE7ay i\xE7ecek yer istedi {hitap}. On be\u015F santim,
+      g\xF6r\xFCnt\xFC meselesi."
   - question: Betonu kim test etti?
     answer: "\u015Eehrin laboratuvar\u0131. Rapor ekte, a\xE7\u0131n bak\u0131n."
-  approvedLine: "Eksik olmay\u0131n. Sizinle iyi \xE7al\u0131\u015F\u0131r\u0131z."
-  shearWallLine: Perde mi? Masraf ama... peki, ekletiriz.
-  rejectedLine: "Balkon i\xE7in mi? Otuz y\u0131lda ilk kez ba\u015F\u0131ma geliyor."
+  approvedLine: 
+  shearWallLine: 
+  rejectedLine: 
   rejectPressure: []
-  collapseHeadline: 
-  standingLine: 
+  collapseHeadline: "Ada Konutlar\u0131 \xE7\xF6kt\xFC"
+  standingLine: "Ada Konutlar\u0131 ayakta: Veysel Bey mahalleye \xE7ay da\u011F\u0131tt\u0131."

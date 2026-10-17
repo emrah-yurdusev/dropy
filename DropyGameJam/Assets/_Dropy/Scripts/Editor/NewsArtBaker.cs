@@ -68,6 +68,15 @@ namespace Dropy.EditorTools
             weights[7].regularTypeface = oldBold;
             EditorUtility.SetDirty(oldRegular);
 
+            // Kalem öğreticisinin el yazısı.
+            var caveat = MakeFont($"{FontFolder}/Caveat/Caveat-Variable.ttf", "Caveat");
+            var tutorial = AssetDatabase.LoadAssetAtPath<TutorialData>(BuildCaseFiles.TutorialPath);
+            if (tutorial != null)
+            {
+                tutorial.font = caveat;
+                EditorUtility.SetDirty(tutorial);
+            }
+
             var style = Style();
             style.tvFont = oswald;
             style.headlineFont = oswald;

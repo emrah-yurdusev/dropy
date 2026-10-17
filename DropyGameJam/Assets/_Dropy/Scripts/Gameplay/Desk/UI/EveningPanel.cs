@@ -229,7 +229,7 @@ namespace Dropy.Gameplay
                 bondLine +
                 "\n\n<size=80%>Eve yürünmez. Alışveriş telefondan.</size>";
             phoneFooter.text = !shopOpen ? "Dükkân kapandı."
-                : day == Economy.LastPaidDay ? "Dükkân bu akşam son kez açık." : "";
+                : day == Economy.LastEvening ? "Dükkân bu akşam son kez açık. Deprem kapıda." : "";
             ShowMessages(messages);
             Refresh(money, purchased, paidNeeds, bond, bondMax);
 

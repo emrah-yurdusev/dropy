@@ -89,10 +89,7 @@ namespace Dropy.Gameplay
                 page.boxes.Add(needs);
 
             page.footerLeft = string.Format(t.footerReport, DeskHud.CountCorrect(results), results.Count);
-            bool house = boughtOn.ContainsKey(ShopItem.Retrofit);
-            page.footerRight = money < 0 ? string.Format(t.footerDebt, Ui.Money(-money))
-                : money > 0 && !house ? string.Format(t.footerCashNoHouse, Ui.Money(money))
-                : string.Format(t.footerCash, Ui.Money(money));
+            page.footerRight = money < 0 ? string.Format(t.footerDebt, Ui.Money(-money)) : string.Format(t.footerCash, Ui.Money(money));
             return page;
         }
 
@@ -130,26 +127,23 @@ namespace Dropy.Gameplay
             return page;
         }
 
-        /// <summary>Evin kutusu: üç hazırlık ve ailenin sonu (ev ayakta mı, yıkıldıysa ailene ne kadar çabuk ulaşıldı).</summary>
+        /// <summary>Evin kutusu: iki hazırlık ve ailenin sonu. Sabitleme Elif'i korur, çanta karanlık geceyi ve yardımı.</summary>
         static NewsBox Home(IDictionary<ShopItem, int> boughtOn, bool estranged, NewspaperTexts t)
         {
-            bool bag = boughtOn.TryGetValue(ShopItem.Bag, out int bagDay);
+            bool bag = boughtOn.ContainsKey(ShopItem.Bag);
             bool fixing = boughtOn.ContainsKey(ShopItem.Fixing);
-            bool house = boughtOn.ContainsKey(ShopItem.Retrofit);
             var box = new NewsBox { title = t.boxHome, column = 0 };
-            // Akşam alınan eşya o günün depreminden sonra gelir: 3. akşam alınan çanta ilk depremi kaçırmıştır.
-            box.lines.Add(!bag ? Bad + t.bagNone : bagDay < Economy.QuakeDays[0] ? Good + t.bagEarly : Good + t.bagLate);
-            box.lines.Add(fixing ? Good + t.fixingYes : Bad + t.fixingNo);
-            box.lines.Add(house ? Good + t.retrofitYes : Bad + t.retrofitNo);
+            box.lines.Add(bag ? Good + t.bagReady : Bad + t.bagNone);
+            box.lines.Add(fixing ? Good + t.fixingDone : Bad + t.fixingMissing);
 
-            if (house && bag && fixing)
+            if (bag && fixing)
                 box.verdict = t.verdictSafe;
-            else if (house)
-                box.verdict = t.verdictStandingUnprepared;
+            else if (fixing)
+                box.verdict = t.verdictNoBag;
             else
-                box.verdict = bag ? t.verdictCollapsedBag : t.verdictCollapsedNoBag;
+                box.verdict = bag ? t.verdictNoFixing : t.verdictNone;
             if (estranged)
-                box.verdict += " " + (house ? t.estrangedHouse : t.estrangedHospital);
+                box.verdict += " " + t.estrangedHouse;
             return box;
         }
 
@@ -165,6 +159,6 @@ namespace Dropy.Gameplay
         /// <summary>İskân günü müteahhidin söylediği söz, şimdi enkazın altına yazılır.</summary>
         static string Quote(DeskManager.CaseResult r, NewspaperTexts t) =>
             string.Format(t.contractorQuote, r.buildingCase.contractorName,
-                r.seal == Seal.ShearWall ? r.buildingCase.shearWallLine : r.buildingCase.approvedLine);
+                !string.IsNullOrEmpty(r.spokenLine) ? r.spokenLine : DeskManager.SealLine(r.buildingCase, r.seal));
     }
 }

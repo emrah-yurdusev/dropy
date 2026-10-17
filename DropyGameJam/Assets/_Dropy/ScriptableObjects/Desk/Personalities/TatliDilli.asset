@@ -1,0 +1,52 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f3fcd023ca25f0e469d4a301ff89633e, type: 3}
+  m_Name: TatliDilli
+  m_EditorClassIdentifier: 
+  typeName: TatliDilli
+  description: "Tatl\u0131 dilli teyze. B\xF6rek ikram eder, torunlar\u0131ndan bahseder;
+    dikkati kusurdan ba\u015Fka yere \xE7eker."
+  lines:
+    address: "evlad\u0131m"
+    typingSpeed: 0.9
+    greetings:
+    - "Hay\u0131rl\u0131 sabahlar {hitap}, b\xF6rek getirdim, s\u0131cac\u0131k."
+    firmHonest:
+    - Tabii {hitap}, sen bilirsin.
+    firmDishonest:
+    - "Kitap m\u0131? Ay {hitap}, ben anlamam o i\u015Flerden, sen bak\u0131ver."
+    softHonest:
+    - "Sa\u011F ol {hitap}."
+    softDishonest:
+    - "Sa\u011F ol {hitap}, Allah ne murad\u0131n varsa versin."
+    fields:
+    - field: claimed
+      defensive: 1
+      text: "\u0130ki k\xE2\u011F\u0131tta da {rapor} yaz\u0131yor {hitap}, daha
+        ne olsun?"
+    - field: lab
+      defensive: 1
+      text: "Laboratuvar\u0131n \xE7ocu\u011Fu \xE7ok efendi, yanl\u0131\u015F yazmaz."
+    - field: hammer
+      defensive: 1
+      text: "O alet bozuktur {hitap}, nem kapm\u0131\u015Ft\u0131r. Benim k\xE2\u011F\u0131d\u0131ma
+        bak sen."
+    tics:
+    - "Torunlar\u0131m i\xE7in {hitap}."
+    - "B\xF6rek so\u011Fumas\u0131n."
+    approved:
+    - "Allah raz\u0131 olsun {hitap}! Torunlara m\xFCjdeyi vereyim."
+    rejected:
+    - "Beton mu? Betoncu bana yemin etmi\u015Fti {hitap}... Torunlara ne diyece\u011Fim?"
+    shearWall: []
+    unjustReject:
+    - "Ay {hitap}, beton {rapor} diyor k\xE2\u011F\u0131t. Neyi be\u011Fenmedin?"

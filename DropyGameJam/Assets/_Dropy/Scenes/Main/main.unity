@@ -4860,6 +4860,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   background: {fileID: 21300000, guid: 8b503f3640f5d55468483c48d582d0fe, type: 3}
+  liveBackground: 0
   gameScene: 
   enableOnStart:
   - {fileID: 960645095}
@@ -14795,25 +14796,14 @@ MonoBehaviour:
     reject: {fileID: 2800000, guid: f324ee945366df24483a3ec796769411, type: 3}
     shearWall: {fileID: 2800000, guid: bf6c64c45705be54588aba28fe3c599b, type: 3}
     hotspot: {x: -1, y: -1}
+  tutorial: {fileID: 11400000, guid: d47899d9e9687b94194cd968082009b4, type: 2}
   cases:
   - {fileID: 11400000, guid: 59dd8e2ccc51d09489b0212c36774432, type: 2}
   - {fileID: 11400000, guid: 539c8f05b44557945a388c7ff694897c, type: 2}
-  - {fileID: 11400000, guid: 878f605ee9a935e4589a50402955940c, type: 2}
-  - {fileID: 11400000, guid: 26927a6027f3d23498323e34cb84f8a6, type: 2}
   - {fileID: 11400000, guid: cad8d8069ac676b4cbd3386c8d9a8f68, type: 2}
-  - {fileID: 11400000, guid: dc2fa8bdc76fb6142a3be3bf36383ded, type: 2}
-  - {fileID: 11400000, guid: 2d12b7e758147304885356af262cd532, type: 2}
-  - {fileID: 11400000, guid: fb0c0151a53ca7448a9b0dfd201466ef, type: 2}
-  - {fileID: 11400000, guid: ebb36597000f08b4db29f90b0c3806d4, type: 2}
-  - {fileID: 11400000, guid: 6b3003eda88faff4d85f479a90946fb6, type: 2}
-  - {fileID: 11400000, guid: 3f10e86862094334e80ebf7ec1c1a61a, type: 2}
-  - {fileID: 11400000, guid: d7d3739f85d5e3b4fa78db56899e5b88, type: 2}
-  - {fileID: 11400000, guid: f0271633f1d431c4daa783bb37bd3e4e, type: 2}
-  - {fileID: 11400000, guid: 09e2150ac34fcfe4485dff9597a5decb, type: 2}
   - {fileID: 11400000, guid: 9ac03a467c981484cb0d0e4e6f4b1b83, type: 2}
-  - {fileID: 11400000, guid: 0f3579dee61e66145b762e1ea80da8e0, type: 2}
-  - {fileID: 11400000, guid: 1986bdf522e0ac144b57f71a1ed2b462, type: 2}
-  - {fileID: 11400000, guid: 05a98307ff5209f4c847b60b61d512a9, type: 2}
+  - {fileID: 11400000, guid: f0271633f1d431c4daa783bb37bd3e4e, type: 2}
+  - {fileID: 11400000, guid: 878f605ee9a935e4589a50402955940c, type: 2}
   defaultContractors:
   - {fileID: 8857029950995756909, guid: 14074826b5076484292140bf5682ecbf, type: 3}
   - {fileID: 8567182205158294849, guid: 64e470ade627ea54d8f85cc0c76e5dfb, type: 3}

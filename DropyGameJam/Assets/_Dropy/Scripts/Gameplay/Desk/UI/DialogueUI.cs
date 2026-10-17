@@ -19,6 +19,9 @@ namespace Dropy.Gameplay
         static readonly Color ChoiceColor = new Color(0.17f, 0.36f, 0.62f);
 
         [SerializeField, Min(1f)] float charsPerSecond = 45f;
+
+        /// <summary>Konuşanın yazı hızı çarpanı (müteahhidin kişiliğinden; telefon ve müdür için 1).</summary>
+        public float SpeedMultiplier { get; set; } = 1f;
         [Tooltip("Balonun kafanın ne kadar üstünde duracağı (metre)")]
         [SerializeField] float headOffset = 0.32f;
 
@@ -115,7 +118,7 @@ namespace Dropy.Gameplay
                 bubble.localScale = Vector3.Lerp(bubble.localScale, Vector3.one, 0.3f);
                 if (AdvancePressed())
                     shown = total;
-                shown += charsPerSecond * Time.deltaTime;
+                shown += charsPerSecond * SpeedMultiplier * Time.deltaTime;
                 bodyText.maxVisibleCharacters = Mathf.Min(total, Mathf.FloorToInt(shown));
                 yield return null;
             }

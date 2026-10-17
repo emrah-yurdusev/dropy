@@ -1,0 +1,31 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4f92cf41a1ab2d3458cfda3176bbe13a, type: 3}
+  m_Name: Gul
+  m_EditorClassIdentifier: 
+  displayName: "G\xFCl Han\u0131m"
+  prefab: {fileID: 0}
+  personality: {fileID: 11400000, guid: 30280a737b2c04146bc7a0f920f734ac, type: 2}
+  overrides:
+    address: 
+    typingSpeed: 0
+    greetings: []
+    firmHonest: []
+    firmDishonest: []
+    softHonest: []
+    softDishonest: []
+    fields: []
+    tics: []
+    approved: []
+    rejected: []
+    shearWall: []
+    unjustReject: []

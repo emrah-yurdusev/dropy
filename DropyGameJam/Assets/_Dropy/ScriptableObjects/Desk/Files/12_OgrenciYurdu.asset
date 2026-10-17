@@ -13,6 +13,7 @@ MonoBehaviour:
   m_Name: 12_OgrenciYurdu
   m_EditorClassIdentifier: 
   contractorName: Ozan Bey
+  contractor: {fileID: 11400000, guid: 8d7f8d3e7b02d44458e66a7ae5c3eac9, type: 2}
   contractorPrefab: {fileID: 0}
   buildingName: "\xD6\u011Frenci Yurdu"
   floors: 5
@@ -27,7 +28,7 @@ MonoBehaviour:
   note: 
   noteAnswer: 
   damage: 0
-  hammerConcrete: 30
+  hammerConcrete: 0
   approveFeeOverride: 4000
   bribe: 0
   bribeOffer: 
@@ -36,37 +37,31 @@ MonoBehaviour:
   dialogue: {fileID: 0}
   callbacks: []
   introLines:
-  - "Fikret size bahsetmi\u015Ftir. Ozan."
-  - "Yurt acil, d\xF6nem ba\u015Fl\u0131yor. \xC7ocuklar kap\u0131da kalmas\u0131n."
+  - "Yurt acil, d\xF6nem ba\u015Fl\u0131yor. \u0130ki y\xFCz \xF6\u011Frenci kap\u0131da
+    kalmas\u0131n."
   - "Siz onay\u0131 bas\u0131n, zahmetinize kar\u015F\u0131l\u0131k d\xF6rt bin.
     Kimse bir \u015Fey demez."
   questions:
   - question: Kolonlar neden kesik?
-    answer: "Odalar geni\u015F olsun diye biraz a\xE7t\u0131k. \xD6\u011Frenciler
-      kalabal\u0131k."
-  - question: "D\xF6rt bin ne demek?"
-    answer: "Te\u015Fekk\xFCr. Kira, fatura... Sizin de bir aileniz var, de\u011Fil
-      mi?"
-  approvedLine: "Ak\u0131ll\u0131 adams\u0131n\u0131z. Kimse bir \u015Fey demez."
-  shearWallLine: Perde mi? Masraf ama... peki, ekletiriz.
-  rejectedLine: "Pi\u015Fman olacaks\u0131n\u0131z. Bu \u015Fehirde herkes beni tan\u0131r."
+    answer: "Odalar geni\u015F olsun diye biraz a\xE7t\u0131k. Ta\u015F\u0131r {hitap},
+      ta\u015F\u0131r."
+  approvedLine: 
+  shearWallLine: 
+  rejectedLine: 
   rejectPressure:
   - condition: 0
     text: "Bir dakika. Acele etmeyin, bir daha d\xFC\u015F\xFCn\xFCn."
   - condition: 1
-    text: "Kira d\xFC\u015F\xFCnce kasan\u0131zda {kasa} kalacak. Evinizin onar\u0131m\u0131
-      4.500 TL. Eksi\u011Finiz {eksik}."
+    text: "Kira d\xFC\u015F\xFCnce kasan\u0131zda {kasa} kalacak. Evde {hazirlik}
+      h\xE2l\xE2 yok; a\xE7\u0131\u011F\u0131n\u0131z {eksik}."
   - condition: 1
-    text: "Bu d\xF6rt bin o a\xE7\u0131\u011F\u0131 kapat\u0131r. Aileniz o hasarl\u0131
-      evde oturuyor, de\u011Fil mi?"
+    text: "Bu d\xF6rt bin o a\xE7\u0131\u011F\u0131 kapat\u0131r. Bir baba ailesini
+      korumaz m\u0131?"
   - condition: 2
-    text: "K\u0131z\u0131n\u0131z\u0131n do\u011Fum g\xFCn\xFC yakla\u015F\u0131yormu\u015F...
-      Fikret s\xF6yledi. Bir baba eli bo\u015F gitmez."
-  - condition: 3
-    text: "Fikret'in paras\u0131n\u0131 alm\u0131\u015Fs\u0131n\u0131z ama. \u015Eimdi
-      mi namuslu oldunuz?"
+    text: "K\u0131z\u0131n\u0131z geziye gidemedi diye duydum... Bir baba eli bo\u015F
+      durur mu?"
   - condition: 4
     text: "Bu \u015Fehirde herkes beni tan\u0131r. Bug\xFCn reddedersiniz, yar\u0131n
       kap\u0131n\u0131z\u0131 kimse \xE7almaz."
   collapseHeadline: "\xD6\u011Frenci yurdu \xE7\xF6kt\xFC"
-  standingLine: 
+  standingLine: "\xD6\u011Frenci Yurdu ayakta."

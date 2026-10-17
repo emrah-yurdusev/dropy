@@ -6,6 +6,9 @@ EditorBuildSettings:
   serializedVersion: 2
   m_Scenes:
   - enabled: 1
+    path: Assets/_Dropy/Scenes/Menu/MenuSahnesi.unity
+    guid: 03237fb9c22b6ab4b863f5e8becc1e46
+  - enabled: 1
     path: Assets/_Dropy/Scenes/Main/main.unity
     guid: 7c0525bc78019ed46a8771ada7a366c8
   - enabled: 1

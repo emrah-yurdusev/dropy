@@ -15,6 +15,7 @@ MonoBehaviour:
   bookTitle: "Y\xD6NETMEL\u0130K"
   pages:
   - title: "M\xFCh\xFCrler"
+    topic: 0
     day: 1
     body: "<b>ONAY</b>: +1500 TL har\xE7. \u0130sk\xE2n verilir, aileler ta\u015F\u0131n\u0131r.\n\n<b>RED</b>:
       0 TL. \u0130sk\xE2n verilmez, bina bo\u015F kal\u0131r.\n\n<b>PERDE EKLE</b>:
@@ -22,42 +23,35 @@ MonoBehaviour:
       duvar) eklenir, sonra isk\xE2n verilir."
     why: 
   - title: Beton
+    topic: 1
     day: 1
     body: "Ger\xE7ek beton yaln\u0131z <b>C25, C30 ya da C35</b> olabilir. Ba\u015Fka
       her beton: RED.\n\nK\xFCnye ile ek rapor farkl\u0131ysa <b>ek rapor</b> ge\xE7erlidir.\n\nKitapta
-      yazmayan kusur (balkon, boya, kap\u0131 rengi, korkuluk) reddettirmez: ONAY."
+      yazmayan kusur (balkon, boya, kap\u0131 rengi) reddettirmez: ONAY."
     why: "Zay\u0131f beton deprem y\xFCk\xFCn\xFC ta\u015F\u0131yamaz. B\xFCy\xFCk
       depremlerden sonraki incelemelerde y\u0131k\u0131lan pek \xE7ok binada betonun
       projede yazandan \xE7ok daha zay\u0131f \xE7\u0131kt\u0131\u011F\u0131 g\xF6r\xFCld\xFC."
   - title: "Yumu\u015Fak kat"
+    topic: 2
     day: 2
     body: "Zemin kat <b>market</b> ve tavan\u0131 <b>4 m ya da daha y\xFCksek</b>,
-      perde yoksa: yumu\u015Fak kat. PERDE EKLE ya da RED.\n\nKolon <b>kesik</b>
-      ise yaln\u0131z RED. Perde kesik kolonu kurtarmaz."
+      perde yoksa: yumu\u015Fak kat.\n\nPERDE EKLE ya da RED."
     why: "Zemin kat\u0131 d\xFCkk\xE2n olup duvarlar\u0131 kald\u0131r\u0131lan binalarda
       deprem y\xFCk\xFC o katta toplan\u0131r ve kat \xE7\xF6ker; 1999 ve 2023 depremlerinde
-      en s\u0131k g\xF6r\xFClen y\u0131k\u0131lma bi\xE7imlerinden biri buydu. Kolon
-      binan\u0131n ta\u015F\u0131y\u0131c\u0131s\u0131d\u0131r; yer a\xE7mak i\xE7in
-      kesilen kolon b\xFCt\xFCn binay\u0131 riske atar."
-  - title: "Zemin ve \xE7eki\xE7"
+      en s\u0131k g\xF6r\xFClen y\u0131k\u0131lma bi\xE7imlerinden biri buydu."
+  - title: Kolon
+    topic: 3
+    day: 2
+    body: "Kolon <b>kesik</b> ise yaln\u0131z RED. Perde kesik kolonu kurtarmaz."
+    why: "Kolon binan\u0131n ta\u015F\u0131y\u0131c\u0131s\u0131d\u0131r; yer a\xE7mak
+      i\xE7in kesilen kolon b\xFCt\xFCn binay\u0131 riske atar."
+  - title: "\xC7eki\xE7"
+    topic: 4
     day: 3
-    body: "<b>Kum</b> zemin ve <b>5 ya da daha fazla kat</b>: kaz\u0131k temel \u015Fart.
-      Radye temel: RED.\n\n<b>\xC7eki\xE7</b> betonun ger\xE7ek dayan\u0131m\u0131n\u0131
-      \xF6l\xE7er. \xC7ekicin okudu\u011Fu beton iki k\xE2\u011F\u0131d\u0131 da
-      ge\xE7ersiz k\u0131lar. \xC7eki\xE7 <b>g\xFCnde 2 kez</b> kullan\u0131labilir:
-      hangi dosyay\u0131 \xF6l\xE7ece\u011Fini sen se\xE7ersin."
-    why: "Suya doygun kum depremde s\u0131v\u0131la\u015F\u0131p ta\u015F\u0131ma
-      g\xFCc\xFCn\xFC yitirebilir; kaz\u0131k temel y\xFCk\xFC alttaki sa\u011Flam
-      katmana indirir. Schmidt \xE7ekici beton y\xFCzeyinin sertli\u011Finden dayan\u0131m\u0131n\u0131
+    body: "<b>\xC7eki\xE7</b> betonun ger\xE7ek dayan\u0131m\u0131n\u0131 \xF6l\xE7er.
+      \xC7ekicin okudu\u011Fu beton iki k\xE2\u011F\u0131d\u0131 da ge\xE7ersiz k\u0131lar.\n\n\xC7eki\xE7
+      <b>g\xFCnde 1 kez</b> kullan\u0131labilir: hangi dosyay\u0131 \xF6l\xE7ece\u011Fini
+      sen se\xE7ersin."
+    why: "Schmidt \xE7ekici beton y\xFCzeyinin sertli\u011Finden dayan\u0131m\u0131n\u0131
       tahmin eder; k\xE2\u011F\u0131ttaki de\u011Feri sahada do\u011Frulaman\u0131n
       h\u0131zl\u0131 yolu."
-  - title: Hasar
-    day: 4
-    body: "Depremden sonra gelen dosyalarda ek raporda <b>hasar tespiti</b> yazar.\n\n<b>Hafif</b>
-      hasar (s\u0131va \xE7atla\u011F\u0131): onar\u0131labilir; di\u011Fer kurallar
-      aynen ge\xE7erli.\n\n<b>A\u011F\u0131r</b> hasar (kolonda \xE7atlak): onar\u0131m
-      izni verilmez: RED."
-    why: "Kolondaki \xE7apraz \xE7atlak, ta\u015F\u0131y\u0131c\u0131n\u0131n y\xFCk\xFC
-      ta\u015F\u0131yamad\u0131\u011F\u0131n\u0131 g\xF6sterir. B\xF6yle bir bina
-      ikinci depremde \xE7\xF6kebilir; s\u0131vayla kapatmak \xE7atla\u011F\u0131
-      yok etmez, yaln\u0131zca gizler."

@@ -31,6 +31,9 @@ namespace Dropy.Gameplay
 
         public Seal Active { get; private set; }
 
+        /// <summary>Mühür tepsisindeki düğme (öğretici ok çizerken hedef alır).</summary>
+        public RectTransform SlotRect(Seal seal) => slots.TryGetValue(seal, out var slot) ? (RectTransform)slot.button.transform : null;
+
         /// <summary>Eldeki mühür değişti (None = bırakıldı). İmleç buna göre damgaya döner.</summary>
         public event System.Action<Seal> ActiveChanged;
 

@@ -1,0 +1,54 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f3fcd023ca25f0e469d4a301ff89633e, type: 3}
+  m_Name: Profesyonel
+  m_EditorClassIdentifier: 
+  typeName: Profesyonel
+  description: "Sakin, net, belgeye h\xE2kim. Tutars\u0131zl\u0131\u011F\u0131 ba\u015Ftan
+    s\xF6yler, haks\u0131z rede kay\u0131t d\xFC\u015Fer."
+  lines:
+    address: 
+    typingSpeed: 1.1
+    greetings:
+    - "G\xFCnayd\u0131n. Dosyada bir tutars\u0131zl\u0131k g\xF6receksiniz, ba\u015Ftan
+      s\xF6yleyeyim."
+    firmHonest:
+    - "Do\u011Fru yakla\u015F\u0131m. Ek rapora bakman\u0131z\u0131 \xF6neririm."
+    firmDishonest:
+    - "Kitap ortada. \u0130nceleyin."
+    softHonest:
+    - "Te\u015Fekk\xFCrler. K\xE2\u011F\u0131tlar d\xFCzenli."
+    softDishonest:
+    - "Te\u015Fekk\xFCrler."
+    fields:
+    - field: claimed
+      defensive: 0
+      text: "K\xFCnyeyi stajyer doldurdu, eski projeden kopyalam\u0131\u015F. Ge\xE7erli
+        olan ek rapor: {rapor}."
+    - field: lab
+      defensive: 0
+      text: "\xDC\xE7 numune, yirmi sekiz g\xFCn. Usul\xFCne uygun: {rapor}."
+    - field: hammer
+      defensive: 0
+      text: "\xD6l\xE7t\xFCn\xFCz, {cekic}. K\xE2\u011F\u0131tlarla ayn\u0131."
+    tics:
+    - "Kay\u0131tlara ge\xE7sin."
+    - "Usul\xFCne uygun."
+    approved:
+    - "Do\u011Fru okudunuz. \u0130yi \xE7al\u0131\u015Fmalar."
+    rejected:
+    - "K\xFCnyedeki bir yaz\u0131m hatas\u0131 y\xFCz\xFCnden mi? Ek raporu okumad\u0131n\u0131z
+      m\u0131?"
+    shearWall: []
+    unjustReject:
+    - "Ek rapor {rapor} diyor; kitaba g\xF6re ge\xE7erli olan o. Karar\u0131n\u0131z\u0131
+      kayda ge\xE7iriyorum."

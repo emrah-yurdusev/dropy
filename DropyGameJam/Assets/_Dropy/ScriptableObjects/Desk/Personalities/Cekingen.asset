@@ -1,0 +1,50 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f3fcd023ca25f0e469d4a301ff89633e, type: 3}
+  m_Name: Cekingen
+  m_EditorClassIdentifier: 
+  typeName: Cekingen
+  description: "Utanga\xE7, kekeleyen, saf. Kendisi de kand\u0131r\u0131lm\u0131\u015F
+    olabilir; k\u0131zmaz, \xFCz\xFCl\xFCr."
+  lines:
+    address: efendim
+    typingSpeed: 0.8
+    greetings:
+    - "\u015E-\u015Fey... G\xFCnayd\u0131n efendim."
+    firmHonest:
+    - "Hakl\u0131s\u0131n\u0131z efendim, bak\u0131n l\xFCtfen."
+    firmDishonest:
+    - "T-tabii efendim, kitap neyse o. Ben bir yanl\u0131\u015F yapmad\u0131m ama...
+      de\u011Fil mi?"
+    softHonest:
+    - "Te\u015Fekk\xFCr ederim..."
+    softDishonest:
+    - "Sa\u011F olun. K\xE2\u011F\u0131tlar\u0131m tam, in\u015Fallah."
+    fields:
+    - field: claimed
+      defensive: 1
+      text: "K\xFCnyede {kunye} yaz\u0131yor efendim... Betoncu \xF6yle dedi, ben
+        de inand\u0131m."
+    - field: lab
+      defensive: 1
+      text: "Rapor mu? \u015E-\u015Fey... Okumad\u0131m a\xE7\u0131k\xE7as\u0131,
+        betoncu getirdi."
+    tics:
+    - "Kusura bakmay\u0131n."
+    - "\u0130lk dosyam da..."
+    approved:
+    - "Ger\xE7ekten mi? Allah raz\u0131 olsun efendim!"
+    rejected:
+    - "Ama... her \u015Fey yazd\u0131\u011F\u0131 gibiydi san\u0131yordum."
+    shearWall: []
+    unjustReject:
+    - "\u015E-\u015Fey... Beton {rapor}, eksik ne var s\xF6yler misiniz?"

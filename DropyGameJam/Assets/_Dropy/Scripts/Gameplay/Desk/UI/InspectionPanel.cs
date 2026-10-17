@@ -103,6 +103,9 @@ namespace Dropy.Gameplay
         /// <summary>Yönetmelik kitabını o güne kadar açılmış sayfalarla günceller.</summary>
         public void SetDay(int day) => book.SetDay(day);
 
+        /// <summary>Yönetmelikte bir konunun sekmesi (öğretici ok çizerken hedef alır).</summary>
+        public RectTransform RuleTab(RuleTopic topic) => book.TabFor(topic);
+
         /// <summary>Dosyanın künyesini ve ek raporunu sağ panelin üstüne koyar.</summary>
         /// <param name="hammersLeft">Çekiç geldiyse bugün kalan kullanım; -1 ise çekiç henüz yok.</param>
         public void LoadCase(BuildingCase buildingCase, int hammersLeft)

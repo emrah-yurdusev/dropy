@@ -35,31 +35,34 @@ namespace Dropy.Gameplay
     }
 
     /// <summary>
-    /// Döngü: 2 bölüm × 3 gün, günde 3 dosya (18 dosya). 3. ve 6. günün son dosyasından sonra deprem olur.
+    /// Döngü: 3 gün, günde 2 dosya (6 dosya). 3. günün son dosyasından sonra deprem olur; 2. gün hafif sarsıntı.
     /// Mühür iskândır: onaylanan binaya aileler taşınır, reddedilen bina boş kalır.
-    /// Rakamlar dürüst tam yola göre ayarlıdır: 1–5. günlerin harcı, kira düşünce çanta + sabitleme + ev onarımına
-    /// (500 + 1.500 + 4.500) yeter ve aileye tek bir küçük istek ödeyecek kadar (500 TL) artar.
+    /// Rakamlar dürüst tam yola göre ayarlıdır: 1–2. günün harcı, kira düşünce çanta + sabitlemeye (500 + 1.000)
+    /// tam yeter, kasa 0'da biter. Aileye ödenen her istek bir güvenlik önleminden ya da rüşvetten çıkar.
     /// Değiştirmeden önce o hesabı yeniden yap (üretici script denetler).
     /// Yanlış onaya para cezası yok: depremde onayladığın bina çökerse hapse girersin. Kasa eksiye düşebilir (borç).
     /// </summary>
     public static class Economy
     {
-        public const int Days = 6;
-        public const int FilesPerDay = 3;
+        public const int Days = 3;
+        public const int FilesPerDay = 2;
         public const int StartMoney = 0;
         public const int ApproveFee = 1500;
         public const int ShearWallFee = 1000;
-        public const int Rent = 1000;
-        /// <summary>Kira 1–5. akşam düşer; dükkân 5. günün sonunda kapanır; 6. gün (deprem günü) mühür para vermez.</summary>
-        public const int LastPaidDay = 5;
+        public const int Rent = 500;
+        /// <summary>Harç her gün alınır. Kira ve dükkân yalnız akşamı olan günlerde (son günden önce).</summary>
+        public const int LastPaidDay = 3;
         /// <summary>Bu günlerin son dosyasından sonra deprem olur.</summary>
-        public static readonly int[] QuakeDays = { 3, 6 };
+        public static readonly int[] QuakeDays = { 3 };
 
         public static bool IsQuakeDay(int day) => System.Array.IndexOf(QuakeDays, day) >= 0;
 
+        /// <summary>Son akşam: dükkân bu akşamdan sonra kapanır.</summary>
+        public static int LastEvening => Days - 1;
+
         /// <summary>Çekiç 3. günden itibaren gelir ve günde bu kadar kullanılabilir; hangi dosyanın ölçüleceği oyuncunun kararı.</summary>
         public const int HammerDay = 3;
-        public const int HammerPerDay = 2;
+        public const int HammerPerDay = 1;
 
         public static int Day(int fileIndex) => fileIndex / FilesPerDay + 1;
     }
@@ -67,39 +70,21 @@ namespace Dropy.Gameplay
     public enum ShopItem
     {
         Bag,
-        Fixing,
-        Retrofit
+        Fixing
     }
 
     public static class Shop
     {
-        public static readonly ShopItem[] Items = { ShopItem.Bag, ShopItem.Fixing, ShopItem.Retrofit };
+        public static readonly ShopItem[] Items = { ShopItem.Bag, ShopItem.Fixing };
 
-        public static int Price(ShopItem item)
-        {
-            switch (item)
-            {
-                case ShopItem.Bag: return 500;
-                case ShopItem.Fixing: return 1500;
-                default: return 4500;
-            }
-        }
+        public static int Price(ShopItem item) => item == ShopItem.Bag ? 500 : 1000;
 
-        public static string Name(ShopItem item)
-        {
-            switch (item)
-            {
-                case ShopItem.Bag: return "Deprem çantası";
-                case ShopItem.Fixing: return "Eşya sabitleme";
-                default: return "Ev onarımı";
-            }
-        }
+        public static string Name(ShopItem item) => item == ShopItem.Bag ? "Deprem çantası" : "Eşya sabitleme";
 
-        /// <summary>Ev onarımı ancak ilk depremde ev hasar aldıktan sonra (o akşamdan itibaren) satılır.</summary>
-        public static int AvailableFrom(ShopItem item) => item == ShopItem.Retrofit ? Economy.QuakeDays[0] : 1;
+        public static int AvailableFrom(ShopItem item) => 1;
 
-        /// <summary>Sabitlemenin işi ilk depremde biter: o akşamdan sonra dükkândan kalkar (geç alınıp "işe yaradı" sanılmasın).</summary>
-        public static int AvailableUntil(ShopItem item) => item == ShopItem.Fixing ? Economy.QuakeDays[0] - 1 : Economy.LastPaidDay;
+        /// <summary>Dükkân son akşama kadar açık; deprem o geceden sonra.</summary>
+        public static int AvailableUntil(ShopItem item) => Economy.LastEvening;
 
         public static bool Offered(ShopItem item, int day) => day >= AvailableFrom(item) && day <= AvailableUntil(item);
     }

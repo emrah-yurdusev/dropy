@@ -31,7 +31,21 @@ namespace Dropy.Gameplay
         /// <summary>Dosyası temiz mi: yönetmelikte hiçbir kusuru yoksa müteahhit rahat konuşur.</summary>
         public static bool IsHonest(BuildingCase c) => BuildingRules.Flaws(c).Count == 0;
 
+        /// <summary>
+        /// Satır cevabı: önce kodun veriye bakarak kurduğu cevap (sakin ya da savunma), sonra kişiliğin o satır ve
+        /// o ruh hali için kalıbı varsa onun yerine o; bazen sonuna müteahhidin kendine has lafı eklenir.
+        /// </summary>
         public static Answer AboutField(BuildingCase c, DocumentField field)
+        {
+            var answer = DefaultAboutField(c, field);
+            string template = Voice.FieldAnswer(c, field.key, answer.defensive);
+            string text = Voice.Fill(template ?? answer.text, c);
+            string tic = Voice.Tic(c);
+            answer.text = string.IsNullOrEmpty(tic) ? text : text + " " + Voice.Fill(tic, c);
+            return answer;
+        }
+
+        static Answer DefaultAboutField(BuildingCase c, DocumentField field)
         {
             var flaws = BuildingRules.Flaws(c);
             bool honest = flaws.Count == 0;

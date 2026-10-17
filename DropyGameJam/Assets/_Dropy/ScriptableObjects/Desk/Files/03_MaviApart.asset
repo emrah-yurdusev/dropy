@@ -13,6 +13,7 @@ MonoBehaviour:
   m_Name: 03_MaviApart
   m_EditorClassIdentifier: 
   contractorName: "Selma Han\u0131m"
+  contractor: {fileID: 11400000, guid: 126b86e5bf7e5e84e937f6c274a5e275, type: 2}
   contractorPrefab: {fileID: 0}
   buildingName: Mavi Apart
   floors: 4
@@ -25,10 +26,9 @@ MonoBehaviour:
   labConcrete: 30
   soil: 1
   note: "Numune: 3 k\xFCp, 28 g\xFCnl\xFCk"
-  noteAnswer: "Laboratuvar \xFC\xE7 numune alm\u0131\u015F, yirmi sekiz g\xFCn bekletmi\u015F.
-    Usul\xFCne uygun."
+  noteAnswer: "\xDC\xE7 numune, yirmi sekiz g\xFCn beklendi. Usul\xFCne uygun."
   damage: 0
-  hammerConcrete: 0
+  hammerConcrete: 30
   approveFeeOverride: 0
   bribe: 0
   bribeOffer: 
@@ -37,20 +37,15 @@ MonoBehaviour:
   dialogue: {fileID: 0}
   callbacks: []
   introLines:
-  - "K\xE2\u011F\u0131tlarda bir tutars\u0131zl\u0131k g\xF6receksiniz, ba\u015Ftan
-    s\xF6yleyeyim."
-  - "K\xFCnyeyi ofisteki \xE7ocuk doldurdu. Ben laboratuvara g\xFCvenirim."
+  - "Mavi Apart, d\xF6rt kat, sekiz daire. Hepsi sat\u0131ld\u0131; aileler bu ak\u015Fam
+    ta\u015F\u0131nmak istiyor."
   questions:
   - question: "K\xFCnyede neden farkl\u0131 beton yaz\u0131yor?"
-    answer: "Eski bir projeden kopyalam\u0131\u015F. D\xF6kt\xFC\u011F\xFCm\xFCz
-      beton raporda ne yaz\u0131yorsa o."
-  - question: "Ka\xE7 daire var?"
-    answer: "Sekiz. Hepsi sat\u0131ld\u0131 bile, aileler ta\u015F\u0131nmay\u0131
-      bekliyor."
-  approvedLine: "Do\u011Fru okudunuz. Te\u015Fekk\xFCrler."
-  shearWallLine: Perde mi? Masraf ama... peki, ekletiriz.
-  rejectedLine: "K\xFCnyedeki bir yaz\u0131m hatas\u0131 y\xFCz\xFCnden mi? Ek raporu
-    okumad\u0131n\u0131z m\u0131?"
+    answer: "Stajyer eski projeden kopyalam\u0131\u015F. Ge\xE7erli olan ek rapor:
+      {rapor}."
+  approvedLine: 
+  shearWallLine: 
+  rejectedLine: 
   rejectPressure: []
-  collapseHeadline: 
-  standingLine: 
+  collapseHeadline: "Mavi Apart \xE7\xF6kt\xFC"
+  standingLine: "Mavi Apart ayakta: sekiz aile sabah\u0131 evinde kar\u015F\u0131lad\u0131."

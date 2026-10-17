@@ -13,6 +13,7 @@ MonoBehaviour:
   m_Name: 02_KiyiEvleri
   m_EditorClassIdentifier: 
   contractorName: Nuri Usta
+  contractor: {fileID: 11400000, guid: ea67b244deb3f8845ae56e869be2caec, type: 2}
   contractorPrefab: {fileID: 0}
   buildingName: "K\u0131y\u0131 Evleri"
   floors: 2
@@ -36,16 +37,14 @@ MonoBehaviour:
   dialogue: {fileID: 0}
   callbacks: []
   introLines:
-  - "\u015E-\u015Fey... \u0130lk kez dosya getiriyorum, kusura bakmay\u0131n."
-  - "\u0130ki katl\u0131, k\xFC\xE7\xFCk bir ev. Annemle babam oturacak."
+  - "\u0130lk kez dosya getiriyorum. \u0130ki katl\u0131 k\xFC\xE7\xFCk bir ev; annemle
+    babam oturacak."
   questions:
-  - question: Neden bu kadar gerginsiniz?
-    answer: "Ge\xE7en ay ba\u015Fka bir b\xFCroda bir saat bekletip geri \xE7evirdiler.
-      K\xE2\u011F\u0131tlar\u0131m tam ama."
   - question: "Beton s\u0131n\u0131f\u0131 ne?"
-    answer: "K\xFCnyede yaz\u0131yor, C25. Fazlas\u0131na param yetmedi a\xE7\u0131k\xE7as\u0131."
-  approvedLine: "Ger\xE7ekten mi? Allah raz\u0131 olsun!"
-  shearWallLine: Perde mi? Masraf ama... peki, ekletiriz.
+    answer: "K\xFCnyede yaz\u0131yor {hitap}, {kunye}. Fazlas\u0131na param yetmedi
+      a\xE7\u0131k\xE7as\u0131."
+  approvedLine: 
+  shearWallLine: 
   rejectedLine: "C20 mi? Betoncu bana C25 diye satt\u0131... Annemlere ne diyece\u011Fim?"
   rejectPressure: []
   collapseHeadline: "K\u0131y\u0131 Evleri \xE7\xF6kt\xFC: betonu C20 \xE7\u0131kt\u0131"

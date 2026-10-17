@@ -1,11 +1,17 @@
 using System.Collections.Generic;
+using System.Linq;
 using TMPro;
 using UnityEngine;
+using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
 namespace Dropy.Gameplay
 {
-    /// <summary>Sol paneldeki sekmeli yönetmelik kitabı. Sayfalar günü gelince açılır.</summary>
+    /// <summary>
+    /// Sol paneldeki sekmeli yönetmelik kitabı. Sayfalar günü gelince açılır. Konusu olan sayfanın sekmesinde ve
+    /// başlığında konu rengi ve rozeti var; sayfanın ya da sekmenin üstüne gelince belgede aynı konudaki satırlar,
+    /// belgede bir satırın üstüne gelince de o konunun sekmesi parlar.
+    /// </summary>
     public class RegulationBook : MonoBehaviour
     {
         static readonly Color Cover = new Color(0.18f, 0.24f, 0.33f);
@@ -21,6 +27,9 @@ namespace Dropy.Gameplay
         TextMeshProUGUI pageBody;
         TextMeshProUGUI pageNumber;
         readonly List<Image> tabs = new List<Image>();
+        readonly List<RuleTopic> tabTopics = new List<RuleTopic>();
+        RectTransform titleBadge;
+        int shownSlot;
 
         public void Build(RectTransform parent, RegulationData regulations)
         {
@@ -61,8 +70,53 @@ namespace Dropy.Gameplay
             pageBody.fontSizeMax = 22f;
             pageNumber = Ui.Text(page, "Number", "", 16f, new Color(0.5f, 0.47f, 0.42f), TextAlignmentOptions.Bottom);
             pageNumber.rectTransform.Stretch(0f, 14f, 0f, 0f);
+            titleBadge = Ui.Rect("TitleBadge", page);
+            titleBadge.anchorMin = titleBadge.anchorMax = new Vector2(1f, 1f);
+            titleBadge.anchoredPosition = new Vector2(-46f, -44f);
+            titleBadge.sizeDelta = new Vector2(34f, 34f);
+
+            // Sayfanın üstüne gelince belgede aynı konudaki satırlar parlar.
+            var trigger = page.gameObject.AddComponent<EventTrigger>();
+            AddTrigger(trigger, EventTriggerType.PointerEnter, () => HighlightShown(true));
+            AddTrigger(trigger, EventTriggerType.PointerExit, () => HighlightShown(false));
+            RuleTopics.Highlighted += OnTopicHighlighted;
 
             SetDay(1);
+        }
+
+        void OnDestroy() => RuleTopics.Highlighted -= OnTopicHighlighted;
+
+        /// <summary>Bir konunun sekmesi (kitapta henüz açılmadıysa null).</summary>
+        public RectTransform TabFor(RuleTopic topic)
+        {
+            int i = tabTopics.IndexOf(topic);
+            return i >= 0 && tabs[i] != null ? tabs[i].rectTransform : null;
+        }
+
+        static void AddTrigger(EventTrigger trigger, EventTriggerType type, System.Action action)
+        {
+            var entry = new EventTrigger.Entry { eventID = type };
+            entry.callback.AddListener(_ => action());
+            trigger.triggers.Add(entry);
+        }
+
+        void HighlightShown(bool on)
+        {
+            var topic = shownSlot < tabTopics.Count ? tabTopics[shownSlot] : RuleTopic.None;
+            if (topic != RuleTopic.None)
+                RuleTopics.Highlight(on ? topic : RuleTopic.None);
+        }
+
+        /// <summary>Belgede bir satırın üstüne gelindi: o konunun sekmesi konu rengine boyanır.</summary>
+        void OnTopicHighlighted(RuleTopic topic)
+        {
+            for (int i = 0; i < tabs.Count; i++)
+            {
+                if (tabs[i] == null)
+                    continue;
+                bool glow = topic != RuleTopic.None && tabTopics[i] == topic;
+                tabs[i].color = glow ? Color.Lerp(RuleTopics.Color(topic), Color.white, 0.35f) : i == shownSlot ? TabSelected : TabColor;
+            }
         }
 
         /// <summary>O güne kadar açılmış sayfaları gösterir ve en yeni sayfayı açar.</summary>
@@ -71,6 +125,7 @@ namespace Dropy.Gameplay
             foreach (var tab in tabs)
                 Destroy(tab.gameObject);
             tabs.Clear();
+            tabTopics.Clear();
             visible.Clear();
             for (int i = 0; i < data.pages.Count; i++)
             {
@@ -78,10 +133,26 @@ namespace Dropy.Gameplay
                     continue;
                 int slot = visible.Count;
                 visible.Add(i);
+                var topic = data.pages[i].topic;
                 var tab = Ui.Button(tabRow, "Tab" + i, data.pages[i].title, TabColor, Ink, 16f);
                 tab.onClick.AddListener(() => ShowPage(slot));
+                if (topic != RuleTopic.None)
+                {
+                    // Sekmenin altında konu rengi şerit: belgedeki aynı renkli satırlarla eşleşir.
+                    var strip = Ui.Image(tab.transform, "TopicStrip", RuleTopics.Color(topic), raycast: false).rectTransform;
+                    strip.anchorMin = new Vector2(0.1f, 0f);
+                    strip.anchorMax = new Vector2(0.9f, 0f);
+                    strip.pivot = new Vector2(0.5f, 0f);
+                    strip.anchoredPosition = new Vector2(0f, 3f);
+                    strip.sizeDelta = new Vector2(0f, 5f);
+                    var tabTrigger = tab.gameObject.AddComponent<EventTrigger>();
+                    AddTrigger(tabTrigger, EventTriggerType.PointerEnter, () => RuleTopics.Highlight(topic));
+                    AddTrigger(tabTrigger, EventTriggerType.PointerExit, () => RuleTopics.Highlight(RuleTopic.None));
+                }
                 tabs.Add(tab.GetComponent<Image>());
+                tabTopics.Add(topic);
             }
+            RuleTopics.SetActive(visible.Select(i => data.pages[i].topic));
             ShowPage(visible.Count - 1);
         }
 
@@ -96,8 +167,15 @@ namespace Dropy.Gameplay
                 ? page.body
                 : $"{page.body}\n\n<size=85%><i><color=#6b5a45>Neden? {page.why}</color></i></size>";
             pageNumber.text = $"— {slot + 1} / {visible.Count} —";
+            shownSlot = slot;
             for (int i = 0; i < tabs.Count; i++)
                 tabs[i].color = i == slot ? TabSelected : TabColor;
+            // Başlık konu renginde, sağ üstte harfli rozet.
+            pageTitle.color = page.topic != RuleTopic.None ? RuleTopics.Color(page.topic) * 0.8f + new Color(0f, 0f, 0f, 0.2f) : Ink;
+            foreach (Transform child in titleBadge)
+                Destroy(child.gameObject);
+            if (page.topic != RuleTopic.None)
+                RuleTopics.Badge(titleBadge, page.topic, 34f).anchoredPosition = Vector2.zero;
         }
     }
 }
