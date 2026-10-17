@@ -14,8 +14,9 @@ namespace Dropy.Gameplay
         const float CaptionDelay = 2.6f;
         const float HoldAfterQuake = 2f;
 
+        /// <summary>Deprem müziği bu sahnenin zamanlamasına göre yazıldı: 0 sn açılış, 2 sn sarsıntı, ~4 sn çöküş.</summary>
         public static IEnumerator Play(IList<string> captions) =>
-            AdditiveCinematic.Play(SceneName, scene => Run(scene, captions));
+            AdditiveCinematic.Play(SceneName, scene => Run(scene, captions), () => Dropy.Core.MusicDirector.Play(Dropy.Core.MusicCue.Earthquake, 0f));
 
         static IEnumerator Run(Scene scene, IList<string> captions)
         {

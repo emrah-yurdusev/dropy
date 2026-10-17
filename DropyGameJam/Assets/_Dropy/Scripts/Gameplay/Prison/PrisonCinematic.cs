@@ -13,8 +13,9 @@ namespace Dropy.Gameplay
         /// <summary>Kapı ~1.2 saniyede çarpar; yazılar ondan hemen sonra gelir.</summary>
         const float CaptionDelay = 1.5f;
 
+        /// <summary>Hapishane müziğindeki vuruş kapının çarptığı ana (~3 sn) denk gelir.</summary>
         public static IEnumerator Play(IList<string> captions) =>
-            AdditiveCinematic.Play(SceneName, scene => Run(scene, captions));
+            AdditiveCinematic.Play(SceneName, scene => Run(scene, captions), () => Dropy.Core.MusicDirector.Play(Dropy.Core.MusicCue.Prison, 0f));
 
         static IEnumerator Run(Scene scene, IList<string> captions)
         {

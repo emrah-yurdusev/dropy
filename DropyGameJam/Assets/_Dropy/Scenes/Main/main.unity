@@ -3162,7 +3162,7 @@ MonoBehaviour:
   gameScene: 
   enableOnStart:
   - {fileID: 960645095}
-  menuMusic: {fileID: 0}
+  menuMusic: {fileID: 8300000, guid: 0eccf2fcc081878429c40b2b8dc1f206, type: 3}
   clickSound: {fileID: 0}
   hoverSound: {fileID: 0}
 --- !u!4 &319407324

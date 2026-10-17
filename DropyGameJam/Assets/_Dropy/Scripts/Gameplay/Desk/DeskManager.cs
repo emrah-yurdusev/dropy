@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using Dropy.Core;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.InputSystem;
@@ -225,7 +226,10 @@ namespace Dropy.Gameplay
                 Debug.LogWarning($"DeskManager: {expected} dosya bekleniyordu, {cases.Length} var. Dropy > Dosyaları Üret ile kur.");
 
             if (startIndex == 0)
+            {
+                MusicDirector.Play(MusicCue.OfficeCalm);
                 yield return hud.Briefing();
+            }
 
             int startDay = Economy.Day(startIndex);
             if (eveningFirst && startDay > 1)
@@ -245,6 +249,7 @@ namespace Dropy.Gameplay
                 int firstFile = day == startDay ? startIndex % Economy.FilesPerDay : 0;
                 inspection.SetDay(day);
                 Sfx.Ambience(0.03f + 0.035f * day);
+                MusicDirector.Play(OfficeMusic(day));
                 if (firstFile == 0)
                 {
                     shearWallUsedToday = false;
@@ -277,6 +282,10 @@ namespace Dropy.Gameplay
 
         int IncomeOf(int forDay) => results.Where(r => r.day == forDay).Sum(r => r.money);
 
+        /// <summary>Deprem günleri ve sondan bir önceki gün gergin parça, diğer günler sakin parça.</summary>
+        static MusicCue OfficeMusic(int forDay) =>
+            Economy.IsQuakeDay(forDay) || forDay == Economy.Days - 1 ? MusicCue.OfficeTense : MusicCue.OfficeCalm;
+
         /// <summary>
         /// 6. günün sonu: gazete ve karne. Deprem normalde haftanın akışında oynar; geliştirici paneli doğrudan
         /// sona atlarsa <paramref name="quakeFirst"/> ile önce 6. gün depremi (ve gerekirse hapis) oynatılır.
@@ -291,6 +300,7 @@ namespace Dropy.Gameplay
                     yield break;
             }
             Sfx.Ambience(0f);
+            MusicDirector.Play(MusicCue.Final, 2f);
             var family = story != null
                 ? story.needs.Select(n => (n, paidNeeds.Contains(n)))
                 : Enumerable.Empty<(FamilyNeed, bool)>();
@@ -758,6 +768,7 @@ namespace Dropy.Gameplay
 
         IEnumerator Evening(int income)
         {
+            MusicDirector.Play(MusicCue.Evening);
             // Kira her akşam tam düşer; kasa yetmezse eksiye iner, ev sahibi borcu hatırlatır.
             int rent = Economy.Rent;
             money -= rent;
@@ -892,6 +903,8 @@ namespace Dropy.Gameplay
         /// </summary>
         IEnumerator Earthquake(int quakeDay)
         {
+            // Müzik çekilir, uğultu tek başına kalır; ara sahne kendi müziğini başlatır.
+            MusicDirector.Stop(0.8f);
             hud.Quake("DEPREM");
             Sfx.Rumble(4.5f, 1f);
             yield return Shake(4f, 0.06f);
@@ -909,6 +922,7 @@ namespace Dropy.Gameplay
             {
                 jailed = true;
                 Sfx.Ambience(0f);
+                MusicDirector.Play(MusicCue.Final, 2f);
                 hud.ShowJail(results, fallen, quakeDay);
                 yield break;
             }

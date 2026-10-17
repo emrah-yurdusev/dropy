@@ -26,7 +26,8 @@ namespace Dropy.Gameplay
         public static bool IsPlaying { get; private set; }
 
         /// <param name="body">Sahne yüklenip siyahtan açıldıktan sonra çalışan akış (sekansı başlat, bitmesini bekle).</param>
-        public static IEnumerator Play(string sceneName, Func<Scene, IEnumerator> body)
+        /// <param name="onShown">Sahne hazır olup siyahtan açılmaya başladığı an (ör. ara sahne müziğini o karede başlatmak için).</param>
+        public static IEnumerator Play(string sceneName, Func<Scene, IEnumerator> body, Action onShown = null)
         {
             if (!Application.CanStreamedLevelBeLoaded(sceneName))
             {
@@ -46,6 +47,7 @@ namespace Dropy.Gameplay
             var hidden = HideHost(host);
             SceneManager.SetActiveScene(scene);
 
+            onShown?.Invoke();
             if (caption != null)
                 yield return caption.FadeFromBlack(FadeIn);
             yield return body(scene);
