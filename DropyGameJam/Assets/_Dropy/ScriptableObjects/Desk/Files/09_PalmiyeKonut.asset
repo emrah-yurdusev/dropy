@@ -26,13 +26,14 @@ MonoBehaviour:
   soil: 1
   note: "Korkuluk al\xE7ak"
   noteAnswer: 
+  damage: 0
   hammerConcrete: 25
   approveFeeOverride: 0
   dialogue: {fileID: 0}
   callbacks: []
   introLines:
   - "Korkuluk biraz al\xE7ak kald\u0131, onu ba\u015Ftan s\xF6yleyeyim."
-  - "Bu arada Ozan Bey sizi sordu. Yar\u0131n bir dosyas\u0131 varm\u0131\u015F,
+  - "Bu arada Ozan Bey sizi sordu. Yak\u0131nda bir dosyas\u0131 varm\u0131\u015F,
     yard\u0131mc\u0131 olursan\u0131z unutmazm\u0131\u015F."
   questions:
   - question: Ozan Bey kim?

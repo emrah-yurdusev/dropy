@@ -27,6 +27,7 @@ MonoBehaviour:
   note: "Numune: 3 k\xFCp, 28 g\xFCnl\xFCk"
   noteAnswer: "Laboratuvar \xFC\xE7 numune alm\u0131\u015F, yirmi sekiz g\xFCn bekletmi\u015F.
     Usul\xFCne uygun."
+  damage: 0
   hammerConcrete: 0
   approveFeeOverride: 0
   dialogue: {fileID: 0}

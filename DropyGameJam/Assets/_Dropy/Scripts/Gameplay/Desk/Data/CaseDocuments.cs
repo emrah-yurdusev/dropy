@@ -8,7 +8,7 @@ namespace Dropy.Gameplay
     {
         public const string Name = "name", Floors = "floors", Claimed = "claimed", Use = "use", Height = "height",
             Foundation = "foundation", Columns = "columns", ShearWall = "shearwall",
-            Lab = "lab", Soil = "soil", Note = "note", Hammer = "hammer";
+            Lab = "lab", Soil = "soil", Note = "note", Hammer = "hammer", Damage = "damage";
     }
 
     /// <summary>Bir dosyanın masadaki iki kâğıdını (künye, ek rapor) vakadan üretir.</summary>
@@ -38,6 +38,8 @@ namespace Dropy.Gameplay
             Add(doc, FieldKey.Lab, "Laboratuvar betonu", BuildingCase.Concrete(c.labConcrete));
             Add(doc, FieldKey.Soil, "Zemin", Soil(c.soil));
             Add(doc, FieldKey.Note, "Not", string.IsNullOrEmpty(c.note) ? "—" : c.note);
+            if (c.damage != DamageLevel.None)
+                Add(doc, FieldKey.Damage, "Hasar tespiti", c.damage == DamageLevel.Heavy ? "Ağır (kolonda çatlak)" : "Hafif (sıva çatlağı)");
             return doc;
         }
 

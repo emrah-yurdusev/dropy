@@ -26,6 +26,7 @@ MonoBehaviour:
   soil: 0
   note: "Kap\u0131 rengi projeden farkl\u0131"
   noteAnswer: 
+  damage: 0
   hammerConcrete: 30
   approveFeeOverride: 0
   dialogue: {fileID: 0}

@@ -18,11 +18,7 @@ MonoBehaviour:
     day: 1
     body: "<b>ONAY</b>: +1000 TL. Bina yap\u0131l\u0131r.\n\n<b>RED</b>: 0 TL. Bina
       yap\u0131lmaz.\n\n<b>PERDE EKLE</b>: +500 TL, g\xFCnde bir kez. Binaya deprem
-      perdesi (ta\u015F\u0131y\u0131c\u0131 duvar) eklenir, sonra onaylan\u0131r.\n\nKitapta
-      yazan bir kural\u0131 \xE7i\u011Fneyen onay <b>m\xFCfetti\u015F tutana\u011F\u0131</b>
-      yer: ald\u0131\u011F\u0131n har\xE7 ak\u015Fam geri al\u0131n\u0131r. \u0130lk
-      tutanak yaln\u0131zca budur; sonrakilerde \xFCst\xFCne 1.000, 2.000, 3.000
-      TL ceza eklenir."
+      perdesi (ta\u015F\u0131y\u0131c\u0131 duvar) eklenir, sonra onaylan\u0131r."
     why: 
   - title: Beton
     day: 1
@@ -54,3 +50,13 @@ MonoBehaviour:
       katmana indirir. Schmidt \xE7ekici beton y\xFCzeyinin sertli\u011Finden dayan\u0131m\u0131n\u0131
       tahmin eder; k\xE2\u011F\u0131ttaki de\u011Feri sahada do\u011Frulaman\u0131n
       h\u0131zl\u0131 yolu."
+  - title: Hasar
+    day: 4
+    body: "Depremden sonra gelen dosyalarda ek raporda <b>hasar tespiti</b> yazar.\n\n<b>Hafif</b>
+      hasar (s\u0131va \xE7atla\u011F\u0131): onar\u0131labilir; di\u011Fer kurallar
+      aynen ge\xE7erli.\n\n<b>A\u011F\u0131r</b> hasar (kolonda \xE7atlak): onar\u0131m
+      izni verilmez: RED."
+    why: "Kolondaki \xE7apraz \xE7atlak, ta\u015F\u0131y\u0131c\u0131n\u0131n y\xFCk\xFC
+      ta\u015F\u0131yamad\u0131\u011F\u0131n\u0131 g\xF6sterir. B\xF6yle bir bina
+      ikinci depremde \xE7\xF6kebilir; s\u0131vayla kapatmak \xE7atla\u011F\u0131
+      yok etmez, yaln\u0131zca gizler."

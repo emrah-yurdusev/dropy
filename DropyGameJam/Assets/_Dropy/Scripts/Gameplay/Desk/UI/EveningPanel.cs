@@ -56,6 +56,7 @@ namespace Dropy.Gameplay
         readonly Dictionary<ShopItem, ItemRow> rows = new Dictionary<ShopItem, ItemRow>();
         readonly Dictionary<FamilyNeed, ItemRow> requestRows = new Dictionary<FamilyNeed, ItemRow>();
         bool shopOpen;
+        int shopDay;
         bool done;
 
         public event System.Action<ShopItem> BuyClicked;
@@ -208,24 +209,24 @@ namespace Dropy.Gameplay
             head.Place(new Vector2(x, 0.18f), new Vector2(0.5f, 0f), new Vector2(0f, 88f * scale), new Vector2(36f, 36f) * scale);
         }
 
-        /// <param name="bondChange">Dünden bu yana aile bağı farkı (ödenmeyen istekler).</param>
-        public IEnumerator Run(int day, int income, int fine, int rent, int money, ICollection<ShopItem> purchased,
+        /// <param name="bondNote">Aile bağının neden düştüğü (dün ödenmeyen istek, depremde devrilen dolap...); yoksa null.</param>
+        public IEnumerator Run(int day, int income, int rent, int money, ICollection<ShopItem> purchased,
             IList<EveningMessage> messages, ICollection<FamilyNeed> paidNeeds,
-            int bond, int bondMax, int bondChange, bool shopOpen)
+            int bond, int bondMax, string bondNote, bool shopOpen)
         {
             this.shopOpen = shopOpen;
+            shopDay = day;
             // Önce aç: TextMeshPro kapalı nesnede yazı boyutunu ölçemiyor (mesaj balonları ölçülüyor).
             root.gameObject.SetActive(true);
             root.SetAsLastSibling();
-            string bondNote = bond <= 0 ? "\n<color=#a3221b>Ailen seninle konuşmuyor.</color>"
-                : bondChange < 0 ? $"\n<size=80%><color=#a3221b>Dün karşılanmayan istek: aile bağı {bondChange}</color></size>" : "";
+            string bondLine = bond <= 0 ? "\n<color=#a3221b>Ailen seninle konuşmuyor.</color>"
+                : !string.IsNullOrEmpty(bondNote) ? $"\n<size=80%><color=#a3221b>{bondNote}</color></size>" : "";
             ledgerText.text =
                 $"<size=34><b>{day}. gün akşamı</b></size>\n\n" +
                 $"Bugünkü mühürler   <b>+{Ui.Money(income)}</b>\n" +
-                (fine > 0 ? $"<color=#a3221b>Tutanak (harç iadesi + ceza)   <b>-{Ui.Money(fine)}</b></color>\n" : "") +
                 $"Kira   <b>-{Ui.Money(rent)}</b>" +
                 (rent < Economy.Rent ? "\n<size=80%><i>Kiranın tamamı ödenemedi.</i></size>" : "") +
-                bondNote +
+                bondLine +
                 "\n\n<size=80%>Eve yürünmez. Alışveriş telefondan.</size>";
             phoneFooter.text = !shopOpen ? "Dükkân kapandı."
                 : day == Economy.LastPaidDay ? "Dükkân bu akşam son kez açık." : "";
@@ -283,6 +284,9 @@ namespace Dropy.Gameplay
             }
             foreach (var pair in rows)
             {
+                // Ev onarımı ancak ilk depremde ev hasar aldıktan sonra satılır.
+                bool offered = shopDay >= Shop.AvailableFrom(pair.Key);
+                pair.Value.button.gameObject.SetActive(offered);
                 int price = Shop.Price(pair.Key);
                 bool owned = purchased.Contains(pair.Key);
                 string state = owned ? "<color=#6fdc8c>Alındı</color>" : $"{Ui.Money(price)}";
