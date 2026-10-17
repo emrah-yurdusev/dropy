@@ -47,6 +47,8 @@ namespace Dropy.Gameplay
                         ? $"{c.buildingName}. Mahallede yıllardır bu adla bilinir."
                         : $"{c.buildingName}. Tabelası bile asıldı, bir mührünüz kaldı.");
                 case FieldKey.Floors:
+                    if (c.illegalFloors > 0)
+                        return Defend($"{c.floors} kat. Projeye birebir uygun.");
                     return sand
                         ? Defend($"{c.floors} kat. Bu sahilde herkes bu kadar yapıyor.")
                         : Calm($"{c.floors} kat. Fazlasını yapmadık.");
@@ -106,6 +108,8 @@ namespace Dropy.Gameplay
                     return c.damage == DamageLevel.Heavy
                         ? Defend("Bir iki çatlak, deprem sonrası hepsinde var. Sıvayı atarız, boyarız, yeni gibi olur.")
                         : Calm("Sıvada ince çatlaklar var, taşıyıcıya bir şey olmamış. Raporda yazıyor.");
+                case FieldKey.IllegalFloor:
+                    return Defend("Orası kat sayılmaz hocam... Terası kapattık sadece.");
                 case FieldKey.Hammer:
                     return hammerLies
                         ? Defend("Alet şaşırmıştır, nemden olur. Rapora güvenin.")

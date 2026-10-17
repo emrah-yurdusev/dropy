@@ -74,7 +74,7 @@ namespace Dropy.EditorTools
         class Spec
         {
             public string building, contractor, note, noteAnswer;
-            public int floors, claimed, lab, hammer, approveOverride;
+            public int floors, claimed, lab, hammer, approveOverride, illegalFloors;
             public GroundUse use;
             public float height = 2.8f;
             public Foundation foundation;
@@ -322,6 +322,8 @@ namespace Dropy.EditorTools
             s.hammer = 30;
             s.foundation = Foundation.Kazik;
             s.columns = ColumnState.Kesik;
+            // Künyede 5 kat; çatıya bir kat daha çıkılmış. Yalnız bina incelemesinde büyüteçle görünür.
+            s.illegalFloors = 1;
             s.approveOverride = 4000;
             // Yalan yok: yalnızca oyuncunun gerçek durumunu kullanır ({kasa}, {eksik} kira sonrası hesaplanır).
             s.Press(PressureCondition.Always, "Bir dakika. Acele etmeyin, bir daha düşünün.")
@@ -390,6 +392,7 @@ namespace Dropy.EditorTools
             c.foundation = spec.foundation;
             c.columns = spec.columns;
             c.hasShearWall = false;
+            c.illegalFloors = spec.illegalFloors;
             c.labConcrete = spec.lab;
             c.soil = spec.soil;
             c.note = spec.note;

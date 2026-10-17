@@ -82,6 +82,10 @@ namespace Dropy.Gameplay
         [Tooltip("İlk depremden sonra gelen dosyalarda hasar tespiti. Ağır hasarlı bina onarılmaz (4. gün kuralı)")]
         public DamageLevel damage;
 
+        [Header("Yerinde (künyede görünmez)")]
+        [Tooltip("Ruhsattan fazla çıkılmış kat. Künyede yazmaz; bina incelemesinde büyüteçle kırmızı görünür. Kuralı değiştirmez")]
+        [Min(0)] public int illegalFloors;
+
         [Header("Çekiç (3. günden itibaren)")]
         [Tooltip("Çekicin okuduğu beton. 0 ise laboratuvar değeriyle aynı okunur")]
         public int hammerConcrete;
