@@ -26,6 +26,7 @@ MonoBehaviour:
   soil: 0
   note: "Balkon 15 cm ta\u015F\u0131yor"
   noteAnswer: 
+  damage: 0
   hammerConcrete: 0
   approveFeeOverride: 0
   dialogue: {fileID: 0}

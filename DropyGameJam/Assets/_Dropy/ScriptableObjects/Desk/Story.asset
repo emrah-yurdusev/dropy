@@ -23,7 +23,15 @@ MonoBehaviour:
     - "K\xFCnyeye bir m\xFCh\xFCr basars\u0131n. Onay bin lira, red s\u0131f\u0131r.
       Perde ekle be\u015F y\xFCz, g\xFCnde bir kere."
     - "Kitapta yazmayan kusura tak\u0131lma. Ak\u015Fam kira kesilir. Kolay gelsin."
-  - day: 5
+  - day: 4
+    caller: "M\xFCd\xFCr (telefon)"
+    lines:
+    - "Alo, benim. \u0130yi misin, evdekiler iyi mi?"
+    - "\u015Eehir hasar tespitiyle u\u011Fra\u015F\u0131yor. Bakanl\u0131k kitaba
+      yeni madde ekledi: hasarl\u0131 binalar."
+    - "Uzmanlar daha b\xFCy\xFCk bir deprem bekliyor. Onar\u0131m izinlerine dikkatli
+      bak."
+  - day: 6
     caller: "M\xFCd\xFCr (telefon)"
     lines:
     - "Alo, benim. Belediye kasas\u0131 bug\xFCn kapal\u0131, har\xE7 al\u0131nm\u0131yor."
@@ -34,18 +42,22 @@ MonoBehaviour:
   - "Radyo: Uzmanlar b\xF6lgedeki fay hatt\u0131na dikkat \xE7ekiyor."
   - "Radyo: AFAD, deprem \xE7antas\u0131nda su, fener ve ilk yard\u0131m malzemesi
     bulunmas\u0131n\u0131 hat\u0131rlatt\u0131."
-  - "Radyo: D\xFCn gece 3.8 b\xFCy\xFCkl\xFC\u011F\xFCnde bir sars\u0131nt\u0131
-    hissedildi."
-  - "Radyo: Uzmanlar, dolaplar\u0131n duvara sabitlenmesinin can kurtard\u0131\u011F\u0131n\u0131
-    vurguluyor."
-  - "Radyo: Son iki g\xFCnde onlarca k\xFC\xE7\xFCk sars\u0131nt\u0131 kaydedildi.
-    Vatanda\u015Flar tedirgin."
+  - "Radyo: D\xFCn gece hafif bir sars\u0131nt\u0131 hissedildi. Uzmanlar dolaplar\u0131n
+    duvara sabitlenmesini \xF6neriyor."
+  - "Radyo: D\xFCnk\xFC depremin ard\u0131ndan hasar tespit \xE7al\u0131\u015Fmalar\u0131
+    s\xFCr\xFCyor. Uzmanlar art\xE7\u0131lara kar\u015F\u0131 uyar\u0131yor."
+  - "Radyo: Hasarl\u0131 binalara girilmemesi \xE7a\u011Fr\u0131s\u0131 yap\u0131ld\u0131.
+    Uzmanlar daha b\xFCy\xFCk bir deprem olas\u0131l\u0131\u011F\u0131ndan s\xF6z
+    ediyor."
+  - "Radyo: Son iki g\xFCnde onlarca sars\u0131nt\u0131 kaydedildi. Vatanda\u015Flar
+    tedirgin."
   tremors:
   - 0
-  - 0
   - 0.012
-  - 0.02
-  - 0.03
+  - 0
+  - 0
+  - 0.025
+  - 0
   messages:
   - day: 1
     sender: "E\u015Fin"
@@ -74,7 +86,60 @@ MonoBehaviour:
     item: 0
     other: {fileID: 0}
     seal: 0
-  - day: 2
+  - day: 3
+    sender: "E\u015Fin"
+    family: 1
+    text: "Ne sars\u0131nt\u0131yd\u0131! Dolaplar sabit oldu\u011Fu i\xE7in kimseye
+      bir \u015Fey olmad\u0131. Ama duvarlarda \xE7atlaklar var."
+    condition: 1
+    item: 1
+    other: {fileID: 0}
+    seal: 0
+  - day: 3
+    sender: "E\u015Fin"
+    family: 1
+    text: "Elif'in odas\u0131ndaki dolap \xFCst\xFCne devrildi, kolu incindi. Hastaneden
+      yeni d\xF6nd\xFCk. Duvarlarda da \xE7atlaklar var."
+    condition: 2
+    item: 1
+    other: {fileID: 0}
+    seal: 0
+  - day: 3
+    sender: Elif
+    family: 1
+    text: "Baba \xE7antadaki fener \xE7ok i\u015Fe yarad\u0131, elektrikler gitti."
+    condition: 1
+    item: 0
+    other: {fileID: 0}
+    seal: 0
+  - day: 3
+    sender: Elif
+    family: 1
+    text: "Baba karanl\u0131kta \xE7ok korktum, evde fener bile yoktu."
+    condition: 2
+    item: 0
+    other: {fileID: 0}
+    seal: 0
+  - day: 3
+    sender: Ev sahibi
+    family: 0
+    text: "Bina depremde hasar ald\u0131. Dairenizin onar\u0131m\u0131 4.500 TL,
+      telefondaki d\xFCkk\xE2ndan \xF6denebiliyor. \u0130kinci bir deprem olmadan
+      yapt\u0131r\u0131n; d\xFCkk\xE2n 5. ak\u015Fam son kez a\xE7\u0131k."
+    condition: 0
+    item: 0
+    other: {fileID: 0}
+    seal: 0
+  - day: 4
+    sender: "E\u015Fin"
+    family: 1
+    text: "Usta onar\u0131ma 4.500 dedi. Yar\u0131n ak\u015Fama kadar yapt\u0131rmam\u0131z
+      laz\u0131m."
+    condition: 0
+    item: 0
+    other: {fileID: 0}
+    seal: 0
+  - day: 4
     sender: Bilinmeyen numara
     family: 0
     text: "Yak\u0131nda bir dosya gelecek. Yard\u0131mc\u0131 olursan\u0131z unutmam.
@@ -83,42 +148,15 @@ MonoBehaviour:
     item: 0
     other: {fileID: 0}
     seal: 0
-  - day: 3
+  - day: 5
     sender: "E\u015Fin"
     family: 1
-    text: "Usta geldi, dolaplar\u0131 duvara sabitledi. Elif rahat uyudu."
-    condition: 1
-    item: 1
-    other: {fileID: 0}
-    seal: 0
-  - day: 3
-    sender: "E\u015Fin"
-    family: 1
-    text: "Gece Elif'in odas\u0131ndaki dolap salland\u0131, \xE7ok korktuk."
-    condition: 2
-    item: 1
-    other: {fileID: 0}
-    seal: 0
-  - day: 3
-    sender: Ev sahibi
-    family: 0
-    text: "Bina eski, kom\u015Fular g\xFC\xE7lendirme i\xE7in para topluyor. Sizin
-      pay\u0131n\u0131z 4.000 TL. Telefondaki d\xFCkk\xE2ndan \xF6denebiliyor, yar\u0131n
-      ak\u015Fam son g\xFCn."
+    text: "Onar\u0131m paras\u0131 yetiyor mu? D\xFCkk\xE2n bu ak\u015Fam son g\xFCn."
     condition: 0
     item: 0
     other: {fileID: 0}
     seal: 0
-  - day: 4
-    sender: "E\u015Fin"
-    family: 1
-    text: "G\xFC\xE7lendirme paras\u0131 yetiyor mu? Ev sahibi bu ak\u015Fam son
-      g\xFCn dedi."
-    condition: 0
-    item: 0
-    other: {fileID: 0}
-    seal: 0
-  - day: 4
+  - day: 5
     sender: Bilinmeyen numara
     family: 0
     text: "Te\u015Fekk\xFCrler. Kimse bir \u015Fey demez. -O"
@@ -126,7 +164,7 @@ MonoBehaviour:
     item: 0
     other: {fileID: 11400000, guid: 9ac03a467c981484cb0d0e4e6f4b1b83, type: 2}
     seal: 1
-  - day: 4
+  - day: 5
     sender: Bilinmeyen numara
     family: 0
     text: "Pi\u015Fman olacaks\u0131n. -O"
@@ -156,17 +194,16 @@ MonoBehaviour:
     unpaidReply: "\u0130lac\u0131 bu ay alamad\u0131m, idare ederim, sen dert etme."
     endingPaid: "Annenin ilac\u0131 aksamad\u0131."
     endingUnpaid: "Annenin ilac\u0131 bir hafta aksad\u0131."
-  - day: 3
-    name: "Do\u011Falgaz faturas\u0131"
+  - day: 4
+    name: Kombi tamiri
     price: 400
     sender: "E\u015Fin"
-    request: "Do\u011Falgaz faturas\u0131 geldi, 400 TL. Yar\u0131n son g\xFCn, yatmazsa
-      kesecekler."
-    paidReply: "Fatura yatm\u0131\u015F, ev s\u0131cac\u0131k."
-    unpaidReply: "Do\u011Falgaz kesildi. Elif'le battaniyeye sar\u0131nd\u0131k."
+    request: "Depremde kombi bozuldu, tamiri 400 TL. Bu so\u011Fukta Elif hasta olur."
+    paidReply: "Kombi yap\u0131ld\u0131, ev \u0131s\u0131nd\u0131."
+    unpaidReply: "Kombi h\xE2l\xE2 bozuk. Elif'le battaniyeye sar\u0131nd\u0131k."
     endingPaid: "Ev hafta boyunca s\u0131cak kald\u0131."
     endingUnpaid: "Ev iki gece so\u011Fuk kald\u0131."
-  - day: 4
+  - day: 5
     name: "Elif'in do\u011Fum g\xFCn\xFC pastas\u0131"
     price: 300
     sender: Elif

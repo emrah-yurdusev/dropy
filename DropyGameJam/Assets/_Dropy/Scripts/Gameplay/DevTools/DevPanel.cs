@@ -13,7 +13,7 @@ using UnityEngine.UI;
 namespace Dropy.Gameplay
 {
     /// <summary>
-    /// F1 geliştirici paneli: dosya/gün atlama, ara sahneleri oynatma, kasa/güçlendirme/aile bağı hileleri, hız,
+    /// F1 geliştirici paneli: dosya/gün atlama, ara sahneleri oynatma, kasa/ev onarımı/aile bağı hileleri, hız,
     /// sahne yükleme. Editörde ve Development Build'de kendiliğinden kurulur (sahneye eklemeye gerek yok);
     /// yayın derlemesine hiç girmez.
     /// </summary>
@@ -119,7 +119,9 @@ namespace Dropy.Gameplay
             Row(("Bu dosyayı geç", AccentColor, () => Jump(+1)), ("Sonraki güne", AccentColor, NextDay));
             var picker = Row(("<", ButtonColor, () => StepTarget(-1)), ("", ButtonColor, null), (">", ButtonColor, () => StepTarget(+1)), ("Git", AccentColor, JumpToTarget));
             targetLabel = picker[1];
-            Row(("5. gün sonu: depreme git", DangerColor, () => JumpAbsolute(int.MaxValue)));
+            // İki deprem: 3. günün sonu (deprem, ardından 3. akşam) ve 6. günün sonu.
+            Row(("3. gün sonu: 1. deprem", DangerColor, () => JumpAbsolute(Economy.QuakeDays[0] * Economy.FilesPerDay)),
+                ("6. gün sonu: 2. deprem", DangerColor, () => JumpAbsolute(int.MaxValue)));
 
             Header("ARA SAHNELER");
             Row(("Deprem sahnesi", ButtonColor, () => PlayCinematic(prison: false)), ("Hapishane sahnesi", ButtonColor, () => PlayCinematic(prison: true)));
@@ -187,7 +189,7 @@ namespace Dropy.Gameplay
                     ? $"Hafta bitti  ·  {n}/{n} dosya"
                     : $"Gün {Economy.Day(i)}  ·  Dosya {i % Economy.FilesPerDay + 1}/{Economy.FilesPerDay}  ({i + 1}/{n})";
                 state += $"\nKasa {Ui.Money(desk.Money)}  ·  Aile bağı {desk.DebugBond}" +
-                         $"\nÇöken bina {desk.DebugCollapsedCount}  ·  Güçlendirme {(desk.DebugHasRetrofit ? "var" : "yok")}";
+                         $"\nÇöken bina {desk.DebugCollapsedCount}  ·  Ev onarımı {(desk.DebugHasRetrofit ? "var" : "yok")}";
             }
             if (AdditiveCinematic.IsPlaying)
                 state += "\n<color=#ffb070>Ara sahne oynuyor</color>";
@@ -196,7 +198,7 @@ namespace Dropy.Gameplay
 
             modeLabel.text = $"Atlanan dosyalara: <b>{ModeNames[(int)mode]}</b>";
             targetLabel.text = $"Gün {Economy.Day(targetIndex)} · D{targetIndex % Economy.FilesPerDay + 1}";
-            retrofitLabel.text = desk != null && desk.DebugHasRetrofit ? "Güçlendirme: VAR" : "Güçlendirme: YOK";
+            retrofitLabel.text = desk != null && desk.DebugHasRetrofit ? "Ev onarımı: VAR" : "Ev onarımı: YOK";
             speedLabel.text = fast ? $"Hız: {FastScale:0}x" : "Hız: 1x";
         }
 
@@ -242,7 +244,7 @@ namespace Dropy.Gameplay
                 return;
             }
             desk.DebugJumpTo(index, mode);
-            Notify(index >= desk.DebugFileCount ? "5. günün sonuna atlandı." : $"Atlandı: Gün {Economy.Day(index)} · Dosya {index % Economy.FilesPerDay + 1}");
+            Notify(index >= desk.DebugFileCount ? $"{Economy.Days}. günün sonuna atlandı." : $"Atlandı: Gün {Economy.Day(index)} · Dosya {index % Economy.FilesPerDay + 1}");
         }
 
         void ToggleRetrofit() => WithDesk(d => d.DebugSetRetrofit(!d.DebugHasRetrofit));

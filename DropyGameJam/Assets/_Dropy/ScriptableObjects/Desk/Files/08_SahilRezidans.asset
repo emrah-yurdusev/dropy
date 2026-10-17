@@ -27,6 +27,7 @@ MonoBehaviour:
   note: Deniz kumu
   noteAnswer: "Deniz kumu tabii, sahil buras\u0131. Kumun \xFCst\xFCne radye, herkes
     \xF6yle yap\u0131yor."
+  damage: 0
   hammerConcrete: 0
   approveFeeOverride: 0
   dialogue: {fileID: 0}

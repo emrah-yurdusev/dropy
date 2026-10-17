@@ -26,6 +26,7 @@ MonoBehaviour:
   soil: 0
   note: "Cephe boyas\u0131 solmu\u015F"
   noteAnswer: 
+  damage: 0
   hammerConcrete: 0
   approveFeeOverride: 0
   dialogue: {fileID: 0}

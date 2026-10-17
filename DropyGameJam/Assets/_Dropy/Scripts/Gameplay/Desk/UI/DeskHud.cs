@@ -343,8 +343,8 @@ namespace Dropy.Gameplay
 
             sb.AppendLine("\n<size=28><b>EVDE</b></size>");
             sb.AppendLine(Line(purchased, ShopItem.Bag, "Su, fener ve ilk yardım çantası hazırdı.", "Karanlıkta ne su vardı ne fener."));
-            sb.AppendLine(Line(purchased, ShopItem.Fixing, "Dolaplar duvara sabitliydi, yerinde kaldı.", "Sabitlenmemiş dolap Elif'in odasına devrildi."));
-            sb.AppendLine(Line(purchased, ShopItem.Retrofit, "Güçlendirilen apartman ayakta kaldı.", "Güçlendirilmemiş apartman ağır hasar aldı."));
+            sb.AppendLine(Line(purchased, ShopItem.Fixing, "Dolaplar duvara sabitliydi, ilk depremde yerinde kaldı.", "Sabitlenmemiş dolap ilk depremde Elif'in üstüne devrildi."));
+            sb.AppendLine(Line(purchased, ShopItem.Retrofit, "İlk depremde hasar alan ev onarıldı, ikinci depremde ayakta kaldı.", "İlk depremde hasar alan ev onarılmadı, ikinci depremde yıkıldı."));
             foreach (var (need, paid) in family)
             {
                 string line = paid ? need.endingPaid : need.endingUnpaid;
@@ -376,13 +376,13 @@ namespace Dropy.Gameplay
         /// Dosya karnesi: her dosyada basılan ve doğru mühür; yanlışlarda kuralın kısa açıklaması.
         /// Gazete ne olduğunu söyler, karne nedenini öğretir.
         /// </summary>
-        public static string ReportCard(IList<DeskManager.CaseResult> results, int citations)
+        public static string ReportCard(IList<DeskManager.CaseResult> results)
         {
             int correct = results.Count(r => r.seal == BuildingRules.CorrectSeal(r.buildingCase));
             var sb = new StringBuilder();
             sb.AppendLine("<size=20><b>BÜRO KAYITLARI</b>  ·  DOSYA KARNESİ</size>");
             sb.AppendLine("<size=14>________________________________________________________________________________</size>");
-            sb.AppendLine($"<size=34><b>{results.Count} dosyadan {correct} doğru</b></size>   <size=22>Tutanak: {citations}</size>\n");
+            sb.AppendLine($"<size=34><b>{results.Count} dosyadan {correct} doğru</b></size>\n");
             int day = 0;
             foreach (var r in results)
             {
@@ -402,6 +402,40 @@ namespace Dropy.Gameplay
             }
             return sb.ToString();
         }
+
+        /// <summary>
+        /// Hapis: depremde onayladığın bina çöktü, oyun biter. Gazete yerine mahkeme kararı; karne yine açılır.
+        /// (Hapse girme animasyonu sonra eklenecek.)
+        /// </summary>
+        public void ShowJail(IList<DeskManager.CaseResult> results, IList<DeskManager.CaseResult> fallen, int quakeDay)
+        {
+            summary.GetComponent<Image>().color = new Color(0.12f, 0.1f, 0.1f, 0.98f);
+            summaryText.color = new Color(0.95f, 0.92f, 0.88f);
+
+            var sb = new StringBuilder();
+            sb.AppendLine("<size=20><b>MAHKEME KARARI</b>  ·  " + quakeDay + ". GÜN DEPREMİNDEN SONRA</size>");
+            sb.AppendLine("<size=14>________________________________________________________________________________</size>");
+            sb.AppendLine("<size=64><b><color=#ff6b6b>TUTUKLANDIN</color></b></size>\n");
+            foreach (var r in fallen)
+            {
+                sb.AppendLine($"<size=28><b>{Headline(r)}</b></size>");
+                sb.AppendLine($"<i>Onay mühründe senin imzan vardı. Müteahhit {r.buildingCase.contractorName}: \"{Said(r)}\"</i>\n");
+            }
+            sb.AppendLine("Yönetmelikte yazan bir kuralı çiğneyen onay, depremde can aldı.");
+            sb.AppendLine("Savcılık, imar memurunun da müteahhit kadar sorumlu olduğuna karar verdi.");
+            sb.AppendLine("\n<size=26><b>OYUN BİTTİ</b></size>   <size=20>Neyi kaçırdığını karnede görebilirsin.</size>");
+
+            newspaperPage = sb.ToString();
+            reportPage = ReportCard(results);
+            showingReport = false;
+            summaryText.text = newspaperPage;
+            pageToggleLabel.text = "DOSYA KARNESİ";
+            summary.gameObject.SetActive(true);
+            summary.SetAsLastSibling();
+        }
+
+        static string Said(DeskManager.CaseResult r) =>
+            r.seal == Seal.ShearWall ? r.buildingCase.shearWallLine : r.buildingCase.approvedLine;
 
         public static string Headline(DeskManager.CaseResult r) =>
             string.IsNullOrEmpty(r.buildingCase.collapseHeadline) ? r.buildingCase.buildingName + " çöktü" : r.buildingCase.collapseHeadline;

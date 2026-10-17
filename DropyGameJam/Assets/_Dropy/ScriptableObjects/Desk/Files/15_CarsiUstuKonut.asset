@@ -26,6 +26,7 @@ MonoBehaviour:
   soil: 0
   note: 
   noteAnswer: 
+  damage: 0
   hammerConcrete: 35
   approveFeeOverride: 0
   dialogue: {fileID: 0}

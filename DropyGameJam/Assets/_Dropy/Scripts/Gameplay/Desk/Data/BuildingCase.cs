@@ -75,6 +75,8 @@ namespace Dropy.Gameplay
         public string note;
         [Tooltip("Oyuncu not satırını sorarsa müteahhidin cevabı. Boşsa kusur notu gibi genel bir cevap üretilir")]
         public string noteAnswer;
+        [Tooltip("İlk depremden sonra gelen dosyalarda hasar tespiti. Ağır hasarlı bina onarılmaz (4. gün kuralı)")]
+        public DamageLevel damage;
 
         [Header("Çekiç (3. günden itibaren)")]
         [Tooltip("Çekicin okuduğu beton. 0 ise laboratuvar değeriyle aynı okunur")]

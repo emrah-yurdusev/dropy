@@ -100,6 +100,10 @@ namespace Dropy.Gameplay
                     return honest
                         ? Calm($"\"{c.note}\" mi? Ufak bir şey, binayla ilgisi yok.")
                         : Defend($"\"{c.note}\"... Onu da düzeltiriz, merak etmeyin.");
+                case FieldKey.Damage:
+                    return c.damage == DamageLevel.Heavy
+                        ? Defend("Bir iki çatlak, deprem sonrası hepsinde var. Sıvayı atarız, boyarız, yeni gibi olur.")
+                        : Calm("Sıvada ince çatlaklar var, taşıyıcıya bir şey olmamış. Raporda yazıyor.");
                 case FieldKey.Hammer:
                     return hammerLies
                         ? Defend("Alet şaşırmıştır, nemden olur. Rapora güvenin.")

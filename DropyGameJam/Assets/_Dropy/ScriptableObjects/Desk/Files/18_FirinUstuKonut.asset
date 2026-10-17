@@ -1,0 +1,49 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b53e488de2e93c841b0e8998a55e2701, type: 3}
+  m_Name: 18_FirinUstuKonut
+  m_EditorClassIdentifier: 
+  contractorName: "Nermin Han\u0131m"
+  contractorPrefab: {fileID: 0}
+  buildingName: "F\u0131r\u0131n \xDCst\xFC Konut"
+  floors: 3
+  claimedConcrete: 30
+  groundUse: 1
+  groundFloorHeight: 4.5
+  foundation: 0
+  columns: 0
+  hasShearWall: 0
+  labConcrete: 30
+  soil: 1
+  note: 
+  noteAnswer: 
+  damage: 1
+  hammerConcrete: 30
+  approveFeeOverride: 0
+  dialogue: {fileID: 0}
+  callbacks: []
+  introLines:
+  - "Altta f\u0131r\u0131n\u0131m\u0131z var, depremde vitrin camlar\u0131 k\u0131r\u0131ld\u0131."
+  - "Hafif hasar dediler. F\u0131r\u0131n\u0131 a\xE7al\u0131m, mahalle ekmeksiz
+    kald\u0131."
+  questions:
+  - question: "F\u0131r\u0131n\u0131n tavan\u0131 neden bu kadar y\xFCksek?"
+    answer: "F\u0131r\u0131n i\xE7in y\xFCksek tuttuk, s\u0131cak birikmesin diye."
+  - question: "\xDCstte kimler oturuyor?"
+    answer: "Ben, o\u011Flum, gelinim, iki de torun."
+  approvedLine: "F\u0131r\u0131n yar\u0131n sabah a\xE7\u0131l\u0131r, sa\u011F olun!"
+  shearWallLine: "Perde mi? Tamam, f\u0131r\u0131na bir duvar ekleriz."
+  rejectedLine: "F\u0131r\u0131n\u0131 kapat\u0131rsak mahalle ne yiyecek?"
+  rejectPressure: []
+  collapseHeadline: "F\u0131r\u0131n \xDCst\xFC Konut'un zemin kat\u0131 \xE7\xF6kt\xFC"
+  standingLine: "F\u0131r\u0131n \xDCst\xFC Konut ayakta: f\u0131r\u0131n ertesi
+    sabah ekmek da\u011F\u0131tt\u0131."

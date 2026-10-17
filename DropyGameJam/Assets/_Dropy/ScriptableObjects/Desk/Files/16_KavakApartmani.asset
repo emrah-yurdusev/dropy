@@ -1,0 +1,48 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b53e488de2e93c841b0e8998a55e2701, type: 3}
+  m_Name: 16_KavakApartmani
+  m_EditorClassIdentifier: 
+  contractorName: Murat Usta
+  contractorPrefab: {fileID: 0}
+  buildingName: "Kavak Apartman\u0131"
+  floors: 4
+  claimedConcrete: 30
+  groundUse: 0
+  groundFloorHeight: 2.8
+  foundation: 0
+  columns: 0
+  hasShearWall: 0
+  labConcrete: 30
+  soil: 1
+  note: Belediye hasar ekibi raporu ekte
+  noteAnswer: "Hasar ekibi her daireye girdi, kolonlara bakt\u0131. Rapor bu."
+  damage: 1
+  hammerConcrete: 30
+  approveFeeOverride: 0
+  dialogue: {fileID: 0}
+  callbacks: []
+  introLines:
+  - "Depremde s\u0131valar \xE7atlad\u0131, onar\u0131m izni i\xE7in geldim."
+  - "On iki aile \xE7ad\u0131rda bekliyor. Ta\u015F\u0131y\u0131c\u0131ya bir \u015Fey
+    olmad\u0131, raporda yaz\u0131yor."
+  questions:
+  - question: "Raporu kim haz\u0131rlad\u0131?"
+    answer: "Belediyenin hasar ekibi, d\xFCn geldiler. \u0130mzal\u0131."
+  - question: "Onar\u0131m ne kadar s\xFCrer?"
+    answer: "S\u0131va ve boya, bir haftada biter. Aileler evine d\xF6ner."
+  approvedLine: "\xC7ad\u0131rdakiler eve d\xF6ner, sa\u011F olun."
+  shearWallLine: Perde mi? Masraf ama... peki, ekletiriz.
+  rejectedLine: Ama hasar hafif! On iki aile sokakta kalacak.
+  rejectPressure: []
+  collapseHeadline: 
+  standingLine: 

@@ -1,0 +1,48 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b53e488de2e93c841b0e8998a55e2701, type: 3}
+  m_Name: 17_YildizSitesi
+  m_EditorClassIdentifier: 
+  contractorName: Hakan Bey
+  contractorPrefab: {fileID: 0}
+  buildingName: "Y\u0131ld\u0131z Sitesi"
+  floors: 5
+  claimedConcrete: 30
+  groundUse: 0
+  groundFloorHeight: 2.8
+  foundation: 1
+  columns: 0
+  hasShearWall: 0
+  labConcrete: 30
+  soil: 0
+  note: "Kolonlarda \xE7apraz \xE7atlaklar"
+  noteAnswer: "\xC7apraz, d\xFCz, ne fark eder? S\u0131va tutar, boyay\u0131nca g\xF6r\xFCnmez."
+  damage: 2
+  hammerConcrete: 30
+  approveFeeOverride: 0
+  dialogue: {fileID: 0}
+  callbacks: []
+  introLines:
+  - "Biraz \xE7atlak var, deprem sonras\u0131 hepsinde var."
+  - "S\u0131vay\u0131 atar, boyar\u0131z. Kirac\u0131lar yar\u0131n d\xF6ns\xFCn
+    istiyorum."
+  questions:
+  - question: "Kolondaki \xE7atlak ne kadar derin?"
+    answer: "G\xF6r\xFCnen k\u0131sm\u0131 ince. \u0130\xE7ini kim g\xF6recek?"
+  - question: "M\xFChendis g\xF6rd\xFC m\xFC?"
+    answer: "G\xF6rd\xFC, 'olur' dedi. Yaz\u0131l\u0131 de\u011Fil ama."
+  approvedLine: "Kirac\u0131lara m\xFCjde, sa\u011F olun!"
+  shearWallLine: Perde mi? Masraf ama... peki, ekletiriz.
+  rejectedLine: "Bina sa\u011Flam diyorum size! Bu i\u015F burada bitmez."
+  rejectPressure: []
+  collapseHeadline: "Y\u0131ld\u0131z Sitesi ikinci depremde tamamen \xE7\xF6kt\xFC"
+  standingLine: 

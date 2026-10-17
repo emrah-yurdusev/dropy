@@ -1,5 +1,4 @@
 using System.Collections.Generic;
-using UnityEngine;
 
 namespace Dropy.Gameplay
 {
@@ -8,7 +7,16 @@ namespace Dropy.Gameplay
         BadConcrete,
         SoftStory,
         CutColumn,
-        SandFoundation
+        SandFoundation,
+        HeavyDamage
+    }
+
+    /// <summary>İlk depremden sonra gelen dosyalarda ek rapordaki hasar tespiti.</summary>
+    public enum DamageLevel
+    {
+        None,
+        Light,
+        Heavy
     }
 
     public enum Seal
@@ -27,32 +35,26 @@ namespace Dropy.Gameplay
     }
 
     /// <summary>
-    /// Kilitli tasarım: 5 gün, günde 3 dosya, sabit fiyatlar. Rakamlar dürüst tam yolun
-    /// kasayı tam 0'da bitirmesine göre ayarlıdır; değiştirmeden önce o hesabı yeniden yap.
+    /// Döngü: 2 bölüm × 3 gün, günde 3 dosya (18 dosya). 3. ve 6. günün son dosyasından sonra deprem olur.
+    /// Rakamlar dürüst tam yolun kasayı tam 0'da bitirmesine göre ayarlıdır: 1–5. günlerin harcı ve
+    /// başlangıç parası, kira düşünce çanta + sabitleme + ev onarımına (500 + 1.500 + 4.500) tam yeter.
+    /// Değiştirmeden önce o hesabı yeniden yap (üretici script denetler).
+    /// Yanlış onaya para cezası yok: depremde onayladığın bina çökerse hapse girersin.
     /// </summary>
     public static class Economy
     {
-        public const int Days = 5;
+        public const int Days = 6;
         public const int FilesPerDay = 3;
         public const int StartMoney = 1000;
         public const int ApproveFee = 1000;
         public const int ShearWallFee = 500;
         public const int Rent = 1000;
-        /// <summary>Kira 1–4. akşam düşer; dükkân 4. günün sonunda kapanır; 5. gün mühür para vermez.</summary>
-        public const int LastPaidDay = 4;
+        /// <summary>Kira 1–5. akşam düşer; dükkân 5. günün sonunda kapanır; 6. gün (deprem günü) mühür para vermez.</summary>
+        public const int LastPaidDay = 5;
+        /// <summary>Bu günlerin son dosyasından sonra deprem olur.</summary>
+        public static readonly int[] QuakeDays = { 3, 6 };
 
-        /// <summary>
-        /// Müfettiş tutanağı: kitapta yazan bir kuralı çiğneyen onay. Her tutanakta o dosyanın normal harcı
-        /// geri alınır (ilki yalnızca budur: uyarı); ikinciden itibaren üstüne 1.000, 2.000, 3.000... ceza eklenir.
-        /// Böylece tek hata kâr getirmez, toptan onaylamak dürüst oyundan geride kalır, rüşvetin fazlası
-        /// (4.000 − 1.000) ise cepte kalır. Dürüst yol tutanak yemez, hesabı değişmez. Akşam kasadan düşer.
-        /// </summary>
-        public const int CitationStep = 1000;
-
-        /// <param name="citationNumber">Bu kaçıncı tutanak (1'den başlar).</param>
-        /// <param name="feeTaken">Bu onaydan alınan para (rüşvette 4.000; iade yalnız normal harç kadar).</param>
-        public static int CitationFine(int citationNumber, int feeTaken) =>
-            Mathf.Min(feeTaken, ApproveFee) + CitationStep * (citationNumber - 1);
+        public static bool IsQuakeDay(int day) => System.Array.IndexOf(QuakeDays, day) >= 0;
 
         /// <summary>Çekiç 3. günden itibaren gelir ve günde bu kadar kullanılabilir; hangi dosyanın ölçüleceği oyuncunun kararı.</summary>
         public const int HammerDay = 3;
@@ -78,7 +80,7 @@ namespace Dropy.Gameplay
             {
                 case ShopItem.Bag: return 500;
                 case ShopItem.Fixing: return 1500;
-                default: return 4000;
+                default: return 4500;
             }
         }
 
@@ -88,9 +90,12 @@ namespace Dropy.Gameplay
             {
                 case ShopItem.Bag: return "Deprem çantası";
                 case ShopItem.Fixing: return "Eşya sabitleme";
-                default: return "Apartman güçlendirme";
+                default: return "Ev onarımı";
             }
         }
+
+        /// <summary>Ev onarımı ancak ilk depremde ev hasar aldıktan sonra (o akşamdan itibaren) satılır.</summary>
+        public static int AvailableFrom(ShopItem item) => item == ShopItem.Retrofit ? Economy.QuakeDays[0] : 1;
     }
 
     /// <summary>Yönetmelik: hangi kusur hangi gün kitaba girer, hangi mühür neyi kurtarır.</summary>
@@ -112,6 +117,8 @@ namespace Dropy.Gameplay
                 flaws.Add(Flaw.CutColumn);
             if (c.soil == SoilType.Kum && c.floors >= SandFloorLimit && c.foundation == Foundation.Radye)
                 flaws.Add(Flaw.SandFoundation);
+            if (c.damage == DamageLevel.Heavy)
+                flaws.Add(Flaw.HeavyDamage);
             return flaws;
         }
 
@@ -123,7 +130,8 @@ namespace Dropy.Gameplay
                 case Flaw.BadConcrete: return 1;
                 case Flaw.SoftStory:
                 case Flaw.CutColumn: return 2;
-                default: return 3;
+                case Flaw.SandFoundation: return 3;
+                default: return 4;
             }
         }
 
@@ -134,7 +142,8 @@ namespace Dropy.Gameplay
                 case Flaw.BadConcrete: return "Beton C25, C30 ya da C35 değil";
                 case Flaw.SoftStory: return "Yumuşak kat: perde ya da red";
                 case Flaw.CutColumn: return "Kesik kolon: yalnız red";
-                default: return "Kum zemin, 5+ kat: kazık şart";
+                case Flaw.SandFoundation: return "Kum zemin, 5+ kat: kazık şart";
+                default: return "Ağır hasarlı bina onarılmaz: red";
             }
         }
 
@@ -213,8 +222,10 @@ namespace Dropy.Gameplay
                     return $"Zemin kat market, tavan {c.groundFloorHeight.ToString("0.0#", new System.Globalization.CultureInfo("tr-TR"))} m, perde yok: yumuşak kat.";
                 case Flaw.CutColumn:
                     return "Kolon kesik: perde de kurtarmaz, yalnız red.";
-                default:
+                case Flaw.SandFoundation:
                     return $"Kum zemin, {c.floors} kat, radye temel: kazık şarttı.";
+                default:
+                    return "Hasar tespiti ağır (taşıyıcıda çatlak): bu bina onarılmaz, yıkılır.";
             }
         }
 
