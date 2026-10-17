@@ -28,6 +28,7 @@ MonoBehaviour:
   note: 
   noteAnswer: 
   damage: 0
+  illegalFloors: 1
   hammerConcrete: 0
   approveFeeOverride: 4000
   bribe: 0

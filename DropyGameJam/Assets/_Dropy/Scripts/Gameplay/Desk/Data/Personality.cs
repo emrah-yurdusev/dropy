@@ -10,7 +10,7 @@ namespace Dropy.Gameplay
     [System.Serializable]
     public class FieldLine
     {
-        [Tooltip("FieldKey: claimed, lab, hammer, use, height, columns, shearWall, soil, foundation, floors, name, note, damage")]
+        [Tooltip("FieldKey: claimed, lab, hammer, use, height, columns, shearWall, soil, foundation, floors, name, note, damage, illegalfloor")]
         public string field;
         [Tooltip("Satırda kusur varken mi (savunma) yoksa temizken mi (sakin) söylenir")]
         public bool defensive;

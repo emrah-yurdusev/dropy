@@ -8,7 +8,8 @@ namespace Dropy.Gameplay
     {
         public const string Name = "name", Floors = "floors", Claimed = "claimed", Use = "use", Height = "height",
             Foundation = "foundation", Columns = "columns", ShearWall = "shearwall",
-            Lab = "lab", Soil = "soil", Note = "note", Hammer = "hammer", Damage = "damage";
+            Lab = "lab", Soil = "soil", Note = "note", Hammer = "hammer", Damage = "damage",
+            IllegalFloor = "illegalfloor";
     }
 
     /// <summary>Bir dosyanın masadaki iki kâğıdını (künye, ek rapor) vakadan üretir.</summary>

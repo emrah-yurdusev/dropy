@@ -8,7 +8,7 @@ namespace Dropy.Gameplay
 {
     /// <summary>
     /// "Belgeleri İncele" modu: ekran %40 / %20 / %40 bölünür.
-    /// Solda yönetmelik, sağda proje künyesi, ek rapor (3. günden itibaren altında çekiç) ve mühürler;
+    /// Solda yönetmelik, sağda proje künyesi, ek rapor (3. günden itibaren altında çekiç), bina incelemesi ve mühürler;
     /// ortada karakter görünmeye devam eder. Mühürlü künye ortaya sürüklenince ya da "Teslim Et"e basınca karar verilir.
     /// </summary>
     public class InspectionPanel : MonoBehaviour
@@ -16,6 +16,9 @@ namespace Dropy.Gameplay
         const float SideWidth = 0.4f;
         const float MainCardHeight = 600f;
         const float ReportCardHeight = 400f;
+        const float BuildingCardHeight = 360f;
+        /// <summary>Mühür tepsisinin üst kenarı (alttan); bina kartı bunun üstünde durur.</summary>
+        const float TrayTop = 132f;
         static readonly Color PanelColor = new Color(0.36f, 0.27f, 0.2f, 0.97f);
         static readonly Color PanelEdge = new Color(0.22f, 0.16f, 0.12f, 1f);
 
@@ -113,7 +116,9 @@ namespace Dropy.Gameplay
             ClearCase();
             float rightCenter = documentLayer.rect.width * (0.5f - SideWidth / 2f);
 
-            var report = AddCard(CaseDocuments.Report(buildingCase), false, ReportCardHeight, new Vector2(rightCenter + 175f, 110f), -2f);
+            float bottom = -documentLayer.rect.height / 2f + TrayTop + BuildingCardHeight / 2f;
+            AddBuildingCard(buildingCase, new Vector2(rightCenter + 175f, bottom), -1f);
+            var report = AddCard(CaseDocuments.Report(buildingCase), false, ReportCardHeight, new Vector2(rightCenter + 175f, 230f), -2f);
             if (hammersLeft >= 0)
                 AddHammer(report, buildingCase, hammersLeft);
             MainCard = AddCard(CaseDocuments.Kunye(buildingCase), true, MainCardHeight, new Vector2(rightCenter - 165f, 40f), 1.5f);
@@ -129,6 +134,19 @@ namespace Dropy.Gameplay
             card.FieldClicked += f => FieldAsked?.Invoke(f);
             cards.Add(card);
             return card;
+        }
+
+        /// <summary>Binanın döndürülebilir maketi; büyüteçle iskelete bakılır, kusura tıklamak müteahhide sorar.</summary>
+        void AddBuildingCard(BuildingCase buildingCase, Vector2 position, float angle)
+        {
+            var data = ScriptableObject.CreateInstance<DocumentData>();
+            data.title = "Bina İncelemesi";
+            data.kind = DocumentKind.Diger;
+            data.subtitle = "Sürükle: döndür. Büyüteçle taşıyıcıya bak.";
+            var card = AddCard(data, false, BuildingCardHeight, position, angle);
+            var viewer = BuildingViewer.Create(card.RectTransform, card.RectTransform, buildingCase, tools);
+            ((RectTransform)viewer.transform).Stretch(14f, 14f, 14f, 104f);
+            viewer.DefectAsked += f => FieldAsked?.Invoke(f);
         }
 
         void AddHammer(DocumentCard report, BuildingCase buildingCase, int left)
@@ -186,7 +204,7 @@ namespace Dropy.Gameplay
             submitButton.interactable = ready;
             hintText.text = ready
                 ? "Mühürlü künyeyi müteahhide sürükle ya da teslim et."
-                : "Künyeye bir mühür bas: ONAY, RED ya da PERDE EKLE.\nBir satıra tıklarsan müteahhide sorarsın.";
+                : "Künyeye bir mühür bas: ONAY, RED ya da PERDE EKLE.\nBir satıra ya da binadaki kusura tıklarsan müteahhide sorarsın.";
         }
 
         public void Toggle() => SetOpen(!IsOpen);
