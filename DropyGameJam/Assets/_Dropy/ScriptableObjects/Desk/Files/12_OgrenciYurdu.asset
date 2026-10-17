@@ -28,10 +28,21 @@ MonoBehaviour:
   hammerConcrete: 30
   approveFeeOverride: 4000
   dialogue: {fileID: 0}
+  callbacks: []
   introLines:
+  - "Fikret size bahsetmi\u015Ftir. Ozan."
   - "Yurt acil, d\xF6nem ba\u015Fl\u0131yor. \xC7ocuklar kap\u0131da kalmas\u0131n."
-  - "Siz onay\u0131 bas\u0131n, gerisini ben hallederim. Zahmetinize kar\u015F\u0131l\u0131k...
-    d\xF6rt bin."
+  - "Siz onay\u0131 bas\u0131n, zahmetinize kar\u015F\u0131l\u0131k d\xF6rt bin.
+    Kimse bir \u015Fey demez."
+  questions:
+  - question: Kolonlar neden kesik?
+    answer: "Odalar geni\u015F olsun diye biraz a\xE7t\u0131k. \xD6\u011Frenciler
+      kalabal\u0131k."
+  - question: "D\xF6rt bin ne demek?"
+    answer: "Te\u015Fekk\xFCr. Kira, fatura... Sizin de bir aileniz var, de\u011Fil
+      mi?"
   approvedLine: "Ak\u0131ll\u0131 adams\u0131n\u0131z. Kimse bir \u015Fey demez."
   shearWallLine: Perde mi? Masraf ama... peki, ekletiriz.
-  rejectedLine: "Bu i\u015F burada bitmez!"
+  rejectedLine: "Pi\u015Fman olacaks\u0131n\u0131z. Bu \u015Fehirde herkes beni tan\u0131r."
+  collapseHeadline: "\xD6\u011Frenci yurdu \xE7\xF6kt\xFC"
+  standingLine: 

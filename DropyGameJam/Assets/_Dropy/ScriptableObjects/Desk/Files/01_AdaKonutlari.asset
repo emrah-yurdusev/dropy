@@ -28,10 +28,19 @@ MonoBehaviour:
   hammerConcrete: 0
   approveFeeOverride: 0
   dialogue: {fileID: 0}
+  callbacks: []
   introLines:
-  - "G\xFCnayd\u0131n! Ada Konutlar\u0131. \xDC\xE7 kat, sa\u011Flam i\u015F."
-  - "Balkon on be\u015F santim ta\u015Fm\u0131\u015F, ona tak\u0131lmazs\u0131n\u0131z
-    herhalde."
-  approvedLine: "Sa\u011F olun, hay\u0131rl\u0131 i\u015Fler."
+  - "G\xFCnayd\u0131n! Yeni gelen siz misiniz? Hay\u0131rl\u0131 olsun."
+  - "Ada Konutlar\u0131, \xFC\xE7 kat. Otuz y\u0131ld\u0131r bu i\u015Fi yapar\u0131m,
+    tek bir \u015Fik\xE2yet gelmedi."
+  questions:
+  - question: "Balkon neden ta\u015Fm\u0131\u015F?"
+    answer: "Han\u0131m biraz geni\u015F olsun dedi. On be\u015F santim, g\xF6r\xFCnt\xFC
+      meselesi."
+  - question: Betonu kim test etti?
+    answer: "\u015Eehrin laboratuvar\u0131. Rapor ekte, a\xE7\u0131n bak\u0131n."
+  approvedLine: "Eksik olmay\u0131n. Sizinle iyi \xE7al\u0131\u015F\u0131r\u0131z."
   shearWallLine: Perde mi? Masraf ama... peki, ekletiriz.
-  rejectedLine: "Bu i\u015F burada bitmez!"
+  rejectedLine: "Balkon i\xE7in mi? Otuz y\u0131lda ilk kez ba\u015F\u0131ma geliyor."
+  collapseHeadline: 
+  standingLine: 

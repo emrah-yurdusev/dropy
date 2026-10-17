@@ -28,8 +28,17 @@ MonoBehaviour:
   hammerConcrete: 0
   approveFeeOverride: 0
   dialogue: {fileID: 0}
+  callbacks: []
   introLines:
-  - "Cephe boyas\u0131 biraz soldu ama binaya bir \u015Fey olmaz, de\u011Fil mi?"
-  approvedLine: "Sa\u011F olun, hay\u0131rl\u0131 i\u015Fler."
+  - "Belediye ba\u015Fkan\u0131 selam s\xF6yledi. Bu dosyaya \xF6zellikle bakacakm\u0131\u015Fs\u0131n\u0131z."
+  - "Cephe boyas\u0131 biraz soldu, onu da s\xF6yleyeyim, sonra laf olmas\u0131n."
+  questions:
+  - question: "Ba\u015Fkan\u0131 nereden tan\u0131yorsunuz?"
+    answer: "Askerlik arkada\u015F\u0131y\u0131z. Selam\u0131 yeter, de\u011Fil mi?"
+  - question: "Boyay\u0131 neden yenilemediniz?"
+    answer: "B\xFCt\xE7e. Boya kozmetik, bina sapasa\u011Flam."
+  approvedLine: "Ba\u015Fkana iletirim, memnun kalacak."
   shearWallLine: Perde mi? Masraf ama... peki, ekletiriz.
-  rejectedLine: "Bu i\u015F burada bitmez!"
+  rejectedLine: "Ba\u015Fkan bunu duyunca hi\xE7 ho\u015Flanmayacak."
+  collapseHeadline: 
+  standingLine: 

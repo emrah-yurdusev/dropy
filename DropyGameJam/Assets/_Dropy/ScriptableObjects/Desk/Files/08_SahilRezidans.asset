@@ -28,9 +28,18 @@ MonoBehaviour:
   hammerConcrete: 0
   approveFeeOverride: 0
   dialogue: {fileID: 0}
+  callbacks: []
   introLines:
-  - "Alt\u0131 kat, deniz manzaral\u0131."
-  - "Radye d\xF6kt\xFCk, kaz\u0131\u011Fa ne gerek var?"
-  approvedLine: "Sa\u011F olun, hay\u0131rl\u0131 i\u015Fler."
+  - "Sahile s\u0131f\u0131r, alt\u0131 kat. Manzaray\u0131 g\xF6rseniz siz de bir
+    daire istersiniz."
+  - "Size \xF6zel bir indirim de konu\u015Furuz, aram\u0131zda."
+  questions:
+  - question: "Temeli kim hesaplad\u0131?"
+    answer: "Radye d\xF6kt\xFCk, standart. Bu sahilde herkes \xF6yle yap\u0131yor."
+  - question: "Zemin et\xFCd\xFC ne diyor?"
+    answer: "Sahil sonu\xE7ta. Hollanda'da da insanlar kumun \xFCst\xFCnde ya\u015F\u0131yor."
+  approvedLine: "Size bir daire ay\u0131r\u0131yorum, haberiniz olsun."
   shearWallLine: Perde mi? Masraf ama... peki, ekletiriz.
-  rejectedLine: "Bu i\u015F burada bitmez!"
+  rejectedLine: "Bu i\u015Fi ba\u015Fka b\xFCroda hallederim, merak etmeyin."
+  collapseHeadline: "Sahil Rezidans'ta enkaz: m\xFCteahhit firari"
+  standingLine: 

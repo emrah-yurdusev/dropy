@@ -28,8 +28,18 @@ MonoBehaviour:
   hammerConcrete: 0
   approveFeeOverride: 0
   dialogue: {fileID: 0}
+  callbacks: []
   introLines:
-  - "\u0130ki katl\u0131 ufak bir i\u015F. K\xE2\u011F\u0131tlar tamam, buyurun."
-  approvedLine: "Sa\u011F olun, hay\u0131rl\u0131 i\u015Fler."
+  - "\u015E-\u015Fey... \u0130lk kez dosya getiriyorum, kusura bakmay\u0131n."
+  - "\u0130ki katl\u0131, k\xFC\xE7\xFCk bir ev. Annemle babam oturacak."
+  questions:
+  - question: Neden bu kadar gerginsiniz?
+    answer: "Ge\xE7en ay ba\u015Fka bir b\xFCroda bir saat bekletip geri \xE7evirdiler.
+      K\xE2\u011F\u0131tlar\u0131m tam ama."
+  - question: "Beton s\u0131n\u0131f\u0131 ne?"
+    answer: "Raporda ne yaz\u0131yorsa o. Fazlas\u0131na param yetmedi a\xE7\u0131k\xE7as\u0131."
+  approvedLine: "Ger\xE7ekten mi? Allah raz\u0131 olsun!"
   shearWallLine: Perde mi? Masraf ama... peki, ekletiriz.
-  rejectedLine: "Bu i\u015F burada bitmez!"
+  rejectedLine: "Ama... her \u015Fey yazd\u0131\u011F\u0131 gibiydi."
+  collapseHeadline: 
+  standingLine: 

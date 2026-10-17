@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b53e488de2e93c841b0e8998a55e2701, type: 3}
   m_Name: 13_LimanKonut
   m_EditorClassIdentifier: 
-  contractorName: Bekir Usta
+  contractorName: Kemal Bey
   contractorPrefab: {fileID: 0}
   buildingName: Liman Konut
   floors: 4
@@ -28,8 +28,27 @@ MonoBehaviour:
   hammerConcrete: 25
   approveFeeOverride: 0
   dialogue: {fileID: 0}
+  callbacks:
+  - other: {fileID: 11400000, guid: 59dd8e2ccc51d09489b0212c36774432, type: 2}
+    seal: 1
+    line: "Yine ben! Ge\xE7en sefer balkona tak\u0131lmad\u0131n\u0131z, sa\u011F
+      olun."
+  - other: {fileID: 11400000, guid: 59dd8e2ccc51d09489b0212c36774432, type: 2}
+    seal: 2
+    line: "Yine ben. Ge\xE7en sefer balkon y\xFCz\xFCnden geri \xE7evirdiniz, bu
+      sefer her \u015Fey milimetrik."
   introLines:
-  - "H\u0131zl\u0131ca bak\u0131verin hocam, millet ev bekliyor."
-  approvedLine: "Sa\u011F olun, hay\u0131rl\u0131 i\u015Fler."
+  - "Bu sabah yer salland\u0131 m\u0131 sizce de? Han\u0131m korktu, b\xFCt\xFCn
+    gece uyumad\u0131."
+  - "D\xF6rt kat, kil zemin. H\u0131zl\u0131ca bakarsan\u0131z eve d\xF6nece\u011Fim."
+  questions:
+  - question: Bu sefer ne getirdiniz?
+    answer: "Ne varsa k\xE2\u011F\u0131tta. \u0130sterseniz \xE7ekici de vurun."
+  - question: "Siz depreme haz\u0131r m\u0131s\u0131n\u0131z?"
+    answer: "\xC7antam\u0131z kap\u0131n\u0131n yan\u0131nda. Siz de haz\u0131rl\u0131kl\u0131
+      olun, hocam."
+  approvedLine: Kolay gelsin, kendinize dikkat edin.
   shearWallLine: Perde mi? Masraf ama... peki, ekletiriz.
-  rejectedLine: "Bu i\u015F burada bitmez!"
+  rejectedLine: Ne eksik ki? Neyse, siz bilirsiniz.
+  collapseHeadline: 
+  standingLine: 

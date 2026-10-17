@@ -28,8 +28,19 @@ MonoBehaviour:
   hammerConcrete: 25
   approveFeeOverride: 0
   dialogue: {fileID: 0}
+  callbacks: []
   introLines:
-  - "Korkuluk biraz al\xE7ak kald\u0131, sonra y\xFCkseltiriz."
-  approvedLine: "Sa\u011F olun, hay\u0131rl\u0131 i\u015Fler."
+  - "Korkuluk biraz al\xE7ak kald\u0131, onu ba\u015Ftan s\xF6yleyeyim."
+  - "Bu arada Ozan Bey sizi sordu. Yar\u0131n bir dosyas\u0131 varm\u0131\u015F,
+    yard\u0131mc\u0131 olursan\u0131z unutmazm\u0131\u015F."
+  questions:
+  - question: Ozan Bey kim?
+    answer: "Yurt i\u015Fleri yapar. Eli a\xE7\u0131kt\u0131r, anlars\u0131n\u0131z
+      ya."
+  - question: "Korkulu\u011Fu ne zaman d\xFCzelteceksiniz?"
+    answer: "\u0130skele s\xF6k\xFClmeden hallederiz, s\xF6z."
+  approvedLine: "Ozan Bey'e iyi \u015Feyler s\xF6ylerim."
   shearWallLine: Perde mi? Masraf ama... peki, ekletiriz.
-  rejectedLine: "Bu i\u015F burada bitmez!"
+  rejectedLine: "Ozan Bey bunu duyunca \u015Fa\u015F\u0131racak."
+  collapseHeadline: 
+  standingLine: 

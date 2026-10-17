@@ -107,6 +107,7 @@ namespace Dropy.Gameplay
             if (hammerAvailable)
                 AddHammer(report, buildingCase);
             MainCard = AddCard(CaseDocuments.Kunye(buildingCase), true, MainCardHeight, new Vector2(rightCenter - 165f, 40f), 1.5f);
+            Sfx.Paper();
         }
 
         DocumentCard AddCard(DocumentData data, bool isMain, float height, Vector2 position, float angle)

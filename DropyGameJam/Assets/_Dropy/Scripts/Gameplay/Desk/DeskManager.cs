@@ -28,6 +28,10 @@ namespace Dropy.Gameplay
         }
 
         const int HammerDay = 3;
+        /// <summary>2. günden itibaren müteahhitler biraz daha hızlı yürür; masa temposu açılır.</summary>
+        const int FastWalkDay = 2;
+        const float FastWalkMultiplier = 1.3f;
+        const string EndQuestions = "Tamam, dosyaya bakayım.";
 
         [Header("Sahne")]
         [Tooltip("Oyuncunun gözü: karşıdaki sandalyeye bakan sabit kamera")]
@@ -40,6 +44,8 @@ namespace Dropy.Gameplay
 
         [Header("İçerik")]
         [SerializeField] RegulationData regulations;
+        [Tooltip("Açılış telefonu, sabah radyosu, akşam mesajları, sarsıntılar")]
+        [SerializeField] StoryData story;
         [Tooltip("Sırayla 15 dosya: her gün 3 tane")]
         [SerializeField] BuildingCase[] cases;
         [Tooltip("Vakada karakter seçilmemişse sırayla bunlar kullanılır")]
@@ -59,6 +65,7 @@ namespace Dropy.Gameplay
         int money;
         readonly List<CaseResult> results = new List<CaseResult>();
         readonly HashSet<ShopItem> purchased = new HashSet<ShopItem>();
+        readonly HashSet<FamilyNeed> paidNeeds = new HashSet<FamilyNeed>();
 
         public IReadOnlyList<CaseResult> Results => results;
         public int Money => money;
@@ -108,6 +115,7 @@ namespace Dropy.Gameplay
             evening = canvasGo.AddComponent<EveningPanel>();
             evening.Build(root);
             evening.BuyClicked += Buy;
+            evening.PayClicked += Pay;
         }
 
         void Update()
@@ -135,7 +143,9 @@ namespace Dropy.Gameplay
             {
                 shearWallUsedToday = false;
                 inspection.SetDay(day);
-                yield return hud.DayBanner(day, NewRules(day));
+                Sfx.Ambience(0.03f + 0.035f * day);
+                yield return hud.DayBanner(day, Morning(day));
+                yield return MorningCalls();
 
                 int income = 0;
                 for (int k = 0; k < Economy.FilesPerDay; k++)
@@ -155,15 +165,41 @@ namespace Dropy.Gameplay
             day = Economy.Days;
 
             yield return Earthquake();
-            hud.ShowFinal(results, purchased, money);
+            Sfx.Ambience(0f);
+            var family = story != null
+                ? story.needs.Select(n => (n, paidNeeds.Contains(n)))
+                : Enumerable.Empty<(FamilyNeed, bool)>();
+            hud.ShowFinal(results, purchased, family, money);
         }
 
-        string NewRules(int forDay)
+        string Morning(int forDay)
         {
-            if (regulations == null)
-                return null;
-            var titles = regulations.pages.Where(p => p.day == forDay).Select(p => p.title).ToList();
-            return titles.Count == 0 ? "Yönetmelikte yeni madde yok." : "Yönetmeliğe yeni madde: " + string.Join(", ", titles);
+            string rules = "Yönetmelikte yeni madde yok.";
+            if (regulations != null)
+            {
+                var titles = regulations.pages.Where(p => p.day == forDay).Select(p => p.title).ToList();
+                if (titles.Count > 0)
+                    rules = "Yönetmeliğe yeni madde: " + string.Join(", ", titles);
+            }
+            if (forDay > Economy.LastPaidDay)
+                rules += "\n<b>Bugün harç yok: mühürler para getirmez, binalar yine yapılır.</b>";
+            string radio = story != null ? story.Radio(forDay) : null;
+            return string.IsNullOrEmpty(radio) ? rules : $"<i>{radio}</i>\n\n{rules}";
+        }
+
+        /// <summary>Günün ilk müteahhidinden önce gelen telefonlar (1. gün müdürün tanıtımı, 5. gün harç yok).</summary>
+        IEnumerator MorningCalls()
+        {
+            if (story == null)
+                yield break;
+            foreach (var call in story.calls.Where(c => c.day == day))
+            {
+                Sfx.Buzz();
+                yield return new WaitForSeconds(0.8f);
+                foreach (var line in call.lines)
+                    yield return dialogue.Say(call.caller, line, null, waitForClick: true);
+                dialogue.HideBubble();
+            }
         }
 
         IEnumerator RunCase(BuildingCase buildingCase, int index)
@@ -176,10 +212,19 @@ namespace Dropy.Gameplay
             var go = Instantiate(prefab, spawnPoint.position, spawnPoint.rotation);
             visitor = go.GetComponent<NpcController>();
             visitorHead = FindDeep(go.transform, "Head") ?? go.transform;
+            if (day >= FastWalkDay)
+                visitor.SetWalkSpeedMultiplier(FastWalkMultiplier);
+            if (!go.TryGetComponent<SeatedLife>(out var life))
+                life = go.AddComponent<SeatedLife>();
+            life.lookTarget = deskCamera != null ? deskCamera.transform : null;
 
             if (door != null)
                 yield return visitor.WalkThrough(door);
             yield return visitor.SitOn(visitorChair);
+
+            float tremor = story != null ? story.Tremor(day) : 0f;
+            if (tremor > 0f && index % Economy.FilesPerDay == 1)
+                yield return Tremor(tremor);
 
             RefreshSeals(buildingCase);
             inspection.LoadCase(buildingCase, day >= HammerDay);
@@ -197,7 +242,8 @@ namespace Dropy.Gameplay
             results.Add(result);
             money += result.money;
             hud.SetMoney(money);
-            hud.Toast($"{SealName(result.seal)}   +{result.money:N0} TL", new Color(0.98f, 0.82f, 0.4f));
+            string paid = day > Economy.LastPaidDay ? "harç yok" : $"+{result.money:N0} TL";
+            hud.Toast($"{SealName(result.seal)}   {paid}", new Color(0.98f, 0.82f, 0.4f));
             if (result.warning != null)
                 hud.Warn("Yönetmelik: " + result.warning);
 
@@ -226,9 +272,46 @@ namespace Dropy.Gameplay
                 yield break;
             }
             visitor.Face?.SetExpression(FaceExpression.Happy);
+            foreach (var callback in buildingCase.callbacks)
+                if (callback.other != null && SealOf(callback.other) == callback.seal)
+                    yield return dialogue.Say(buildingCase.contractorName, callback.line, visitorHead, waitForClick: true);
             foreach (var line in buildingCase.introLines)
                 yield return dialogue.Say(buildingCase.contractorName, line, visitorHead, waitForClick: true);
+
+            // Oyuncu soru sorabilir; cevaplar karakteri açar, kuralı değiştirmez.
+            var remaining = new List<CaseQuestion>(buildingCase.questions);
+            while (remaining.Count > 0)
+            {
+                var options = remaining.Select(q => q.question).ToList();
+                options.Add(EndQuestions);
+                int picked = options.Count - 1;
+                yield return dialogue.Choose(options, i => picked = i);
+                if (picked >= remaining.Count)
+                    break;
+                var asked = remaining[picked];
+                remaining.RemoveAt(picked);
+                yield return dialogue.Say(buildingCase.contractorName, asked.answer, visitorHead, waitForClick: true);
+            }
             dialogue.HideBubble();
+        }
+
+        Seal SealOf(BuildingCase other)
+        {
+            foreach (var r in results)
+                if (r.buildingCase == other)
+                    return r.seal;
+            return Seal.None;
+        }
+
+        bool Holds(PhoneMessage message)
+        {
+            switch (message.condition)
+            {
+                case MessageCondition.Bought: return purchased.Contains(message.item);
+                case MessageCondition.NotBought: return !purchased.Contains(message.item);
+                case MessageCondition.SealWas: return message.other != null && SealOf(message.other) == message.seal;
+                default: return true;
+            }
         }
 
         IEnumerator RunDialogue(DialogueData data)
@@ -255,10 +338,18 @@ namespace Dropy.Gameplay
         void RefreshSeals(BuildingCase buildingCase)
         {
             var tools = inspection.Tools;
-            tools.SetSeal(Seal.Approve, BuildingRules.Fee(buildingCase, Seal.Approve, day), true);
-            tools.SetSeal(Seal.Reject, 0, true);
-            tools.SetSeal(Seal.ShearWall, BuildingRules.Fee(buildingCase, Seal.ShearWall, day), !shearWallUsedToday,
-                shearWallUsedToday ? " · bugün kullanıldı" : " · günde 1");
+            string perDay = shearWallUsedToday ? " · bugün kullanıldı" : " · günde 1";
+            tools.SetSeal(Seal.Approve, FeeCaption(BuildingRules.Fee(buildingCase, Seal.Approve, day)), true);
+            tools.SetSeal(Seal.Reject, FeeCaption(0), true);
+            tools.SetSeal(Seal.ShearWall, FeeCaption(BuildingRules.Fee(buildingCase, Seal.ShearWall, day)) + perDay, !shearWallUsedToday);
+        }
+
+        /// <summary>5. gün harç yok; mühürlerin altında "0 TL" yerine bu yazar ki bozuk sanılmasın.</summary>
+        string FeeCaption(int fee)
+        {
+            if (day > Economy.LastPaidDay)
+                return "harç yok";
+            return fee > 0 ? $"+{fee:N0} TL" : "0 TL";
         }
 
         /// <summary>Perde mührü yalnız yumuşak katı kurtarır; işe yaramıyorsa basılmaz ve hak harcanmaz.</summary>
@@ -324,7 +415,35 @@ namespace Dropy.Gameplay
             int rent = Mathf.Min(money, Economy.Rent);
             money -= rent;
             hud.SetMoney(money);
-            yield return evening.Run(day, income, rent, money, purchased, shopOpen: day <= Economy.LastPaidDay);
+            var messages = new List<PhoneMessage>();
+            var needs = new List<FamilyNeed>();
+            if (story != null)
+            {
+                // Dünkü aile masrafının cevabı önce gelir: ödendiyse teşekkür, ödenmediyse sitem.
+                foreach (var need in story.needs.Where(n => n.day == day - 1))
+                {
+                    string reply = paidNeeds.Contains(need) ? need.paidReply : need.unpaidReply;
+                    if (!string.IsNullOrEmpty(reply))
+                        messages.Add(new PhoneMessage { day = day, sender = need.sender, text = reply });
+                }
+                messages.AddRange(story.messages.Where(m => m.day == day && Holds(m)));
+                needs.AddRange(story.needs.Where(n => n.day == day));
+            }
+            if (messages.Count > 0)
+                Sfx.Buzz();
+            yield return evening.Run(day, income, rent, money, purchased, messages, needs, paidNeeds,
+                shopOpen: day <= Economy.LastPaidDay);
+        }
+
+        /// <summary>İsteğe bağlı aile masrafı. Para güvenlik alışverişiyle aynı kasadan çıkar.</summary>
+        void Pay(FamilyNeed need)
+        {
+            if (paidNeeds.Contains(need) || money < need.price)
+                return;
+            money -= need.price;
+            paidNeeds.Add(need);
+            hud.SetMoney(money);
+            evening.Refresh(money, purchased, paidNeeds);
         }
 
         void Buy(ShopItem item)
@@ -335,24 +454,37 @@ namespace Dropy.Gameplay
             money -= price;
             purchased.Add(item);
             hud.SetMoney(money);
-            evening.Refresh(money, purchased);
+            evening.Refresh(money, purchased, paidNeeds);
+        }
+
+        /// <summary>Depremden önceki küçük sarsıntı: kamera titrer, uğultu gelir.</summary>
+        IEnumerator Tremor(float strength)
+        {
+            Sfx.Rumble(1.5f, Mathf.Clamp01(strength * 12f));
+            yield return Shake(1.2f, strength);
+            yield return new WaitForSeconds(0.4f);
         }
 
         IEnumerator Earthquake()
         {
             hud.Quake("DEPREM");
+            Sfx.Rumble(4.5f, 1f);
+            yield return Shake(4f, 0.06f);
+            yield return new WaitForSeconds(0.8f);
+        }
+
+        IEnumerator Shake(float seconds, float strength)
+        {
             var cam = deskCamera != null ? deskCamera.transform : null;
-            var origin = cam != null ? cam.localPosition : Vector3.zero;
-            for (float t = 0f; t < 4f; t += Time.deltaTime)
+            if (cam == null)
+                yield break;
+            var origin = cam.localPosition;
+            for (float t = 0f; t < seconds; t += Time.deltaTime)
             {
-                float strength = Mathf.Sin(Mathf.Clamp01(t / 4f) * Mathf.PI) * 0.06f;
-                if (cam != null)
-                    cam.localPosition = origin + Random.insideUnitSphere * strength;
+                cam.localPosition = origin + Random.insideUnitSphere * (Mathf.Sin(Mathf.Clamp01(t / seconds) * Mathf.PI) * strength);
                 yield return null;
             }
-            if (cam != null)
-                cam.localPosition = origin;
-            yield return new WaitForSeconds(0.8f);
+            cam.localPosition = origin;
         }
 
         public static string SealName(Seal seal)

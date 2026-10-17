@@ -113,6 +113,7 @@ namespace Dropy.EditorTools
             so.FindProperty("door").objectReferenceValue = doorComp;
             so.FindProperty("regulations").objectReferenceValue =
                 AssetDatabase.LoadAssetAtPath<RegulationData>("Assets/_Dropy/ScriptableObjects/Desk/Regulations.asset");
+            so.FindProperty("story").objectReferenceValue = AssetDatabase.LoadAssetAtPath<StoryData>(BuildCaseFiles.StoryPath);
 
             var casePaths = BuildCaseFiles.Paths;
             var cases = so.FindProperty("cases");

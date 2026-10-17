@@ -28,9 +28,18 @@ MonoBehaviour:
   hammerConcrete: 30
   approveFeeOverride: 0
   dialogue: {fileID: 0}
+  callbacks: []
   introLines:
-  - "Alt\u0131na market koyduk, okul \xFCst katlarda."
-  - "Kira geliri okula gider, herkes kazan\u0131r."
-  approvedLine: "Sa\u011F olun, hay\u0131rl\u0131 i\u015Fler."
-  shearWallLine: Perde mi? Masraf ama... peki, ekletiriz.
-  rejectedLine: "Bu i\u015F burada bitmez!"
+  - "Mahallenin okulu bu. Alt\u0131na market koyduk, kiras\u0131 okulun masraflar\u0131na
+    gidecek."
+  - "\xC7ocuklar i\xE7in yap\u0131yoruz, tak\u0131lmazs\u0131n\u0131z umar\u0131m."
+  questions:
+  - question: Zemin kat neden market?
+    answer: "Belediye b\xFCt\xE7e vermedi. Market kiras\u0131 olmadan okul a\xE7\u0131lam\u0131yor."
+  - question: "Markette duvar var m\u0131?"
+    answer: "Geni\u015F olsun dedik, sadece kolon var. Y\xFCksek tavan, ferah."
+  approvedLine: "\xC7ocuklar ad\u0131na te\u015Fekk\xFCrler."
+  shearWallLine: "Perde mi? Tamam, \xE7ocuklar i\xE7in ne gerekiyorsa."
+  rejectedLine: "Bu mahallenin \xE7ocuklar\u0131 nerede okuyacak \u015Fimdi?"
+  collapseHeadline: "\u0130stiklal \u0130lkokulu'nun zemin kat\u0131 \xE7\xF6kt\xFC"
+  standingLine: "\u0130stiklal \u0130lkokulu ayakta: \xE7ocuklar bah\xE7ede topland\u0131."

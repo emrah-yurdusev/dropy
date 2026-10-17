@@ -28,8 +28,17 @@ MonoBehaviour:
   hammerConcrete: 30
   approveFeeOverride: 0
   dialogue: {fileID: 0}
+  callbacks: []
   introLines:
-  - "Yeni \xE7eki\xE7 mi gelmi\u015F? Vurun bakal\u0131m, korkmuyoruz."
-  approvedLine: "Sa\u011F olun, hay\u0131rl\u0131 i\u015Fler."
+  - "Duydum, yeni bir \xE7eki\xE7 gelmi\u015F. Vurun bakal\u0131m, korkmuyoruz."
+  - "D\xFCn gece salland\u0131 m\u0131 sizce de? Bizde bardaklar \u015F\u0131ng\u0131rdad\u0131."
+  questions:
+  - question: "\xC7eki\xE7ten neden korkmuyorsunuz?"
+    answer: "Betonu kendim kar\u0131\u015Ft\u0131rd\u0131m, ne koydu\u011Fumu bilirim."
+  - question: "Zemin nas\u0131l?"
+    answer: "Tepeye yapt\u0131k, ad\u0131 \xFCst\xFCnde. Raporu okuyun."
+  approvedLine: "\xC7eki\xE7 de do\u011Frulad\u0131 ya, bitti bu i\u015F."
   shearWallLine: Perde mi? Masraf ama... peki, ekletiriz.
-  rejectedLine: "Bu i\u015F burada bitmez!"
+  rejectedLine: "\xC7eki\xE7 bile sa\u011Flam dedi, daha ne istiyorsunuz?"
+  collapseHeadline: 
+  standingLine: 

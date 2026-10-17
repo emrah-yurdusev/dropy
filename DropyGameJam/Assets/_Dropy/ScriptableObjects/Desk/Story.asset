@@ -1,0 +1,175 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4f0ca156423bb7a4894d9dfff59afd1a, type: 3}
+  m_Name: Story
+  m_EditorClassIdentifier: 
+  calls:
+  - day: 1
+    caller: "M\xFCd\xFCr (telefon)"
+    lines:
+    - "Alo? Hay\u0131rl\u0131 olsun, ilk g\xFCn\xFCn. K\u0131sa anlatay\u0131m, m\xFCteahhitler
+      kap\u0131da."
+    - "Gelen oturur, derdini anlat\u0131r. Lafa de\u011Fil k\xE2\u011F\u0131da bak:
+      solda y\xF6netmelik, sa\u011Fda k\xFCnye ve ek rapor."
+    - "K\xFCnyeye bir m\xFCh\xFCr basars\u0131n. Onay bin lira, red s\u0131f\u0131r.
+      Perde ekle be\u015F y\xFCz, g\xFCnde bir kere."
+    - "Kitapta yazmayan kusura tak\u0131lma. Ak\u015Fam kira kesilir. Kolay gelsin."
+  - day: 5
+    caller: "M\xFCd\xFCr (telefon)"
+    lines:
+    - "Alo, benim. Belediye kasas\u0131 bug\xFCn kapal\u0131, har\xE7 al\u0131nm\u0131yor."
+    - "Yani bug\xFCn m\xFCh\xFCrler sana para getirmez. Ama binalar yine yap\u0131lacak,
+      karar\u0131n yine ge\xE7erli."
+    - Radyo da hep deprem diyor. Dikkatli bak.
+  radio:
+  - "Radyo: Uzmanlar b\xF6lgedeki fay hatt\u0131na dikkat \xE7ekiyor."
+  - "Radyo: AFAD, deprem \xE7antas\u0131nda su, fener ve ilk yard\u0131m malzemesi
+    bulunmas\u0131n\u0131 hat\u0131rlatt\u0131."
+  - "Radyo: D\xFCn gece 3.8 b\xFCy\xFCkl\xFC\u011F\xFCnde bir sars\u0131nt\u0131
+    hissedildi."
+  - "Radyo: Uzmanlar, dolaplar\u0131n duvara sabitlenmesinin can kurtard\u0131\u011F\u0131n\u0131
+    vurguluyor."
+  - "Radyo: Son iki g\xFCnde onlarca k\xFC\xE7\xFCk sars\u0131nt\u0131 kaydedildi.
+    Vatanda\u015Flar tedirgin."
+  tremors:
+  - 0
+  - 0
+  - 0.012
+  - 0.02
+  - 0.03
+  messages:
+  - day: 1
+    sender: "E\u015Fin"
+    text: "Kira bu ak\u015Fam kesiliyor, unutma. Elif okulda deprem tatbikat\u0131
+      yapm\u0131\u015F, \xE7ok korkmu\u015F."
+    condition: 0
+    item: 0
+    other: {fileID: 0}
+    seal: 0
+  - day: 1
+    sender: Elif
+    text: "Baba \xF6\u011Fretmen deprem \xE7antas\u0131 haz\u0131rlay\u0131n dedi.
+      Bizde var m\u0131?"
+    condition: 0
+    item: 0
+    other: {fileID: 0}
+    seal: 0
+  - day: 2
+    sender: "E\u015Fin"
+    text: "\xC7anta geldi, kap\u0131n\u0131n yan\u0131na koydum. Elif'in ast\u0131m
+      ilac\u0131n\u0131 da i\xE7ine koydum."
+    condition: 1
+    item: 0
+    other: {fileID: 0}
+    seal: 0
+  - day: 2
+    sender: "E\u015Fin"
+    text: "\xC7anta i\u015Fini konu\u015Fmad\u0131k. Elif yine sordu."
+    condition: 2
+    item: 0
+    other: {fileID: 0}
+    seal: 0
+  - day: 2
+    sender: Elif
+    text: "Baba \xF6\u011Fretmen dolaplar\u0131 duvara vidalamam\u0131z laz\u0131m
+      dedi. Benim odadaki dolap \xE7ok uzun."
+    condition: 0
+    item: 0
+    other: {fileID: 0}
+    seal: 0
+  - day: 2
+    sender: Bilinmeyen numara
+    text: "Yak\u0131nda bir dosya gelecek. Yard\u0131mc\u0131 olursan\u0131z unutmam.
+      -O"
+    condition: 0
+    item: 0
+    other: {fileID: 0}
+    seal: 0
+  - day: 3
+    sender: "E\u015Fin"
+    text: "Usta geldi, dolaplar\u0131 duvara sabitledi. Elif rahat uyudu."
+    condition: 1
+    item: 1
+    other: {fileID: 0}
+    seal: 0
+  - day: 3
+    sender: "E\u015Fin"
+    text: "Gece Elif'in odas\u0131ndaki dolap salland\u0131, \xE7ok korktuk."
+    condition: 2
+    item: 1
+    other: {fileID: 0}
+    seal: 0
+  - day: 3
+    sender: Ev sahibi
+    text: "Bina eski, kom\u015Fular g\xFC\xE7lendirme i\xE7in para topluyor. Sizin
+      pay\u0131n\u0131z 4.000 TL. Telefondaki d\xFCkk\xE2ndan \xF6denebiliyor, yar\u0131n
+      ak\u015Fam son g\xFCn."
+    condition: 0
+    item: 0
+    other: {fileID: 0}
+    seal: 0
+  - day: 4
+    sender: "E\u015Fin"
+    text: "G\xFC\xE7lendirme paras\u0131 yetiyor mu? Ev sahibi bu ak\u015Fam son
+      g\xFCn dedi."
+    condition: 0
+    item: 0
+    other: {fileID: 0}
+    seal: 0
+  - day: 4
+    sender: Bilinmeyen numara
+    text: "Te\u015Fekk\xFCrler. Kimse bir \u015Fey demez. -O"
+    condition: 3
+    item: 0
+    other: {fileID: 11400000, guid: 9ac03a467c981484cb0d0e4e6f4b1b83, type: 2}
+    seal: 1
+  - day: 4
+    sender: Bilinmeyen numara
+    text: "Pi\u015Fman olacaks\u0131n. -O"
+    condition: 3
+    item: 0
+    other: {fileID: 11400000, guid: 9ac03a467c981484cb0d0e4e6f4b1b83, type: 2}
+    seal: 2
+  needs:
+  - day: 1
+    name: Elif'in okul gezisi
+    price: 300
+    sender: Elif
+    paidReply: "Baba gezi \xE7ok g\xFCzeldi! M\xFCzede deprem sim\xFClat\xF6r\xFCne
+      bindik."
+    unpaidReply: "Herkes geziye gitti, ben s\u0131n\u0131fta kald\u0131m."
+    endingPaid: "Elif okul gezisini h\xE2l\xE2 anlat\u0131yor."
+    endingUnpaid: Elif okul gezisine gidemedi.
+  - day: 2
+    name: "Annenin ilac\u0131"
+    price: 500
+    sender: Annen
+    paidReply: "\u0130lac\u0131m geldi, Allah raz\u0131 olsun evlad\u0131m."
+    unpaidReply: "\u0130lac\u0131 bu ay alamad\u0131m, idare ederim, sen dert etme."
+    endingPaid: "Annenin ilac\u0131 aksamad\u0131."
+    endingUnpaid: "Annenin ilac\u0131 bir hafta aksad\u0131."
+  - day: 3
+    name: "Do\u011Falgaz faturas\u0131"
+    price: 400
+    sender: "E\u015Fin"
+    paidReply: "Fatura yatm\u0131\u015F, ev s\u0131cac\u0131k."
+    unpaidReply: "Do\u011Falgaz kesildi. Elif'le battaniyeye sar\u0131nd\u0131k."
+    endingPaid: "Ev hafta boyunca s\u0131cak kald\u0131."
+    endingUnpaid: "Ev iki gece so\u011Fuk kald\u0131."
+  - day: 4
+    name: "Elif'in do\u011Fum g\xFCn\xFC pastas\u0131"
+    price: 300
+    sender: Elif
+    paidReply: 
+    unpaidReply: 
+    endingPaid: "Elif do\u011Fum g\xFCn\xFCnde mumlar\u0131n\u0131 \xFCfledi."
+    endingUnpaid: "Elif'in do\u011Fum g\xFCn\xFC pastas\u0131z ge\xE7ti."

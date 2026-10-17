@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using TMPro;
 using UnityEngine;
+using UnityEngine.InputSystem;
 using UnityEngine.UI;
 
 namespace Dropy.Gameplay
@@ -24,6 +25,7 @@ namespace Dropy.Gameplay
         TextMeshProUGUI warnText;
         CanvasGroup warnGroup;
         TextMeshProUGUI bannerText;
+        TextMeshProUGUI bannerHint;
         CanvasGroup bannerGroup;
         RectTransform summary;
         TextMeshProUGUI summaryText;
@@ -74,13 +76,15 @@ namespace Dropy.Gameplay
             bannerText = Ui.Text(banner, "Text", "", 30f, Color.white, TextAlignmentOptions.Center);
             bannerText.rectTransform.Stretch(200f, 0f, 200f, 0f);
             bannerText.richText = true;
+            bannerHint = Ui.Text(banner, "Hint", "Devam etmek için tıkla", 22f, new Color(1f, 1f, 1f, 0.6f), TextAlignmentOptions.Bottom, FontStyles.Italic);
+            bannerHint.rectTransform.Stretch(0f, 60f, 0f, 0f);
 
             summary = Ui.Image(root, "Summary", new Color(0.08f, 0.08f, 0.1f, 0.94f), Ui.Rounded).rectTransform;
             summary.Place(new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), Vector2.zero, new Vector2(1100f, 980f));
             summaryText = Ui.Text(summary, "Text", "", 22f, Color.white);
             summaryText.enableAutoSizing = true;
             summaryText.fontSizeMin = 14f;
-            summaryText.fontSizeMax = 22f;
+            summaryText.fontSizeMax = 30f;
             summaryText.rectTransform.Stretch(40f, 40f, 40f, 36f);
             summaryText.richText = true;
             summary.gameObject.SetActive(false);
@@ -124,18 +128,37 @@ namespace Dropy.Gameplay
             group.alpha = 0f;
         }
 
-        /// <summary>Gün başında ekranı kaplayan "GÜN N" yazısı.</summary>
+        /// <summary>
+        /// Gün başında ekranı kaplayan "GÜN N" yazısı. Oyuncu tıklayana kadar (Space / Enter da olur) kalır;
+        /// ilk yarım saniye tıklama sayılmaz ki önceki ekrandan kalan tık yanlışlıkla geçirmesin.
+        /// </summary>
         public IEnumerator DayBanner(int day, string subtitle)
         {
             bannerText.text = $"<size=90><b>GÜN {day}</b></size>\n\n{subtitle}";
             bannerGroup.alpha = 1f;
-            yield return new WaitForSeconds(2.2f);
+            bannerHint.alpha = 0f;
+            for (float t = 0f; t < 0.5f; t += Time.unscaledDeltaTime)
+                yield return null;
+            while (!ContinuePressed())
+            {
+                bannerHint.alpha = 0.45f + 0.35f * Mathf.Sin(Time.unscaledTime * 3f);
+                yield return null;
+            }
+            bannerHint.alpha = 0f;
             for (float t = 0f; t < 0.6f; t += Time.unscaledDeltaTime)
             {
                 bannerGroup.alpha = 1f - t / 0.6f;
                 yield return null;
             }
             bannerGroup.alpha = 0f;
+        }
+
+        static bool ContinuePressed()
+        {
+            var mouse = Mouse.current;
+            var keyboard = Keyboard.current;
+            return (mouse != null && mouse.leftButton.wasPressedThisFrame)
+                || (keyboard != null && (keyboard.spaceKey.wasPressedThisFrame || keyboard.enterKey.wasPressedThisFrame));
         }
 
         public void Quake(string message)
@@ -147,46 +170,77 @@ namespace Dropy.Gameplay
             toastRoutine = StartCoroutine(Fade(toastGroup, 4.5f));
         }
 
-        /// <summary>Deprem sonrası rapor: her binanın akıbeti ve ailenin durumu.</summary>
-        public void ShowFinal(IList<DeskManager.CaseResult> results, ICollection<ShopItem> purchased, int money)
+        /// <summary>
+        /// Deprem sonrası gazete: çöken binalar manşet olur, onaylayan müteahhidin son sözü altına düşer;
+        /// ayakta kalanlar ve hiç yapılmayanlar kısa listelenir. Altta evin ve ailenin durumu.
+        /// </summary>
+        public void ShowFinal(IList<DeskManager.CaseResult> results, ICollection<ShopItem> purchased,
+            IEnumerable<(FamilyNeed need, bool paid)> family, int money)
         {
-            var sb = new StringBuilder();
-            sb.AppendLine("<size=40><b>DEPREMDEN SONRA</b></size>\n");
-            int collapsed = 0;
-            foreach (var r in results)
-            {
-                string fate;
-                switch (r.fate)
-                {
-                    case BuildingFate.Collapsed:
-                        fate = "<color=#ff6b6b>ÇÖKTÜ</color>";
-                        collapsed++;
-                        break;
-                    case BuildingFate.Standing:
-                        fate = "<color=#6fdc8c>Ayakta</color>";
-                        break;
-                    default:
-                        fate = "<color=#9aa0a6>Yapılmadı</color>";
-                        break;
-                }
-                sb.AppendLine($"Gün {r.day}  <b>{r.buildingCase.buildingName}</b>  ·  {DeskManager.SealName(r.seal)}  ·  {fate}");
-            }
-            sb.AppendLine($"\nÇöken bina: <b>{collapsed}</b>");
+            summary.GetComponent<Image>().color = new Color(0.95f, 0.93f, 0.86f, 0.98f);
+            summaryText.color = new Color(0.12f, 0.11f, 0.1f);
 
-            sb.AppendLine("\n<size=30><b>EVDE</b></size>");
+            var collapsed = results.Where(r => r.fate == BuildingFate.Collapsed).ToList();
+            var standing = results.Where(r => r.fate == BuildingFate.Standing).ToList();
+            var notBuilt = results.Where(r => r.fate == BuildingFate.NotBuilt).ToList();
+
+            var sb = new StringBuilder();
+            sb.AppendLine("<size=20><b>KENT GAZETESİ</b>  ·  DEPREM ÖZEL BASKISI</size>");
+            sb.AppendLine("<size=14>________________________________________________________________________________</size>");
+            string main = collapsed.Count == 0
+                ? "Büronun onayladığı binaların hepsi ayakta"
+                : Headline(collapsed[0]);
+            sb.AppendLine($"<size=42><b>{main.ToUpper(new System.Globalization.CultureInfo("tr-TR"))}</b></size>");
+            if (collapsed.Count > 0)
+                sb.AppendLine(Quote(collapsed[0]));
+            for (int i = 1; i < collapsed.Count; i++)
+            {
+                sb.AppendLine($"\n<size=28><b>{Headline(collapsed[i])}</b></size>");
+                sb.AppendLine(Quote(collapsed[i]));
+            }
+
+            if (standing.Count > 0)
+            {
+                sb.AppendLine("\n<b>Ayakta kalanlar</b>");
+                foreach (var r in standing.Where(r => !string.IsNullOrEmpty(r.buildingCase.standingLine)))
+                    sb.AppendLine(r.buildingCase.standingLine);
+                var plain = standing.Where(r => string.IsNullOrEmpty(r.buildingCase.standingLine)).Select(r => r.buildingCase.buildingName);
+                sb.AppendLine(string.Join(", ", plain));
+            }
+            if (notBuilt.Count > 0)
+                sb.AppendLine("\n<b>Hiç yapılmayanlar:</b> " + string.Join(", ", notBuilt.Select(r => r.buildingCase.buildingName)));
+
+            sb.AppendLine("\n<size=28><b>EVDE</b></size>");
             sb.AppendLine(Line(purchased, ShopItem.Bag, "Su, fener ve ilk yardım çantası hazırdı.", "Karanlıkta ne su vardı ne fener."));
-            sb.AppendLine(Line(purchased, ShopItem.Fixing, "Dolaplar duvara sabitliydi, yerinde kaldı.", "Sabitlenmemiş dolap devrildi."));
+            sb.AppendLine(Line(purchased, ShopItem.Fixing, "Dolaplar duvara sabitliydi, yerinde kaldı.", "Sabitlenmemiş dolap Elif'in odasına devrildi."));
             sb.AppendLine(Line(purchased, ShopItem.Retrofit, "Güçlendirilen apartman ayakta kaldı.", "Güçlendirilmemiş apartman ağır hasar aldı."));
+            foreach (var (need, paid) in family)
+            {
+                string line = paid ? need.endingPaid : need.endingUnpaid;
+                if (!string.IsNullOrEmpty(line))
+                    sb.AppendLine((paid ? "<color=#1f7a3a>Ödendi</color>  " : "<color=#a3221b>Ödenmedi</color>  ") + line);
+            }
             bool safe = Shop.Items.All(purchased.Contains);
-            sb.AppendLine(safe ? "\n<color=#6fdc8c><b>Ailen güvende.</b></color>" : "\n<color=#ff6b6b><b>Ailen güvende değil.</b></color>");
-            sb.AppendLine($"\n<color=#fad166>Kasa: {money:N0} TL</color>");
+            sb.AppendLine(safe ? "\n<color=#1f7a3a><b>Ailen güvende.</b></color>" : "\n<color=#a3221b><b>Ailen güvende değil.</b></color>");
+            sb.AppendLine($"<size=18>Kasa: {money:N0} TL</size>");
             summaryText.text = sb.ToString();
             summary.gameObject.SetActive(true);
+            summary.SetAsLastSibling();
+        }
+
+        static string Headline(DeskManager.CaseResult r) =>
+            string.IsNullOrEmpty(r.buildingCase.collapseHeadline) ? r.buildingCase.buildingName + " çöktü" : r.buildingCase.collapseHeadline;
+
+        /// <summary>Onay anında müteahhidin söylediği söz, şimdi enkazın altına yazılır.</summary>
+        static string Quote(DeskManager.CaseResult r)
+        {
+            string line = r.seal == Seal.ShearWall ? r.buildingCase.shearWallLine : r.buildingCase.approvedLine;
+            return $"<i>Müteahhit {r.buildingCase.contractorName}, onay günü: \"{line}\"</i>";
         }
 
         static string Line(ICollection<ShopItem> purchased, ShopItem item, string yes, string no) =>
             purchased.Contains(item)
-                ? $"<color=#6fdc8c>Alındı</color>  {Shop.Name(item)}: {yes}"
-                : $"<color=#ff6b6b>Alınmadı</color>  {Shop.Name(item)}: {no}";
+                ? $"<color=#1f7a3a>Alındı</color>  {Shop.Name(item)}: {yes}"
+                : $"<color=#a3221b>Alınmadı</color>  {Shop.Name(item)}: {no}";
     }
 }

@@ -96,6 +96,12 @@ namespace Dropy.Gameplay
             animator.SetFloat(WalkSpeedId, Mathf.Max(0.5f, speed / walkAnimSpeed));
         }
 
+        /// <summary>Yürüme hızını Inspector'daki değerin katı yapar; animasyon hıza kendisi uyar.</summary>
+        public void SetWalkSpeedMultiplier(float multiplier)
+        {
+            agent.speed = walkSpeed * multiplier;
+        }
+
         /// <summary>Inspector'daki rutini (baştan) oynatır.</summary>
         public void PlayRoutine()
         {

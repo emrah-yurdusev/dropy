@@ -69,12 +69,11 @@ namespace Dropy.Gameplay
             };
         }
 
-        /// <summary>Mührün üstündeki tutarı ve kullanılabilirliğini günceller.</summary>
-        public void SetSeal(Seal seal, int fee, bool available, string extra = null)
+        /// <summary>Mührün altındaki küçük yazıyı (tutar, "harç yok"...) ve kullanılabilirliğini günceller.</summary>
+        public void SetSeal(Seal seal, string caption, bool available)
         {
             var slot = slots[seal];
-            string amount = fee > 0 ? $"+{fee:N0} TL" : "0 TL";
-            slot.label.text = $"{slot.title}\n<size=80%>{amount}{extra}</size>";
+            slot.label.text = $"{slot.title}\n<size=80%>{caption}</size>";
             slot.button.interactable = available;
             if (!available && Active == seal)
                 Select(Seal.None);

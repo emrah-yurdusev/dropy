@@ -28,9 +28,25 @@ MonoBehaviour:
   hammerConcrete: 16
   approveFeeOverride: 0
   dialogue: {fileID: 0}
+  callbacks:
+  - other: {fileID: 11400000, guid: fb0c0151a53ca7448a9b0dfd201466ef, type: 2}
+    seal: 2
+    line: "Tar\u0131k'\u0131n i\u015Fini yat\u0131rm\u0131\u015Fs\u0131n\u0131z,
+      adam peri\u015Fan. Ben ondan ak\u0131ll\u0131y\u0131m."
+  - other: {fileID: 11400000, guid: fb0c0151a53ca7448a9b0dfd201466ef, type: 2}
+    seal: 1
+    line: "Tar\u0131k sizi \xE7ok \xF6vd\xFC. Ben de onun orta\u011F\u0131y\u0131m."
   introLines:
-  - "K\xE2\u011F\u0131tlar tertemiz, iki rapor da C30."
-  - "\xC7eki\xE7le u\u011Fra\u015Fmay\u0131n, vaktiniz k\u0131ymetli."
-  approvedLine: "Sa\u011F olun, hay\u0131rl\u0131 i\u015Fler."
+  - "\u0130ki laboratuvar da ayn\u0131 sonucu verdi."
+  - "\u0130kinci kez test yapt\u0131rmak hakaret olur bize. Vaktiniz k\u0131ymetli."
+  questions:
+  - question: Hangi laboratuvar?
+    answer: "Kay\u0131nbiraderimin. \u0130\u015Fini bilir, merak etmeyin."
+  - question: "\xC7eki\xE7le \xF6l\xE7sem?"
+    answer: "\xD6l\xE7\xFCn ama o alet nem g\xF6r\xFCnce \u015Fa\u015F\u0131r\u0131r.
+      Biz rapora g\xFCveniriz."
+  approvedLine: "G\xF6rd\xFCn\xFCz m\xFC? Bo\u015Funa u\u011Fra\u015Fmad\u0131n\u0131z."
   shearWallLine: Perde mi? Masraf ama... peki, ekletiriz.
-  rejectedLine: "Bu i\u015F burada bitmez!"
+  rejectedLine: "Bir aletin dedi\u011Fine mi inan\u0131yorsunuz \u015Fimdi?"
+  collapseHeadline: "Deniz Rezidans'\u0131n betonu un ufak oldu"
+  standingLine: 

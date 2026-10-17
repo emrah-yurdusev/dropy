@@ -28,9 +28,17 @@ MonoBehaviour:
   hammerConcrete: 30
   approveFeeOverride: 0
   dialogue: {fileID: 0}
+  callbacks: []
   introLines:
-  - "Kap\u0131lar\u0131 ye\u015Fil boyad\u0131k, projede kahverengi yaz\u0131yordu.
-    Sorun olmaz de\u011Fil mi?"
-  approvedLine: "Sa\u011F olun, hay\u0131rl\u0131 i\u015Fler."
+  - "Kap\u0131lar\u0131 ye\u015Fil boyad\u0131k, projede kahverengi yaz\u0131yordu."
+  - "Torunum ye\u015Fil sever. Sorun olur mu bilmiyorum."
+  questions:
+  - question: "Neden projeden sapt\u0131n\u0131z?"
+    answer: "Sadece renk. Ba\u015Fka hi\xE7bir \u015Feye dokunmad\u0131k, yemin ederim."
+  - question: Bina ne zaman bitecek?
+    answer: "Bahara. Torunlar bayram\u0131 orada ge\xE7irsin istiyorum."
+  approvedLine: "Torunlara m\xFCjdeyi vereyim!"
   shearWallLine: Perde mi? Masraf ama... peki, ekletiriz.
-  rejectedLine: "Bu i\u015F burada bitmez!"
+  rejectedLine: "Kap\u0131 rengi y\xFCz\xFCnden mi? Ger\xE7ekten mi?"
+  collapseHeadline: 
+  standingLine: 

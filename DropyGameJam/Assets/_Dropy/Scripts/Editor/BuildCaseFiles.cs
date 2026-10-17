@@ -8,13 +8,15 @@ using Dropy.Gameplay;
 namespace Dropy.EditorTools
 {
     /// <summary>
-    /// Kilitli tasarımın 15 dosyasını ve gün gün açılan yönetmeliği asset olarak yazar,
-    /// açık sahnedeki DeskManager'a bağlar. Tekrar çalıştırmak aynı asset'leri günceller.
+    /// Kilitli tasarımın 15 dosyasını, gün gün açılan yönetmeliği ve masanın hikâyesini
+    /// (telefon, radyo, mesajlar, sarsıntılar) asset olarak yazar, açık sahnedeki DeskManager'a bağlar.
+    /// Tekrar çalıştırmak aynı asset'leri günceller.
     /// </summary>
     public static class BuildCaseFiles
     {
         const string Folder = "Assets/_Dropy/ScriptableObjects/Desk/Files";
         const string RegulationsPath = "Assets/_Dropy/ScriptableObjects/Desk/Regulations.asset";
+        public const string StoryPath = "Assets/_Dropy/ScriptableObjects/Desk/Story.asset";
 
         public static readonly string[] Paths =
         {
@@ -35,6 +37,9 @@ namespace Dropy.EditorTools
             Folder + "/15_CarsiUstuKonut.asset",
         };
 
+        // Dosya sırası (0'dan): hikâye bağlantıları bunlara göre kurulur.
+        const int Ada = 0, Sahil = 7, Yurt = 11;
+
         [MenuItem("Dropy/Dosyaları Üret")]
         public static void Build()
         {
@@ -43,12 +48,19 @@ namespace Dropy.EditorTools
             var specs = Specs();
             for (int i = 0; i < specs.Count; i++)
                 cases.Add(Write(Paths[i], specs[i]));
+            for (int i = 0; i < specs.Count; i++)
+                WriteCallbacks(cases[i], specs[i], cases);
 
             WriteRegulations();
+            var story = WriteStory(cases);
             AssetDatabase.SaveAssets();
 
             Verify(cases);
-            AssignToScene(cases);
+            int family = 0;
+            foreach (var need in story.needs)
+                family += need.price;
+            Debug.Log($"Aile masrafları toplam {family} TL. Dürüst yolda hepsi ödenirse güvenlik alışverişinden {family} TL eksik kalır.");
+            AssignToScene(cases, story);
         }
 
         class Spec
@@ -62,106 +74,203 @@ namespace Dropy.EditorTools
             public SoilType soil;
             public string[] intro;
             public string approved, rejected, shearWall;
+            public string headline, standing;
             public Seal expected;
+            public readonly List<CaseQuestion> questions = new List<CaseQuestion>();
+            public readonly List<(int other, Seal seal, string line)> callbacks = new List<(int, Seal, string)>();
+
+            public Spec Ask(string question, string answer)
+            {
+                questions.Add(new CaseQuestion { question = question, answer = answer });
+                return this;
+            }
+
+            public Spec React(string onApprove, string onReject, string onShearWall = null)
+            {
+                approved = onApprove;
+                rejected = onReject;
+                shearWall = onShearWall;
+                return this;
+            }
+
+            public Spec News(string onCollapse, string onStanding = null)
+            {
+                headline = onCollapse;
+                standing = onStanding;
+                return this;
+            }
+
+            public Spec Recall(int otherFile, Seal seal, string line)
+            {
+                callbacks.Add((otherFile, seal, line));
+                return this;
+            }
         }
 
         static Spec File(string building, string contractor, int floors, int claimed, int lab, SoilType soil, Seal expected, params string[] intro) =>
             new Spec { building = building, contractor = contractor, floors = floors, claimed = claimed, lab = lab, soil = soil, expected = expected, intro = intro };
 
+        /// <summary>
+        /// Diyalog ilkesi: müteahhit cevabı söylemez, kendi derdini anlatır. İpucu kâğıttadır;
+        /// lafı oyuncuyu ikna etmeye ya da yanıltmaya çalışır. Bazı dürüst müteahhitler bilerek şüpheli konuşur.
+        /// </summary>
         static List<Spec> Specs()
         {
             var list = new List<Spec>();
 
-            // 1. gün: beton
+            // ---- 1. gün: beton ----
             var s = File("Ada Konutları", "Kemal Bey", 3, 30, 30, SoilType.Kaya, Seal.Approve,
-                "Günaydın! Ada Konutları. Üç kat, sağlam iş.",
-                "Balkon on beş santim taşmış, ona takılmazsınız herhalde.");
+                "Günaydın! Yeni gelen siz misiniz? Hayırlı olsun.",
+                "Ada Konutları, üç kat. Otuz yıldır bu işi yaparım, tek bir şikâyet gelmedi.")
+                .Ask("Balkon neden taşmış?", "Hanım biraz geniş olsun dedi. On beş santim, görüntü meselesi.")
+                .Ask("Betonu kim test etti?", "Şehrin laboratuvarı. Rapor ekte, açın bakın.")
+                .React("Eksik olmayın. Sizinle iyi çalışırız.", "Balkon için mi? Otuz yılda ilk kez başıma geliyor.");
             s.note = "Balkon 15 cm taşıyor";
             list.Add(s);
 
             list.Add(File("Kıyı Evleri", "Nuri Usta", 2, 25, 25, SoilType.Kil, Seal.Approve,
-                "İki katlı ufak bir iş. Kâğıtlar tamam, buyurun."));
+                    "Ş-şey... İlk kez dosya getiriyorum, kusura bakmayın.",
+                    "İki katlı, küçük bir ev. Annemle babam oturacak.")
+                .Ask("Neden bu kadar gerginsiniz?", "Geçen ay başka bir büroda bir saat bekletip geri çevirdiler. Kâğıtlarım tam ama.")
+                .Ask("Beton sınıfı ne?", "Raporda ne yazıyorsa o. Fazlasına param yetmedi açıkçası.")
+                .React("Gerçekten mi? Allah razı olsun!", "Ama... her şey yazdığı gibiydi."));
 
             s = File("Mavi Apart", "Selma Hanım", 4, 20, 30, SoilType.Kil, Seal.Approve,
-                "Künyeye yanlışlıkla C20 yazmışlar.",
-                "Laboratuvar raporu ekte, numune C30 çıktı.");
-            s.note = "Künyedeki beton sınıfı yanlış yazılmış";
+                    "Kâğıtlarda bir tutarsızlık göreceksiniz, baştan söyleyeyim.",
+                    "Künyeyi ofisteki çocuk doldurdu. Ben laboratuvara güvenirim.")
+                .Ask("Künyede neden farklı beton yazıyor?", "Eski bir projeden kopyalamış. Döktüğümüz beton raporda ne yazıyorsa o.")
+                .Ask("Kaç daire var?", "Sekiz. Hepsi satıldı bile, aileler taşınmayı bekliyor.")
+                .React("Doğru okudunuz. Teşekkürler.", "Künyedeki bir yazım hatası yüzünden mi? Ek raporu okumadınız mı?");
+            s.note = "Numune: 3 küp, 28 günlük";
             list.Add(s);
 
-            // 2. gün: yumuşak kat, kesik kolon
+            // ---- 2. gün: yumuşak kat, kesik kolon ----
             s = File("Sarı Site", "Rıza Bey", 3, 30, 30, SoilType.Kaya, Seal.Approve,
-                "Cephe boyası biraz soldu ama binaya bir şey olmaz, değil mi?");
+                    "Belediye başkanı selam söyledi. Bu dosyaya özellikle bakacakmışsınız.",
+                    "Cephe boyası biraz soldu, onu da söyleyeyim, sonra laf olmasın.")
+                .Ask("Başkanı nereden tanıyorsunuz?", "Askerlik arkadaşıyız. Selamı yeter, değil mi?")
+                .Ask("Boyayı neden yenilemediniz?", "Bütçe. Boya kozmetik, bina sapasağlam.")
+                .React("Başkana iletirim, memnun kalacak.", "Başkan bunu duyunca hiç hoşlanmayacak.");
             s.note = "Cephe boyası solmuş";
             list.Add(s);
 
             s = File("Pazar Market", "Cengiz Bey", 4, 30, 30, SoilType.Kil, Seal.ShearWall,
-                "Altı market, üstü daire.",
-                "Market tavanını yüksek tuttuk, müşteri ferah sever.");
+                    "Zemine zincir market giriyor, kira garantili.",
+                    "Tavanı yüksek tuttuk, raflar sığsın diye. Kolonlar kalın, dengeler.")
+                .Ask("Zemin katta duvar var mı?", "Market bu, duvar olur mu? Açık alan, baştan başa cam vitrin.")
+                .Ask("Kolonlar ne kadar kalın?", "Elli elli. Mühendisimiz yeter dedi.")
+                .React("Market açılışına beklerim!", "Bir market için bu kadar zorluk mu?", "Perde mi? Vitrin küçülür ama... peki, ekletiriz.")
+                .News("Pazar Market'in zemin katı çöktü", "Pazar Market ayakta: perde zemin katı tuttu.");
             s.use = GroundUse.Market;
             s.height = 4.5f;
             list.Add(s);
 
             list.Add(File("Zeytin Apart", "Ayten Hanım", 3, 35, 35, SoilType.Kaya, Seal.Approve,
-                "C35 döktük, sağlam olsun dedik."));
+                    "Vinç kapıda bekliyor, saatine para veriyorum.",
+                    "C35 döktük, en iyisinden. Hızlıca bakarsanız sevinirim.")
+                .Ask("Neden bu kadar acele?", "Kış gelmeden kaba inşaatı bitirmemiz lazım.")
+                .Ask("C35 pahalı değil mi?", "Pahalı. Ama oğlum da bu binada oturacak.")
+                .React("Vinç kurtuldu, sağ olun!", "Vinç parasını siz mi ödeyeceksiniz?"));
 
-            // 3. gün: kum zemin, çekiç
+            // ---- 3. gün: kum zemin, çekiç ----
             s = File("Tepe Evleri", "Hüseyin Usta", 3, 30, 30, SoilType.Kaya, Seal.Approve,
-                "Yeni çekiç mi gelmiş? Vurun bakalım, korkmuyoruz.");
+                    "Duydum, yeni bir çekiç gelmiş. Vurun bakalım, korkmuyoruz.",
+                    "Dün gece sallandı mı sizce de? Bizde bardaklar şıngırdadı.")
+                .Ask("Çekiçten neden korkmuyorsunuz?", "Betonu kendim karıştırdım, ne koyduğumu bilirim.")
+                .Ask("Zemin nasıl?", "Tepeye yaptık, adı üstünde. Raporu okuyun.")
+                .React("Çekiç de doğruladı ya, bitti bu iş.", "Çekiç bile sağlam dedi, daha ne istiyorsunuz?");
             s.hammer = 30;
             list.Add(s);
 
             s = File("Sahil Rezidans", "Tarık Bey", 6, 30, 30, SoilType.Kum, Seal.Reject,
-                "Altı kat, deniz manzaralı.",
-                "Radye döktük, kazığa ne gerek var?");
+                    "Sahile sıfır, altı kat. Manzarayı görseniz siz de bir daire istersiniz.",
+                    "Size özel bir indirim de konuşuruz, aramızda.")
+                .Ask("Temeli kim hesapladı?", "Radye döktük, standart. Bu sahilde herkes öyle yapıyor.")
+                .Ask("Zemin etüdü ne diyor?", "Sahil sonuçta. Hollanda'da da insanlar kumun üstünde yaşıyor.")
+                .React("Size bir daire ayırıyorum, haberiniz olsun.", "Bu işi başka büroda hallederim, merak etmeyin.")
+                .News("Sahil Rezidans'ta enkaz: müteahhit firari");
             s.note = "Deniz kumu";
             list.Add(s);
 
             s = File("Palmiye Konut", "Fikret Bey", 4, 25, 25, SoilType.Kil, Seal.Approve,
-                "Korkuluk biraz alçak kaldı, sonra yükseltiriz.");
+                    "Korkuluk biraz alçak kaldı, onu baştan söyleyeyim.",
+                    "Bu arada Ozan Bey sizi sordu. Yarın bir dosyası varmış, yardımcı olursanız unutmazmış.")
+                .Ask("Ozan Bey kim?", "Yurt işleri yapar. Eli açıktır, anlarsınız ya.")
+                .Ask("Korkuluğu ne zaman düzelteceksiniz?", "İskele sökülmeden hallederiz, söz.")
+                .React("Ozan Bey'e iyi şeyler söylerim.", "Ozan Bey bunu duyunca şaşıracak.");
             s.hammer = 25;
             s.note = "Korkuluk alçak";
             list.Add(s);
 
-            // 4. gün: rüşvet
+            // ---- 4. gün: rüşvet ----
             s = File("Çınar Apart", "Gül Hanım", 3, 30, 30, SoilType.Kaya, Seal.Approve,
-                "Kapıları yeşil boyadık, projede kahverengi yazıyordu. Sorun olmaz değil mi?");
+                    "Kapıları yeşil boyadık, projede kahverengi yazıyordu.",
+                    "Torunum yeşil sever. Sorun olur mu bilmiyorum.")
+                .Ask("Neden projeden saptınız?", "Sadece renk. Başka hiçbir şeye dokunmadık, yemin ederim.")
+                .Ask("Bina ne zaman bitecek?", "Bahara. Torunlar bayramı orada geçirsin istiyorum.")
+                .React("Torunlara müjdeyi vereyim!", "Kapı rengi yüzünden mi? Gerçekten mi?");
             s.hammer = 30;
             s.note = "Kapı rengi projeden farklı";
             list.Add(s);
 
             s = File("İstiklal İlkokulu", "Erdal Bey", 4, 30, 30, SoilType.Kil, Seal.ShearWall,
-                "Altına market koyduk, okul üst katlarda.",
-                "Kira geliri okula gider, herkes kazanır.");
+                    "Mahallenin okulu bu. Altına market koyduk, kirası okulun masraflarına gidecek.",
+                    "Çocuklar için yapıyoruz, takılmazsınız umarım.")
+                .Ask("Zemin kat neden market?", "Belediye bütçe vermedi. Market kirası olmadan okul açılamıyor.")
+                .Ask("Markette duvar var mı?", "Geniş olsun dedik, sadece kolon var. Yüksek tavan, ferah.")
+                .React("Çocuklar adına teşekkürler.", "Bu mahallenin çocukları nerede okuyacak şimdi?", "Perde mi? Tamam, çocuklar için ne gerekiyorsa.")
+                .News("İstiklal İlkokulu'nun zemin katı çöktü", "İstiklal İlkokulu ayakta: çocuklar bahçede toplandı.");
             s.hammer = 30;
             s.use = GroundUse.Market;
             s.height = 4.5f;
             list.Add(s);
 
             s = File("Öğrenci Yurdu", "Ozan Bey", 5, 30, 30, SoilType.Kaya, Seal.Reject,
-                "Yurt acil, dönem başlıyor. Çocuklar kapıda kalmasın.",
-                "Siz onayı basın, gerisini ben hallederim. Zahmetinize karşılık... dört bin.");
+                    "Fikret size bahsetmiştir. Ozan.",
+                    "Yurt acil, dönem başlıyor. Çocuklar kapıda kalmasın.",
+                    "Siz onayı basın, zahmetinize karşılık dört bin. Kimse bir şey demez.")
+                .Ask("Kolonlar neden kesik?", "Odalar geniş olsun diye biraz açtık. Öğrenciler kalabalık.")
+                .Ask("Dört bin ne demek?", "Teşekkür. Kira, fatura... Sizin de bir aileniz var, değil mi?")
+                .React("Akıllı adamsınız. Kimse bir şey demez.", "Pişman olacaksınız. Bu şehirde herkes beni tanır.")
+                .News("Öğrenci yurdu çöktü");
             s.hammer = 30;
             s.foundation = Foundation.Kazik;
             s.columns = ColumnState.Kesik;
             s.approveOverride = 4000;
-            s.approved = "Akıllı adamsınız. Kimse bir şey demez.";
             list.Add(s);
 
-            // 5. gün: para yok
-            s = File("Liman Konut", "Bekir Usta", 4, 25, 25, SoilType.Kil, Seal.Approve,
-                "Hızlıca bakıverin hocam, millet ev bekliyor.");
+            // ---- 5. gün: para yok ----
+            s = File("Liman Konut", "Kemal Bey", 4, 25, 25, SoilType.Kil, Seal.Approve,
+                    "Bu sabah yer sallandı mı sizce de? Hanım korktu, bütün gece uyumadı.",
+                    "Dört kat, kil zemin. Hızlıca bakarsanız eve döneceğim.")
+                .Recall(Ada, Seal.Approve, "Yine ben! Geçen sefer balkona takılmadınız, sağ olun.")
+                .Recall(Ada, Seal.Reject, "Yine ben. Geçen sefer balkon yüzünden geri çevirdiniz, bu sefer her şey milimetrik.")
+                .Ask("Bu sefer ne getirdiniz?", "Ne varsa kâğıtta. İsterseniz çekici de vurun.")
+                .Ask("Siz depreme hazır mısınız?", "Çantamız kapının yanında. Siz de hazırlıklı olun, hocam.")
+                .React("Kolay gelsin, kendinize dikkat edin.", "Ne eksik ki? Neyse, siz bilirsiniz.");
             s.hammer = 25;
             list.Add(s);
 
             s = File("Deniz Rezidans", "Levent Bey", 5, 30, 30, SoilType.Kaya, Seal.Reject,
-                "Kâğıtlar tertemiz, iki rapor da C30.",
-                "Çekiçle uğraşmayın, vaktiniz kıymetli.");
+                    "İki laboratuvar da aynı sonucu verdi.",
+                    "İkinci kez test yaptırmak hakaret olur bize. Vaktiniz kıymetli.")
+                .Recall(Sahil, Seal.Reject, "Tarık'ın işini yatırmışsınız, adam perişan. Ben ondan akıllıyım.")
+                .Recall(Sahil, Seal.Approve, "Tarık sizi çok övdü. Ben de onun ortağıyım.")
+                .Ask("Hangi laboratuvar?", "Kayınbiraderimin. İşini bilir, merak etmeyin.")
+                .Ask("Çekiçle ölçsem?", "Ölçün ama o alet nem görünce şaşırır. Biz rapora güveniriz.")
+                .React("Gördünüz mü? Boşuna uğraşmadınız.", "Bir aletin dediğine mi inanıyorsunuz şimdi?")
+                .News("Deniz Rezidans'ın betonu un ufak oldu");
             s.hammer = 16;
             s.foundation = Foundation.Kazik;
             list.Add(s);
 
             s = File("Çarşı Üstü Konut", "Sevgi Hanım", 3, 35, 35, SoilType.Kaya, Seal.ShearWall,
-                "Alt kat çarşı, beş metre tavan. Ferah oldu.");
+                    "Alt kat çarşı, beş metre tavan. Esnaf çok sevdi.",
+                    "Bugün son dosya mı? Herkes tedirgin, radyo da hep deprem diyor.")
+                .Ask("Çarşı katında perde var mı?", "Dükkânlar geniş olsun dedik. Perde... gerekir mi?")
+                .Ask("Üst katlarda kim oturacak?", "Esnafın aileleri. Dükkânın üstü ev, eski usul.")
+                .React("Esnafa haber vereyim.", "Esnaf ne yapacak şimdi?", "Peki, perdeyi ekletiriz. İçim rahatladı açıkçası.")
+                .News("Çarşı Üstü Konut'ta zemin kat göçtü", "Çarşı Üstü Konut ayakta: esnaf dükkânların önünde toplandı.");
             s.hammer = 35;
             s.use = GroundUse.Market;
             s.height = 5f;
@@ -178,6 +287,7 @@ namespace Dropy.EditorTools
                 c = ScriptableObject.CreateInstance<BuildingCase>();
                 AssetDatabase.CreateAsset(c, path);
             }
+            var defaults = ScriptableObject.CreateInstance<BuildingCase>();
             c.contractorName = spec.contractor;
             c.buildingName = spec.building;
             c.floors = spec.floors;
@@ -193,11 +303,144 @@ namespace Dropy.EditorTools
             c.hammerConcrete = spec.hammer;
             c.approveFeeOverride = spec.approveOverride;
             c.introLines = new List<string>(spec.intro);
-            if (spec.approved != null)
-                c.approvedLine = spec.approved;
+            c.questions = new List<CaseQuestion>(spec.questions);
+            c.approvedLine = spec.approved ?? defaults.approvedLine;
+            c.rejectedLine = spec.rejected ?? defaults.rejectedLine;
+            c.shearWallLine = spec.shearWall ?? defaults.shearWallLine;
+            c.collapseHeadline = spec.headline;
+            c.standingLine = spec.standing;
+            Object.DestroyImmediate(defaults);
             EditorUtility.SetDirty(c);
             return c;
         }
+
+        static void WriteCallbacks(BuildingCase c, Spec spec, List<BuildingCase> cases)
+        {
+            c.callbacks = new List<CaseCallback>();
+            foreach (var (other, seal, line) in spec.callbacks)
+                c.callbacks.Add(new CaseCallback { other = cases[other], seal = seal, line = line });
+            EditorUtility.SetDirty(c);
+        }
+
+        static StoryData WriteStory(List<BuildingCase> cases)
+        {
+            var story = AssetDatabase.LoadAssetAtPath<StoryData>(StoryPath);
+            if (story == null)
+            {
+                story = ScriptableObject.CreateInstance<StoryData>();
+                AssetDatabase.CreateAsset(story, StoryPath);
+            }
+
+            story.calls = new List<PhoneCall>
+            {
+                new PhoneCall
+                {
+                    day = 1,
+                    lines = new List<string>
+                    {
+                        "Alo? Hayırlı olsun, ilk günün. Kısa anlatayım, müteahhitler kapıda.",
+                        "Gelen oturur, derdini anlatır. Lafa değil kâğıda bak: solda yönetmelik, sağda künye ve ek rapor.",
+                        "Künyeye bir mühür basarsın. Onay bin lira, red sıfır. Perde ekle beş yüz, günde bir kere.",
+                        "Kitapta yazmayan kusura takılma. Akşam kira kesilir. Kolay gelsin.",
+                    }
+                },
+                // 5. gün mühür para vermez (kilitli tasarım); oyuncu bozuk sanmasın diye müdür söyler.
+                new PhoneCall
+                {
+                    day = 5,
+                    lines = new List<string>
+                    {
+                        "Alo, benim. Belediye kasası bugün kapalı, harç alınmıyor.",
+                        "Yani bugün mühürler sana para getirmez. Ama binalar yine yapılacak, kararın yine geçerli.",
+                        "Radyo da hep deprem diyor. Dikkatli bak.",
+                    }
+                },
+            };
+
+            story.radio = new List<string>
+            {
+                "Radyo: Uzmanlar bölgedeki fay hattına dikkat çekiyor.",
+                "Radyo: AFAD, deprem çantasında su, fener ve ilk yardım malzemesi bulunmasını hatırlattı.",
+                "Radyo: Dün gece 3.8 büyüklüğünde bir sarsıntı hissedildi.",
+                "Radyo: Uzmanlar, dolapların duvara sabitlenmesinin can kurtardığını vurguluyor.",
+                "Radyo: Son iki günde onlarca küçük sarsıntı kaydedildi. Vatandaşlar tedirgin.",
+            };
+
+            // 1–2. gün sakin, sonra gittikçe sertleşen sarsıntılar.
+            story.tremors = new List<float> { 0f, 0f, 0.012f, 0.02f, 0.03f };
+
+            const string Wife = "Eşin", Child = "Elif", Landlord = "Ev sahibi", Unknown = "Bilinmeyen numara";
+            story.messages = new List<PhoneMessage>
+            {
+                Msg(1, Wife, "Kira bu akşam kesiliyor, unutma. Elif okulda deprem tatbikatı yapmış, çok korkmuş."),
+                Msg(1, Child, "Baba öğretmen deprem çantası hazırlayın dedi. Bizde var mı?"),
+
+                Bought(2, Wife, "Çanta geldi, kapının yanına koydum. Elif'in astım ilacını da içine koydum.", ShopItem.Bag),
+                NotBought(2, Wife, "Çanta işini konuşmadık. Elif yine sordu.", ShopItem.Bag),
+                Msg(2, Child, "Baba öğretmen dolapları duvara vidalamamız lazım dedi. Benim odadaki dolap çok uzun."),
+                Msg(2, Unknown, "Yakında bir dosya gelecek. Yardımcı olursanız unutmam. -O"),
+
+                Bought(3, Wife, "Usta geldi, dolapları duvara sabitledi. Elif rahat uyudu.", ShopItem.Fixing),
+                NotBought(3, Wife, "Gece Elif'in odasındaki dolap sallandı, çok korktuk.", ShopItem.Fixing),
+                Msg(3, Landlord, "Bina eski, komşular güçlendirme için para topluyor. Sizin payınız 4.000 TL. Telefondaki dükkândan ödenebiliyor, yarın akşam son gün."),
+
+                Msg(4, Wife, "Güçlendirme parası yetiyor mu? Ev sahibi bu akşam son gün dedi."),
+                Sealed(4, Unknown, "Teşekkürler. Kimse bir şey demez. -O", cases[Yurt], Seal.Approve),
+                Sealed(4, Unknown, "Pişman olacaksın. -O", cases[Yurt], Seal.Reject),
+            };
+
+            // İsteğe bağlı aile masrafları. Dürüst yol üç güvenlik alışverişine tam yeter (kasa 0'da biter),
+            // yani her ödenen masraf ya bir güvenlik önleminden ya da rüşvetten gelir. İkilem burada.
+            const string Mother = "Annen";
+            story.needs = new List<FamilyNeed>
+            {
+                new FamilyNeed
+                {
+                    day = 1, name = "Elif'in okul gezisi", price = 300, sender = Child,
+                    paidReply = "Baba gezi çok güzeldi! Müzede deprem simülatörüne bindik.",
+                    unpaidReply = "Herkes geziye gitti, ben sınıfta kaldım.",
+                    endingPaid = "Elif okul gezisini hâlâ anlatıyor.",
+                    endingUnpaid = "Elif okul gezisine gidemedi."
+                },
+                new FamilyNeed
+                {
+                    day = 2, name = "Annenin ilacı", price = 500, sender = Mother,
+                    paidReply = "İlacım geldi, Allah razı olsun evladım.",
+                    unpaidReply = "İlacı bu ay alamadım, idare ederim, sen dert etme.",
+                    endingPaid = "Annenin ilacı aksamadı.",
+                    endingUnpaid = "Annenin ilacı bir hafta aksadı."
+                },
+                new FamilyNeed
+                {
+                    day = 3, name = "Doğalgaz faturası", price = 400, sender = Wife,
+                    paidReply = "Fatura yatmış, ev sıcacık.",
+                    unpaidReply = "Doğalgaz kesildi. Elif'le battaniyeye sarındık.",
+                    endingPaid = "Ev hafta boyunca sıcak kaldı.",
+                    endingUnpaid = "Ev iki gece soğuk kaldı."
+                },
+                new FamilyNeed
+                {
+                    day = 4, name = "Elif'in doğum günü pastası", price = 300, sender = Child,
+                    endingPaid = "Elif doğum gününde mumlarını üfledi.",
+                    endingUnpaid = "Elif'in doğum günü pastasız geçti."
+                },
+            };
+
+            EditorUtility.SetDirty(story);
+            return story;
+        }
+
+        static PhoneMessage Msg(int day, string sender, string text) =>
+            new PhoneMessage { day = day, sender = sender, text = text };
+
+        static PhoneMessage Bought(int day, string sender, string text, ShopItem item) =>
+            new PhoneMessage { day = day, sender = sender, text = text, condition = MessageCondition.Bought, item = item };
+
+        static PhoneMessage NotBought(int day, string sender, string text, ShopItem item) =>
+            new PhoneMessage { day = day, sender = sender, text = text, condition = MessageCondition.NotBought, item = item };
+
+        static PhoneMessage Sealed(int day, string sender, string text, BuildingCase other, Seal seal) =>
+            new PhoneMessage { day = day, sender = sender, text = text, condition = MessageCondition.SealWas, other = other, seal = seal };
 
         static void WriteRegulations()
         {
@@ -280,7 +523,7 @@ namespace Dropy.EditorTools
                 Debug.LogError($"Dosyalar tasarımla tutmuyor. Dürüst yol sonu kasa: {money}");
         }
 
-        static void AssignToScene(List<BuildingCase> cases)
+        static void AssignToScene(List<BuildingCase> cases, StoryData story)
         {
             var desks = Object.FindObjectsByType<DeskManager>(FindObjectsInactive.Include, FindObjectsSortMode.None);
             foreach (var desk in desks)
@@ -290,10 +533,11 @@ namespace Dropy.EditorTools
                 prop.arraySize = cases.Count;
                 for (int i = 0; i < cases.Count; i++)
                     prop.GetArrayElementAtIndex(i).objectReferenceValue = cases[i];
+                so.FindProperty("story").objectReferenceValue = story;
                 so.ApplyModifiedPropertiesWithoutUndo();
                 EditorSceneManager.MarkSceneDirty(desk.gameObject.scene);
                 EditorSceneManager.SaveScene(desk.gameObject.scene);
-                Debug.Log($"{desk.gameObject.scene.name} sahnesindeki DeskManager 15 dosyaya bağlandı.");
+                Debug.Log($"{desk.gameObject.scene.name} sahnesindeki DeskManager 15 dosyaya ve hikâyeye bağlandı.");
             }
         }
     }

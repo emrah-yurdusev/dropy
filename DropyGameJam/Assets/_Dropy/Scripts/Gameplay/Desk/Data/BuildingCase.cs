@@ -8,6 +8,23 @@ namespace Dropy.Gameplay
     public enum ColumnState { Tam, Kesik }
     public enum SoilType { Kaya, Kil, Kum }
 
+    [System.Serializable]
+    public class CaseQuestion
+    {
+        [Tooltip("Oyuncunun cevap balonunda görünen soru")]
+        public string question;
+        [TextArea(2, 4)] public string answer;
+    }
+
+    /// <summary>Önceki bir dosyaya hangi mühür basıldıysa müteahhidin ona değinmesi.</summary>
+    [System.Serializable]
+    public class CaseCallback
+    {
+        public BuildingCase other;
+        public Seal seal;
+        [TextArea(2, 4)] public string line;
+    }
+
     /// <summary>
     /// Masaya gelen bir dosya: müteahhit, proje künyesi ve ek rapor.
     /// Doğru mühür buradaki değerlerden <see cref="BuildingRules"/> ile türetilir.
@@ -49,12 +66,22 @@ namespace Dropy.Gameplay
         [Header("Konuşma")]
         [Tooltip("Varsa dallanan diyalog; yoksa aşağıdaki satırlar sırayla söylenir")]
         public DialogueData dialogue;
+        [Tooltip("Daha önceki bir dosyanın sonucuna göre girişten önce söylenen satırlar")]
+        public List<CaseCallback> callbacks = new List<CaseCallback>();
         [TextArea(2, 4)] public List<string> introLines = new List<string>();
+        [Tooltip("Oyuncunun sorabileceği sorular. Cevaplar karakteri açar, kuralı değiştirmez")]
+        public List<CaseQuestion> questions = new List<CaseQuestion>();
 
         [Header("Karar sonrası tepkiler")]
         [TextArea] public string approvedLine = "Sağ olun, hayırlı işler.";
         [TextArea] public string shearWallLine = "Perde mi? Masraf ama... peki, ekletiriz.";
         [TextArea] public string rejectedLine = "Bu iş burada bitmez!";
+
+        [Header("Deprem sonrası gazete")]
+        [Tooltip("Bina çökerse manşet. Boşsa '<bina> çöktü'")]
+        public string collapseHeadline;
+        [Tooltip("Bina ayakta kalırsa kısa haber. Boşsa yalnızca adı listelenir")]
+        public string standingLine;
 
         /// <summary>Betonun gerçek dayanımı: çekiç varsa çekiç, yoksa ek rapor.</summary>
         public int TrueConcrete => hammerConcrete > 0 ? hammerConcrete : labConcrete;

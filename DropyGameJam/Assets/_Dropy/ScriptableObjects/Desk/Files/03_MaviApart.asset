@@ -24,13 +24,25 @@ MonoBehaviour:
   hasShearWall: 0
   labConcrete: 30
   soil: 1
-  note: "K\xFCnyedeki beton s\u0131n\u0131f\u0131 yanl\u0131\u015F yaz\u0131lm\u0131\u015F"
+  note: "Numune: 3 k\xFCp, 28 g\xFCnl\xFCk"
   hammerConcrete: 0
   approveFeeOverride: 0
   dialogue: {fileID: 0}
+  callbacks: []
   introLines:
-  - "K\xFCnyeye yanl\u0131\u015Fl\u0131kla C20 yazm\u0131\u015Flar."
-  - "Laboratuvar raporu ekte, numune C30 \xE7\u0131kt\u0131."
-  approvedLine: "Sa\u011F olun, hay\u0131rl\u0131 i\u015Fler."
+  - "K\xE2\u011F\u0131tlarda bir tutars\u0131zl\u0131k g\xF6receksiniz, ba\u015Ftan
+    s\xF6yleyeyim."
+  - "K\xFCnyeyi ofisteki \xE7ocuk doldurdu. Ben laboratuvara g\xFCvenirim."
+  questions:
+  - question: "K\xFCnyede neden farkl\u0131 beton yaz\u0131yor?"
+    answer: "Eski bir projeden kopyalam\u0131\u015F. D\xF6kt\xFC\u011F\xFCm\xFCz
+      beton raporda ne yaz\u0131yorsa o."
+  - question: "Ka\xE7 daire var?"
+    answer: "Sekiz. Hepsi sat\u0131ld\u0131 bile, aileler ta\u015F\u0131nmay\u0131
+      bekliyor."
+  approvedLine: "Do\u011Fru okudunuz. Te\u015Fekk\xFCrler."
   shearWallLine: Perde mi? Masraf ama... peki, ekletiriz.
-  rejectedLine: "Bu i\u015F burada bitmez!"
+  rejectedLine: "K\xFCnyedeki bir yaz\u0131m hatas\u0131 y\xFCz\xFCnden mi? Ek raporu
+    okumad\u0131n\u0131z m\u0131?"
+  collapseHeadline: 
+  standingLine: 

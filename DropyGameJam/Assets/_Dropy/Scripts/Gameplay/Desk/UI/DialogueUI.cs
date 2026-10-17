@@ -28,6 +28,7 @@ namespace Dropy.Gameplay
         TextMeshProUGUI nameText;
         TextMeshProUGUI bodyText;
         RectTransform continueHint;
+        RectTransform tail;
         RectTransform choiceRoot;
         Transform anchor;
 
@@ -49,7 +50,7 @@ namespace Dropy.Gameplay
             layout.childForceExpandHeight = false;
             bubble.gameObject.AddComponent<ContentSizeFitter>().verticalFit = ContentSizeFitter.FitMode.PreferredSize;
 
-            var tail = Ui.Image(bubble, "Tail", BubbleColor, raycast: false).rectTransform;
+            tail = Ui.Image(bubble, "Tail", BubbleColor, raycast: false).rectTransform;
             tail.gameObject.AddComponent<LayoutElement>().ignoreLayout = true;
             tail.Place(new Vector2(0.5f, 0f), new Vector2(0.5f, 0.5f), new Vector2(0f, 2f), new Vector2(26f, 26f));
             tail.localRotation = Quaternion.Euler(0f, 0f, 45f);
@@ -94,6 +95,9 @@ namespace Dropy.Gameplay
         public IEnumerator Say(string speaker, string text, Transform head, bool waitForClick)
         {
             anchor = head;
+            if (head == null)
+                bubble.anchoredPosition = new Vector2(0f, 60f); // kafası olmayan konuşmacı (telefon): ekranın ortası
+            tail.gameObject.SetActive(head != null);
             nameText.text = speaker;
             bodyText.text = text;
             bodyText.maxVisibleCharacters = 0;

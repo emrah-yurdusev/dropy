@@ -28,8 +28,18 @@ MonoBehaviour:
   hammerConcrete: 35
   approveFeeOverride: 0
   dialogue: {fileID: 0}
+  callbacks: []
   introLines:
-  - "Alt kat \xE7ar\u015F\u0131, be\u015F metre tavan. Ferah oldu."
-  approvedLine: "Sa\u011F olun, hay\u0131rl\u0131 i\u015Fler."
-  shearWallLine: Perde mi? Masraf ama... peki, ekletiriz.
-  rejectedLine: "Bu i\u015F burada bitmez!"
+  - "Alt kat \xE7ar\u015F\u0131, be\u015F metre tavan. Esnaf \xE7ok sevdi."
+  - "Bug\xFCn son dosya m\u0131? Herkes tedirgin, radyo da hep deprem diyor."
+  questions:
+  - question: "\xC7ar\u015F\u0131 kat\u0131nda perde var m\u0131?"
+    answer: "D\xFCkk\xE2nlar geni\u015F olsun dedik. Perde... gerekir mi?"
+  - question: "\xDCst katlarda kim oturacak?"
+    answer: "Esnaf\u0131n aileleri. D\xFCkk\xE2n\u0131n \xFCst\xFC ev, eski usul."
+  approvedLine: Esnafa haber vereyim.
+  shearWallLine: "Peki, perdeyi ekletiriz. \u0130\xE7im rahatlad\u0131 a\xE7\u0131k\xE7as\u0131."
+  rejectedLine: "Esnaf ne yapacak \u015Fimdi?"
+  collapseHeadline: "\xC7ar\u015F\u0131 \xDCst\xFC Konut'ta zemin kat g\xF6\xE7t\xFC"
+  standingLine: "\xC7ar\u015F\u0131 \xDCst\xFC Konut ayakta: esnaf d\xFCkk\xE2nlar\u0131n
+    \xF6n\xFCnde topland\u0131."

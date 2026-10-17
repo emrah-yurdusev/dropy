@@ -150,6 +150,7 @@ namespace Dropy.Gameplay
             stampMark.localRotation = Quaternion.Euler(0f, 0f, Random.Range(-14f, 14f));
             stampMark.gameObject.AddComponent<StampThump>();
             Stamp = seal;
+            Sfx.Stamp();
         }
 
         public static RectTransform CreateStampGraphic(Transform parent, Seal seal)
