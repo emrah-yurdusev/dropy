@@ -127,7 +127,7 @@ namespace Dropy.EditorTools
             var list = new List<Spec>();
 
             // ---- 1. gün: beton ----
-            var s = File("Ada Konutları", "Kemal Bey", 3, 30, 30, SoilType.Kaya, Seal.Approve,
+            var s = File("Ada Konutları", "Veysel Bey", 3, 30, 30, SoilType.Kaya, Seal.Approve,
                 "Günaydın! Yeni gelen siz misiniz? Hayırlı olsun.",
                 "Ada Konutları, üç kat. Otuz yıldır bu işi yaparım, tek bir şikâyet gelmedi.")
                 .Ask("Balkon neden taşmış?", "Hanım biraz geniş olsun dedi. On beş santim, görüntü meselesi.")
@@ -256,7 +256,7 @@ namespace Dropy.EditorTools
             list.Add(s);
 
             // ---- 5. gün: para yok ----
-            s = File("Liman Konut", "Kemal Bey", 4, 25, 25, SoilType.Kil, Seal.Approve,
+            s = File("Liman Konut", "Veysel Bey", 4, 25, 25, SoilType.Kil, Seal.Approve,
                     "Bu sabah yer sallandı mı sizce de? Hanım korktu, bütün gece uyumadı.",
                     "Dört kat, kil zemin. Hızlıca bakarsanız eve döneceğim.")
                 .Recall(Ada, Seal.Approve, "Yine ben! Geçen sefer balkona takılmadınız, sağ olun.")

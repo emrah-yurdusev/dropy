@@ -12,8 +12,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b53e488de2e93c841b0e8998a55e2701, type: 3}
   m_Name: 01_AdaKonutlari
   m_EditorClassIdentifier: 
-  contractorName: Kemal Bey
-  contractorPrefab: {fileID: 0}
+  contractorName: Veysel Bey
+  contractorPrefab: {fileID: 257129419783892725, guid: cc600f087f0763b489417a813e88df4a, type: 3}
   buildingName: "Ada Konutlar\u0131"
   floors: 3
   claimedConcrete: 30

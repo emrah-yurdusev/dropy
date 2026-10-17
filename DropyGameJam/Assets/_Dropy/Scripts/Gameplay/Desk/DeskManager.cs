@@ -313,7 +313,7 @@ namespace Dropy.Gameplay
             visitor = go.GetComponent<NpcController>();
             visitorHead = FindDeep(go.transform, "Head") ?? HumanBone(go, HumanBodyBones.Head) ?? go.transform;
             visitor.SetWalkSpeedMultiplier(day >= FastWalkDay ? FastWalkMultiplier : FirstDayWalkMultiplier);
-            // Oyunun ilk müteahhidinde (Kemal Bey) geçiş yok: oyuncu ofisi, kapıyı ve oturuşu bir kez görsün.
+            // Oyunun ilk müteahhidinde (Veysel Bey) geçiş yok: oyuncu ofisi, kapıyı ve oturuşu bir kez görsün.
             bool skippable = index > 0;
             if (!go.TryGetComponent<SeatedLife>(out var life))
                 life = go.AddComponent<SeatedLife>();
