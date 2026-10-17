@@ -194,7 +194,8 @@ namespace Dropy.Menu
 
         void BuildLogo(RectTransform root)
         {
-            logo = Ui.Rect("Logo", root).Place(new Vector2(0.5f, 1f), new Vector2(0.5f, 0.5f), new Vector2(-80f, -185f), new Vector2(800f, 300f));
+            // Sol üst köşede: ortada oturan karakterin başını kapatmasın.
+            logo = Ui.Rect("Logo", root).Place(new Vector2(0f, 1f), new Vector2(0.5f, 0.5f), new Vector2(540f, -185f), new Vector2(800f, 300f));
 
             // İkaz şeritli çerçeve: yuvarlak köşeli maske içinde döşenmiş şerit
             var frame = Ui.Image(logo, "Frame", Color.white, Ui.Rounded);
