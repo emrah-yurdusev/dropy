@@ -29,6 +29,10 @@ MonoBehaviour:
   damage: 0
   hammerConcrete: 35
   approveFeeOverride: 0
+  bribe: 0
+  bribeOffer: 
+  bribeAcceptedLine: 
+  bribeRefusedLine: 
   dialogue: {fileID: 0}
   callbacks: []
   introLines:

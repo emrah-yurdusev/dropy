@@ -29,6 +29,12 @@ MonoBehaviour:
   damage: 0
   hammerConcrete: 25
   approveFeeOverride: 0
+  bribe: 1500
+  bribeOffer: "Bir de... korkuluk i\xE7in tutanak tutmazsan\u0131z, bin be\u015F
+    y\xFCz de benden. Te\u015Fekk\xFCr olarak."
+  bribeAcceptedLine: "Ak\u0131ll\u0131 adams\u0131n\u0131z. Ozan Bey'e de s\xF6ylerim,
+    sizi unutmaz."
+  bribeRefusedLine: "Peki peki. Ben te\u015Fekk\xFCr etmek istemi\u015Ftim, o kadar."
   dialogue: {fileID: 0}
   callbacks: []
   introLines:
@@ -40,7 +46,7 @@ MonoBehaviour:
     answer: "Yurt i\u015Fleri yapar. Eli a\xE7\u0131kt\u0131r, anlars\u0131n\u0131z
       ya."
   - question: "Korkulu\u011Fu ne zaman d\xFCzelteceksiniz?"
-    answer: "\u0130skele s\xF6k\xFClmeden hallederiz, s\xF6z."
+    answer: "Aileler ta\u015F\u0131nmadan hallederiz, s\xF6z."
   approvedLine: "Ozan Bey'e iyi \u015Feyler s\xF6ylerim."
   shearWallLine: Perde mi? Masraf ama... peki, ekletiriz.
   rejectedLine: "Ozan Bey bunu duyunca \u015Fa\u015F\u0131racak."

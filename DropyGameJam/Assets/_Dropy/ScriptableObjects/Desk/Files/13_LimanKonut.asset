@@ -29,6 +29,10 @@ MonoBehaviour:
   damage: 0
   hammerConcrete: 25
   approveFeeOverride: 0
+  bribe: 0
+  bribeOffer: 
+  bribeAcceptedLine: 
+  bribeRefusedLine: 
   dialogue: {fileID: 0}
   callbacks:
   - other: {fileID: 11400000, guid: 59dd8e2ccc51d09489b0212c36774432, type: 2}
@@ -40,8 +44,8 @@ MonoBehaviour:
     line: "Yine ben. Ge\xE7en sefer balkon y\xFCz\xFCnden geri \xE7evirdiniz, bu
       sefer her \u015Fey milimetrik."
   introLines:
-  - "Bu sabah yer salland\u0131 m\u0131 sizce de? Han\u0131m korktu, b\xFCt\xFCn
-    gece uyumad\u0131."
+  - "D\xFCn yine salland\u0131, de\u011Fil mi? B\xFCy\xFCk depremden beri han\u0131m
+    geceleri uyuyam\u0131yor."
   - "D\xF6rt kat, kil zemin. H\u0131zl\u0131ca bakarsan\u0131z eve d\xF6nece\u011Fim."
   questions:
   - question: Bu sefer ne getirdiniz?

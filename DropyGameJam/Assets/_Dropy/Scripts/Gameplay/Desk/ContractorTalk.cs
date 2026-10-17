@@ -43,7 +43,9 @@ namespace Dropy.Gameplay
             switch (field.key)
             {
                 case FieldKey.Name:
-                    return Calm($"{c.buildingName}. Adını ben koydum, yakışmış değil mi?");
+                    return Calm(c.damage != DamageLevel.None
+                        ? $"{c.buildingName}. Mahallede yıllardır bu adla bilinir."
+                        : $"{c.buildingName}. Tabelası bile asıldı, bir mührünüz kaldı.");
                 case FieldKey.Floors:
                     return sand
                         ? Defend($"{c.floors} kat. Bu sahilde herkes bu kadar yapıyor.")
@@ -120,8 +122,9 @@ namespace Dropy.Gameplay
         /// <summary>
         /// Müteahhidin cümlesi oyuncuya yöneltilmiş bir soru ya da baskıysa iki cevap kartı döner, değilse null.
         /// Konu cümledeki kelimelerden anlaşılır; sıra önemlidir (rüşvet, torpil önce gelir).
+        /// <paramref name="afterQuake"/>: ilk deprem oldu; artık "hissettim mi" değil "geçmiş olsun" konuşulur.
         /// </summary>
-        public static List<Reply> RepliesTo(string line)
+        public static List<Reply> RepliesTo(string line, bool afterQuake)
         {
             string s = line.ToLower(Tr);
             if (Has(s, "dört bin", "zahmetinize"))
@@ -136,6 +139,9 @@ namespace Dropy.Gameplay
             if (Has(s, "son dosya"))
                 return Two("Evet, son dosya. Radyo boşuna demiyor, dikkatli olun.", "Siz de hocam, siz de.", "Bir şey olmaz, bu binalar sağlam.",
                     "Önce dosyanıza bakalım.", "Tabii, buyurun.", null);
+            if (afterQuake && Has(s, "sallandı", "sarsıntı", "deprem"))
+                return Two("Geçmiş olsun. Evdekiler iyi mi?", "Şükür, herkes sağ. Siz de geçmiş olsun.", "Sağ olun. İşimize bakalım.",
+                    "Önce kâğıtlara bakalım.", "Tabii, buyurun.", null);
             if (Has(s, "sallandı", "sarsıntı", "deprem"))
                 return Two("Ben de hissettim. Dikkatli olun.", "Siz de dikkat edin hocam.", "Bir şey olmaz, bu binalar sağlam.",
                     "Fark etmedim.", "Bana öyle geldi herhalde.", "Neyse, işimize bakalım.");

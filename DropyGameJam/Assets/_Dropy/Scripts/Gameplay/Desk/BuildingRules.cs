@@ -36,18 +36,19 @@ namespace Dropy.Gameplay
 
     /// <summary>
     /// Döngü: 2 bölüm × 3 gün, günde 3 dosya (18 dosya). 3. ve 6. günün son dosyasından sonra deprem olur.
-    /// Rakamlar dürüst tam yolun kasayı tam 0'da bitirmesine göre ayarlıdır: 1–5. günlerin harcı ve
-    /// başlangıç parası, kira düşünce çanta + sabitleme + ev onarımına (500 + 1.500 + 4.500) tam yeter.
+    /// Mühür iskândır: onaylanan binaya aileler taşınır, reddedilen bina boş kalır.
+    /// Rakamlar dürüst tam yola göre ayarlıdır: 1–5. günlerin harcı, kira düşünce çanta + sabitleme + ev onarımına
+    /// (500 + 1.500 + 4.500) yeter ve aileye tek bir küçük istek ödeyecek kadar (500 TL) artar.
     /// Değiştirmeden önce o hesabı yeniden yap (üretici script denetler).
-    /// Yanlış onaya para cezası yok: depremde onayladığın bina çökerse hapse girersin.
+    /// Yanlış onaya para cezası yok: depremde onayladığın bina çökerse hapse girersin. Kasa eksiye düşebilir (borç).
     /// </summary>
     public static class Economy
     {
         public const int Days = 6;
         public const int FilesPerDay = 3;
-        public const int StartMoney = 1000;
-        public const int ApproveFee = 1000;
-        public const int ShearWallFee = 500;
+        public const int StartMoney = 0;
+        public const int ApproveFee = 1500;
+        public const int ShearWallFee = 1000;
         public const int Rent = 1000;
         /// <summary>Kira 1–5. akşam düşer; dükkân 5. günün sonunda kapanır; 6. gün (deprem günü) mühür para vermez.</summary>
         public const int LastPaidDay = 5;
@@ -96,6 +97,11 @@ namespace Dropy.Gameplay
 
         /// <summary>Ev onarımı ancak ilk depremde ev hasar aldıktan sonra (o akşamdan itibaren) satılır.</summary>
         public static int AvailableFrom(ShopItem item) => item == ShopItem.Retrofit ? Economy.QuakeDays[0] : 1;
+
+        /// <summary>Sabitlemenin işi ilk depremde biter: o akşamdan sonra dükkândan kalkar (geç alınıp "işe yaradı" sanılmasın).</summary>
+        public static int AvailableUntil(ShopItem item) => item == ShopItem.Fixing ? Economy.QuakeDays[0] - 1 : Economy.LastPaidDay;
+
+        public static bool Offered(ShopItem item, int day) => day >= AvailableFrom(item) && day <= AvailableUntil(item);
     }
 
     /// <summary>Yönetmelik: hangi kusur hangi gün kitaba girer, hangi mühür neyi kurtarır.</summary>
@@ -203,7 +209,7 @@ namespace Dropy.Gameplay
                 return why;
             }
             if (played == Seal.Reject && ShearWallSaves(c))
-                return "Yumuşak kat perdeyle kurtarılabilirdi: bina yapılır, sen de 500 TL alırdın.";
+                return $"Yumuşak kat perdeyle kurtarılabilirdi: perde eklenir, aileler taşınır, sen de {Economy.ShearWallFee} TL alırdın.";
             var parts = new List<string>();
             foreach (var flaw in flaws)
                 parts.Add(Explain(flaw, c));
@@ -225,7 +231,7 @@ namespace Dropy.Gameplay
                 case Flaw.SandFoundation:
                     return $"Kum zemin, {c.floors} kat, radye temel: kazık şarttı.";
                 default:
-                    return "Hasar tespiti ağır (taşıyıcıda çatlak): bu bina onarılmaz, yıkılır.";
+                    return "Hasar tespiti ağır (kolonda çapraz çatlak): bu binaya onarım izni verilmez, boşaltılır.";
             }
         }
 

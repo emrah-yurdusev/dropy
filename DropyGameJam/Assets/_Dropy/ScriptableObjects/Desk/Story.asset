@@ -18,11 +18,14 @@ MonoBehaviour:
     lines:
     - "Alo? Hay\u0131rl\u0131 olsun, ilk g\xFCn\xFCn. K\u0131sa anlatay\u0131m, m\xFCteahhitler
       kap\u0131da."
-    - "Gelen oturur, derdini anlat\u0131r. Lafa de\u011Fil k\xE2\u011F\u0131da bak:
-      solda y\xF6netmelik, sa\u011Fda k\xFCnye ve ek rapor."
-    - "K\xFCnyeye bir m\xFCh\xFCr basars\u0131n. Onay bin lira, red s\u0131f\u0131r.
-      Perde ekle be\u015F y\xFCz, g\xFCnde bir kere."
-    - "Kitapta yazmayan kusura tak\u0131lma. Ak\u015Fam kira kesilir. Kolay gelsin."
+    - "Binalar bitti, aileler ta\u015F\u0131nmak i\xE7in isk\xE2n bekliyor. Lafa
+      de\u011Fil k\xE2\u011F\u0131da bak: solda y\xF6netmelik, sa\u011Fda k\xFCnye
+      ve ek rapor."
+    - "K\xFCnyeye bir m\xFCh\xFCr basars\u0131n. Onay bin be\u015F y\xFCz lira har\xE7,
+      aileler ta\u015F\u0131n\u0131r. Red s\u0131f\u0131r, bina bo\u015F kal\u0131r.
+      Perde ekle bin lira, g\xFCnde bir kere."
+    - "Kasan bo\u015F ba\u015Fl\u0131yor, kira her ak\u015Fam kesilir. Kitapta yazmayan
+      kusura tak\u0131lma. Kolay gelsin."
   - day: 4
     caller: "M\xFCd\xFCr (telefon)"
     lines:
@@ -35,15 +38,17 @@ MonoBehaviour:
     caller: "M\xFCd\xFCr (telefon)"
     lines:
     - "Alo, benim. Belediye kasas\u0131 bug\xFCn kapal\u0131, har\xE7 al\u0131nm\u0131yor."
-    - "Yani bug\xFCn m\xFCh\xFCrler sana para getirmez. Ama binalar yine yap\u0131lacak,
+    - "Yani bug\xFCn m\xFCh\xFCrler sana para getirmez. Ama aileler yine ta\u015F\u0131nacak,
       karar\u0131n yine ge\xE7erli."
     - Radyo da hep deprem diyor. Dikkatli bak.
   radio:
-  - "Radyo: Uzmanlar b\xF6lgedeki fay hatt\u0131na dikkat \xE7ekiyor."
-  - "Radyo: AFAD, deprem \xE7antas\u0131nda su, fener ve ilk yard\u0131m malzemesi
-    bulunmas\u0131n\u0131 hat\u0131rlatt\u0131."
-  - "Radyo: D\xFCn gece hafif bir sars\u0131nt\u0131 hissedildi. Uzmanlar dolaplar\u0131n
-    duvara sabitlenmesini \xF6neriyor."
+  - "Radyo: Uzmanlar b\xF6lgedeki fay hatt\u0131na dikkat \xE7ekiyor. AFAD, her evde
+    su, fener ve d\xFCd\xFCk olan bir deprem \xE7antas\u0131 bulunmas\u0131n\u0131
+    hat\u0131rlatt\u0131."
+  - "Radyo: Uzmanlar uzun dolaplar\u0131n duvara sabitlenmesini \xF6neriyor; depremde
+    yaralanmalar\u0131n \xE7o\u011Fu devrilen e\u015Fyadan oluyor."
+  - "Radyo: D\xFCn \xF6\u011Fleden sonra hafif bir sars\u0131nt\u0131 hissedildi.
+    Uzmanlar tedirgin."
   - "Radyo: D\xFCnk\xFC depremin ard\u0131ndan hasar tespit \xE7al\u0131\u015Fmalar\u0131
     s\xFCr\xFCyor. Uzmanlar art\xE7\u0131lara kar\u015F\u0131 uyar\u0131yor."
   - "Radyo: Hasarl\u0131 binalara girilmemesi \xE7a\u011Fr\u0131s\u0131 yap\u0131ld\u0131.
@@ -213,5 +218,5 @@ MonoBehaviour:
     unpaidReply: 
     endingPaid: "Elif do\u011Fum g\xFCn\xFCnde mumlar\u0131n\u0131 \xFCfledi."
     endingUnpaid: "Elif'in do\u011Fum g\xFCn\xFC pastas\u0131z ge\xE7ti."
-  bondStart: 3
+  bondStart: 4
   bondMax: 5

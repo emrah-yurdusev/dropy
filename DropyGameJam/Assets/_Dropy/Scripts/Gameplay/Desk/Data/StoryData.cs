@@ -78,8 +78,8 @@ namespace Dropy.Gameplay
         public List<FamilyNeed> needs = new List<FamilyNeed>();
 
         [Header("Aile bağı")]
-        [Tooltip("Başlangıç. Dürüst oyuncu hiçbir isteği ödemezse 3. akşamın sonunda sıfıra düşer")]
-        [Min(1)] public int bondStart = 3;
+        [Tooltip("Başlangıç. Hiçbir isteği ödemeyen oyuncu 5. akşamın sonunda sıfıra düşer; birini ödemek yeter")]
+        [Min(1)] public int bondStart = 4;
         [Min(1)] public int bondMax = 5;
 
         public string Radio(int day) => day >= 1 && day <= radio.Count ? radio[day - 1] : null;

@@ -24,11 +24,16 @@ MonoBehaviour:
   hasShearWall: 0
   labConcrete: 30
   soil: 0
-  note: "Kap\u0131 rengi projeden farkl\u0131"
-  noteAnswer: 
+  note: "Numune: 1 k\xFCp, 7 g\xFCnl\xFCk"
+  noteAnswer: "Laboratuvar acele etti, bir k\xFCp yeter dediler. Sonu\xE7 ayn\u0131
+    \xE7\u0131kar."
   damage: 0
-  hammerConcrete: 30
+  hammerConcrete: 18
   approveFeeOverride: 0
+  bribe: 0
+  bribeOffer: 
+  bribeAcceptedLine: 
+  bribeRefusedLine: 
   dialogue: {fileID: 0}
   callbacks: []
   introLines:
@@ -37,11 +42,13 @@ MonoBehaviour:
   questions:
   - question: "Neden projeden sapt\u0131n\u0131z?"
     answer: "Sadece renk. Ba\u015Fka hi\xE7bir \u015Feye dokunmad\u0131k, yemin ederim."
-  - question: Bina ne zaman bitecek?
-    answer: "Bahara. Torunlar bayram\u0131 orada ge\xE7irsin istiyorum."
+  - question: "Ne zaman ta\u015F\u0131nacaklar?"
+    answer: "Bu hafta. Torunlar bayram\u0131 orada ge\xE7irsin istiyorum."
   approvedLine: "Torunlara m\xFCjdeyi vereyim!"
   shearWallLine: Perde mi? Masraf ama... peki, ekletiriz.
-  rejectedLine: "Kap\u0131 rengi y\xFCz\xFCnden mi? Ger\xE7ekten mi?"
+  rejectedLine: "Beton mu? Betoncu bana C30 diye yemin etmi\u015Fti... Torunlara
+    ne diyece\u011Fim?"
   rejectPressure: []
-  collapseHeadline: 
+  collapseHeadline: "\xC7\u0131nar Apart \xE7\xF6kt\xFC: betonu k\xE2\u011F\u0131ttakinin
+    yar\u0131s\u0131 \xE7\u0131kt\u0131"
   standingLine: 

@@ -29,11 +29,16 @@ MonoBehaviour:
   damage: 0
   hammerConcrete: 30
   approveFeeOverride: 0
+  bribe: 0
+  bribeOffer: 
+  bribeAcceptedLine: 
+  bribeRefusedLine: 
   dialogue: {fileID: 0}
   callbacks: []
   introLines:
   - "Duydum, yeni bir \xE7eki\xE7 gelmi\u015F. Vurun bakal\u0131m, korkmuyoruz."
-  - "D\xFCn gece salland\u0131 m\u0131 sizce de? Bizde bardaklar \u015F\u0131ng\u0131rdad\u0131."
+  - "D\xFCn \xF6\u011Fleden sonra salland\u0131, de\u011Fil mi? Bizim evde bardaklar
+    \u015F\u0131ng\u0131rdad\u0131."
   questions:
   - question: "\xC7eki\xE7ten neden korkmuyorsunuz?"
     answer: "Betonu kendim kar\u0131\u015Ft\u0131rd\u0131m, ne koydu\u011Fumu bilirim."

@@ -21,6 +21,7 @@ namespace Dropy.Gameplay
         [Tooltip("Her zaman, en başta")] Always,
         [Tooltip("Kira düşünce kasa güçlendirmeye yetmiyorsa")] RetrofitShort,
         [Tooltip("Aile bağı 2 ya da altındaysa")] BondLow,
+        [Tooltip("Oyuncu daha önce bir dosyada rüşvet aldıysa")] TookBribe,
         [Tooltip("Yukarıdakilerin hiçbiri tutmadıysa")] Otherwise
     }
 
@@ -85,6 +86,13 @@ namespace Dropy.Gameplay
         [Header("Ekonomi")]
         [Tooltip("0 değilse Onay mührünün üstünde bu tutar yazar (rüşvet)")]
         public int approveFeeOverride;
+
+        [Header("Gri rüşvet")]
+        [Tooltip("0 değilse müteahhit konuşmada bu tutarı teklif eder; oyuncu kabul edip onay basarsa harca eklenir. Bina sağlam olsa da rüşvettir")]
+        public int bribe;
+        [TextArea(2, 4)] public string bribeOffer;
+        [TextArea(2, 4)] public string bribeAcceptedLine;
+        [TextArea(2, 4)] public string bribeRefusedLine;
 
         [Header("Konuşma")]
         [Tooltip("Varsa dallanan diyalog; yoksa aşağıdaki satırlar sırayla söylenir")]

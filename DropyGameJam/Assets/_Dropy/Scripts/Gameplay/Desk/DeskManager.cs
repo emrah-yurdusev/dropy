@@ -11,9 +11,9 @@ using UnityEngine.UI;
 namespace Dropy.Gameplay
 {
     /// <summary>
-    /// Vize bürosu masa akışı: 5 gün, günde 3 dosya. Müteahhit kapıdan girer, karşıya oturur, konuşur;
-    /// oyuncu yönetmeliğe, künyeye ve ek rapora bakıp künyeye mühür basar. Akşam kira düşer, telefondan
-    /// alışveriş yapılır. 5. günün üçüncü dosyasından sonra deprem olur.
+    /// İskân bürosu masa akışı: 6 gün, günde 3 dosya. Müteahhit kapıdan girer, karşıya oturur, konuşur;
+    /// oyuncu yönetmeliğe, künyeye ve ek rapora bakıp künyeye mühür basar (onay: aileler taşınır, red: bina boş kalır).
+    /// Akşam kira düşer, telefondan alışveriş yapılır. 3. ve 6. günün son dosyasından sonra deprem olur.
     /// Arayüzü (Canvas, EventSystem) kendisi kurar; sahnede yalnızca bu bileşen ve referanslar gerekir.
     /// </summary>
     public class DeskManager : MonoBehaviour
@@ -26,6 +26,8 @@ namespace Dropy.Gameplay
             public int money;
             public BuildingFate fate;
             public string warning;
+            /// <summary>Onayın karşılığında harç dışında para alındı (gri rüşvet ya da Ozan Bey'in teklifi).</summary>
+            public bool bribed;
         }
 
         /// <summary>Müteahhitler biraz hızlı yürür (1. gün 1.2, 2. günden itibaren 1.3 kat); fazlası koşar adım görünür.</summary>
@@ -44,6 +46,11 @@ namespace Dropy.Gameplay
         const int MaxQuakeHeadlines = 3;
         /// <summary>İlk depremde eşya sabitlenmemişse aile bağından giden dilim.</summary>
         const int FixingQuakeBondLoss = 2;
+        /// <summary>İlk depremde deprem çantası yoksa (karanlıkta fener bile yok) aile bağından giden dilim.</summary>
+        const int BagQuakeBondLoss = 1;
+        const string TakeBribe = "Onaylarsam konuşuruz.";
+        const string RefuseBribe = "Ben harç dışında para almam.";
+        const string Landlord = "Ev sahibi";
 
         [Header("Sahne")]
         [Tooltip("Oyuncunun gözü: karşıdaki sandalyeye bakan sabit kamera")]
@@ -58,7 +65,7 @@ namespace Dropy.Gameplay
         [SerializeField] RegulationData regulations;
         [Tooltip("Açılış telefonu, sabah radyosu, akşam mesajları, sarsıntılar")]
         [SerializeField] StoryData story;
-        [Tooltip("Sırayla 15 dosya: her gün 3 tane")]
+        [Tooltip("Sırayla 18 dosya: her gün 3 tane")]
         [SerializeField] BuildingCase[] cases;
         [Tooltip("Vakada karakter seçilmemişse sırayla bunlar kullanılır")]
         [SerializeField] GameObject[] defaultContractors;
@@ -77,6 +84,10 @@ namespace Dropy.Gameplay
         int money;
         readonly List<CaseResult> results = new List<CaseResult>();
         readonly HashSet<ShopItem> purchased = new HashSet<ShopItem>();
+        /// <summary>Hangi eşya hangi akşam alındı: gazete "ilk depremde vardı mı" diye buna bakar.</summary>
+        readonly Dictionary<ShopItem, int> boughtOn = new Dictionary<ShopItem, int>();
+        /// <summary>Masadaki müteahhidin gri rüşvet teklifi kabul edildi (onay basılırsa harca eklenir).</summary>
+        bool bribeAccepted;
         readonly HashSet<FamilyNeed> paidNeeds = new HashSet<FamilyNeed>();
         /// <summary>Aile bağı. Sıfıra düşerse kalıcıdır: aile küser, aileden mesaj gelmez.</summary>
         int bond;
@@ -210,7 +221,7 @@ namespace Dropy.Gameplay
                 Debug.LogWarning($"DeskManager: {expected} dosya bekleniyordu, {cases.Length} var. Dropy > Dosyaları Üret ile kur.");
 
             if (startIndex == 0)
-                yield return hud.Title();
+                yield return hud.Briefing();
 
             int startDay = Economy.Day(startIndex);
             if (eveningFirst && startDay > 1)
@@ -279,7 +290,7 @@ namespace Dropy.Gameplay
             var family = story != null
                 ? story.needs.Select(n => (n, paidNeeds.Contains(n)))
                 : Enumerable.Empty<(FamilyNeed, bool)>();
-            hud.ShowFinal(results, purchased, family, Estranged, money, DeskHud.ReportCard(results));
+            hud.ShowFinal(results, boughtOn, family, Estranged, money, DeskHud.ReportCard(results));
         }
 
         string Morning(int forDay)
@@ -292,7 +303,7 @@ namespace Dropy.Gameplay
                     rules = "Yönetmeliğe yeni madde: " + string.Join(", ", titles);
             }
             if (forDay > Economy.LastPaidDay)
-                rules += "\n<b>Bugün harç yok: mühürler para getirmez, binalar yine yapılır.</b>";
+                rules += "\n<b>Bugün harç yok: mühürler para getirmez, ama aileler yine taşınır.</b>";
             string radio = story != null ? story.Radio(forDay) : null;
             string cracks = CrackNews(forDay);
             if (!string.IsNullOrEmpty(cracks))
@@ -346,6 +357,7 @@ namespace Dropy.Gameplay
         IEnumerator RunCase(BuildingCase buildingCase, int index)
         {
             submitted = false;
+            bribeAccepted = false;
 
             var prefab = buildingCase.contractorPrefab != null
                 ? buildingCase.contractorPrefab
@@ -509,9 +521,10 @@ namespace Dropy.Gameplay
             // Konuşma uzamasın diye dosya başına bir kez; geri dönüş cümleleri teşekkür olduğu için hariç.
             bool replied = false;
             bool honest = ContractorTalk.IsHonest(buildingCase);
+            bool afterQuake = day > Economy.QuakeDays[0];
             foreach (var line in buildingCase.introLines)
             {
-                var replies = replied ? null : ContractorTalk.RepliesTo(line);
+                var replies = replied ? null : ContractorTalk.RepliesTo(line, afterQuake);
                 // Cevap kartı gelecekse balon tıklama beklemez: kartlar hemen altında açılır.
                 yield return dialogue.Say(buildingCase.contractorName, line, visitorHead, waitForClick: replies == null);
                 if (replies == null)
@@ -523,6 +536,19 @@ namespace Dropy.Gameplay
                 visitor.Face?.SetExpression(honest ? FaceExpression.Happy : FaceExpression.Suspicious);
                 yield return dialogue.Say(buildingCase.contractorName, honest ? reply.honestReaction : reply.dishonestReaction,
                     visitorHead, waitForClick: true);
+            }
+
+            // Gri rüşvet: bina sağlam olsa da harç dışında para teklif edilir. Kabul edilirse onayda kasaya girer.
+            if (buildingCase.bribe > 0 && !string.IsNullOrEmpty(buildingCase.bribeOffer))
+            {
+                visitor.Face?.SetExpression(FaceExpression.Suspicious);
+                yield return dialogue.Say(buildingCase.contractorName, buildingCase.bribeOffer, visitorHead, waitForClick: false);
+                int picked = 1;
+                yield return dialogue.Choose(new List<string> { TakeBribe, RefuseBribe }, i => picked = i);
+                bribeAccepted = picked == 0;
+                RefreshSeals(buildingCase);
+                yield return dialogue.Say(buildingCase.contractorName,
+                    bribeAccepted ? buildingCase.bribeAcceptedLine : buildingCase.bribeRefusedLine, visitorHead, waitForClick: true);
             }
 
             // Oyuncu soru sorabilir; cevaplar karakteri açar, kuralı değiştirmez.
@@ -614,17 +640,24 @@ namespace Dropy.Gameplay
         {
             var tools = inspection.Tools;
             string perDay = shearWallUsedToday ? " · bugün kullanıldı" : " · günde 1";
-            tools.SetSeal(Seal.Approve, FeeCaption(BuildingRules.Fee(buildingCase, Seal.Approve, day)), true);
+            tools.SetSeal(Seal.Approve, FeeCaption(ApproveIncome(buildingCase)), true);
             tools.SetSeal(Seal.Reject, FeeCaption(0), true);
             tools.SetSeal(Seal.ShearWall, FeeCaption(BuildingRules.Fee(buildingCase, Seal.ShearWall, day)) + perDay, !shearWallUsedToday);
         }
 
-        /// <summary>5. gün harç yok; mühürlerin altında "0 TL" yerine bu yazar ki bozuk sanılmasın.</summary>
+        /// <summary>6. gün harç yok; mühürlerin altında "0 TL" yerine bu yazar ki bozuk sanılmasın.</summary>
         string FeeCaption(int fee)
         {
-            if (day > Economy.LastPaidDay)
+            if (day > Economy.LastPaidDay && fee == 0)
                 return "harç yok";
             return fee > 0 ? $"+{Ui.Money(fee)}" : "0 TL";
+        }
+
+        /// <summary>Onayın kasaya getirdiği: harç, kabul edilen gri rüşvet de varsa üstüne o.</summary>
+        int ApproveIncome(BuildingCase buildingCase)
+        {
+            int fee = BuildingRules.Fee(buildingCase, Seal.Approve, day);
+            return bribeAccepted && buildingCase == current ? fee + buildingCase.bribe : fee;
         }
 
         /// <summary>Perde mührü yalnız yumuşak katı kurtarır; işe yaramıyorsa basılmaz ve hak harcanmaz.</summary>
@@ -652,14 +685,16 @@ namespace Dropy.Gameplay
         {
             if (seal == Seal.ShearWall)
                 shearWallUsedToday = true;
+            bool approved = seal == Seal.Approve;
             var result = new CaseResult
             {
                 buildingCase = buildingCase,
                 day = day,
                 seal = seal,
-                money = BuildingRules.Fee(buildingCase, seal, day),
+                money = approved ? ApproveIncome(buildingCase) : BuildingRules.Fee(buildingCase, seal, day),
                 fate = BuildingRules.Fate(buildingCase, seal),
-                warning = BuildingRules.KnownViolation(buildingCase, seal, day)
+                warning = BuildingRules.KnownViolation(buildingCase, seal, day),
+                bribed = approved && (buildingCase.approveFeeOverride > 0 || (bribeAccepted && buildingCase == current))
             };
             // Para cezası yok: yanlış onayın bedeli depremde ödenir (bina çökerse hapis).
             return result;
@@ -696,14 +731,17 @@ namespace Dropy.Gameplay
 
         IEnumerator Evening(int income)
         {
-            int rent = Mathf.Min(money, Economy.Rent);
+            // Kira her akşam tam düşer; kasa yetmezse eksiye iner, ev sahibi borcu hatırlatır.
+            int rent = Economy.Rent;
             money -= rent;
             hud.SetMoney(money);
 
-            // Sıra: dünkü isteğe cevap, o akşamın mesajları, sonda bugünkü istek (Öde düğmeli).
+            // Sıra: borç, dünkü isteğe cevap, o akşamın mesajları, sonda bugünkü istek (Öde düğmeli).
             // Aile küstüyse aileden hiçbir şey gelmez; ev sahibi ve bilinmeyen numara yine yazar.
             var messages = new List<EveningMessage>();
             var requests = new List<FamilyNeed>();
+            if (money < 0)
+                messages.Add(new EveningMessage { sender = Landlord, text = DebtMessage() });
             if (story != null)
             {
                 if (!Estranged)
@@ -746,6 +784,13 @@ namespace Dropy.Gameplay
 
         int BondMax => story != null ? story.bondMax : 5;
 
+        string DebtMessage()
+        {
+            int unpaid = Mathf.Min(Economy.Rent, -money);
+            string total = unpaid < -money ? $" Toplam borcunuz {Ui.Money(-money)}." : "";
+            return $"Bu akşamki kiranın {Ui.Money(unpaid)}'si ödenmedi.{total} Ödemezseniz icraya vermek zorunda kalırım.";
+        }
+
         /// <summary>
         /// Müteahhidin RED'e itirazı. Satırlar oyuncunun gerçek durumuna göre seçilir:
         /// kira sonrası kasa güçlendirmeye yetmiyorsa para, aile bağı düşükse aile; hiçbiri değilse tehdit.
@@ -757,11 +802,13 @@ namespace Dropy.Gameplay
             int retrofit = Shop.Price(ShopItem.Retrofit);
             bool retrofitShort = !purchased.Contains(ShopItem.Retrofit) && afterRent < retrofit;
             bool lowBond = bond <= LowBond;
+            bool tookBribe = results.Any(r => r.bribed);
 
             var lines = buildingCase.rejectPressure.Where(p => p.condition == PressureCondition.Always).ToList();
             var specific = buildingCase.rejectPressure.Where(p =>
                 (p.condition == PressureCondition.RetrofitShort && retrofitShort) ||
-                (p.condition == PressureCondition.BondLow && lowBond)).ToList();
+                (p.condition == PressureCondition.BondLow && lowBond) ||
+                (p.condition == PressureCondition.TookBribe && tookBribe)).ToList();
             lines.AddRange(specific.Count > 0 ? specific : buildingCase.rejectPressure.Where(p => p.condition == PressureCondition.Otherwise));
 
             visitor.Face?.SetExpression(FaceExpression.Suspicious);
@@ -797,6 +844,7 @@ namespace Dropy.Gameplay
                 return;
             money -= price;
             purchased.Add(item);
+            boughtOn[item] = day;
             hud.SetMoney(money);
             evening.Refresh(money, purchased, paidNeeds, bond, BondMax);
         }
@@ -811,8 +859,9 @@ namespace Dropy.Gameplay
 
         /// <summary>
         /// Deprem: bu bölümde onaylanıp çöken bina varsa oyuncu hapse girer, oyun biter.
-        /// 1. depremde (3. gün) aile evi her durumda hasar alır; sabitleme yoksa aile bağı iki dilim düşer.
-        /// 2. depremde (6. gün) evi ayakta tutan onarımdır.
+        /// Reddedilen çürük binalar da çöker ama boştur: iskân verilmediği için içinde kimse yoktur.
+        /// 1. depremde (3. gün) aile evi her durumda hasar alır; sabitleme yoksa aile bağı iki, çanta yoksa bir dilim düşer.
+        /// 2. depremde (6. gün) evi ayakta tutan onarımdır; ev yıkılırsa ailene ulaşılmasını çanta hızlandırır.
         /// </summary>
         IEnumerator Earthquake(int quakeDay)
         {
@@ -840,10 +889,17 @@ namespace Dropy.Gameplay
         }
 
         /// <summary>Bu depremin bölümünde (önceki depremden bu yana) onaylanıp çöken binalar.</summary>
-        List<CaseResult> Fallen(int quakeDay)
+        List<CaseResult> Fallen(int quakeDay) =>
+            results.Where(r => r.fate == BuildingFate.Collapsed && InPart(r, quakeDay)).ToList();
+
+        /// <summary>Bu depremin bölümünde reddedilen çürük binalar: depremde çöktüler ama boştular.</summary>
+        List<CaseResult> FallenEmpty(int quakeDay) =>
+            results.Where(r => DeskHud.FellEmpty(r) && InPart(r, quakeDay)).ToList();
+
+        static bool InPart(CaseResult r, int quakeDay)
         {
             int previousQuake = Economy.QuakeDays.Where(d => d < quakeDay).DefaultIfEmpty(0).Max();
-            return results.Where(r => r.fate == BuildingFate.Collapsed && r.day > previousQuake && r.day <= quakeDay).ToList();
+            return r.day > previousQuake && r.day <= quakeDay;
         }
 
         /// <summary>Deprem sahnesinin manşetleri: çöken binalar ve aile evinin durumu.</summary>
@@ -852,12 +908,26 @@ namespace Dropy.Gameplay
             var captions = fallen.Take(MaxQuakeHeadlines).Select(DeskHud.Headline).ToList();
             if (fallen.Count > MaxQuakeHeadlines)
                 captions.Add($"ve {fallen.Count - MaxQuakeHeadlines} bina daha");
+            var empty = FallenEmpty(quakeDay);
+            if (empty.Count == 1)
+                captions.Add($"{empty[0].buildingCase.buildingName} çöktü; iskân verilmediği için içi boştu");
+            else if (empty.Count > 1)
+                captions.Add($"İskân verilmeyen {empty.Count} bina çöktü; hiçbirinde kimse yoktu");
+
+            bool bag = purchased.Contains(ShopItem.Bag);
             if (quakeDay == Economy.QuakeDays[0])
+            {
                 captions.Add(purchased.Contains(ShopItem.Fixing)
                     ? "Ailenin evi hasar aldı; dolaplar sabitti, kimse yaralanmadı"
                     : "Ailenin evi hasar aldı; sabitlenmemiş dolap Elif'in üstüne devrildi");
-            else if (!purchased.Contains(ShopItem.Retrofit))
-                captions.Add("Onarılmayan aile evi ikinci depremde yıkıldı");
+                captions.Add(bag ? "Elektrikler kesildi; çantadaki fener ve su işe yaradı" : "Elektrikler kesildi; evde ne fener vardı ne su");
+            }
+            else if (purchased.Contains(ShopItem.Retrofit))
+                captions.Add(bag ? "Onarılan aile evi ayakta kaldı" : "Onarılan aile evi ayakta kaldı; ama evde ne fener vardı ne su");
+            else
+                captions.Add(bag
+                    ? "Onarılmayan aile evi yıkıldı; çantadaki düdük kurtarıcıları ailene götürdü"
+                    : "Onarılmayan aile evi yıkıldı; ailene ancak ertesi sabah ulaşılabildi");
             return captions;
         }
 
@@ -869,17 +939,29 @@ namespace Dropy.Gameplay
             string what = fallen.Count == 1
                 ? $"Çöken {fallen[0].buildingCase.buildingName} binasının onayında senin imzan vardı"
                 : $"Çöken {fallen.Count} binanın onayında senin imzan vardı";
-            return new List<string> { what, "Yapı denetim mühendisi tutuklandı" };
+            return new List<string> { what, "İskân memuru tutuklandı" };
         }
 
-        /// <summary>1. depremde eşya sabitlenmemişse dolap Elif'in üstüne devrilir: aile bağı düşer.</summary>
+        /// <summary>1. depremde eşya sabitlenmemişse dolap Elif'in üstüne devrilir, çanta yoksa karanlıkta kalınır: aile bağı düşer.</summary>
         void ApplyQuakeToFamily(int quakeDay)
         {
-            if (quakeDay != Economy.QuakeDays[0] || purchased.Contains(ShopItem.Fixing))
+            if (quakeDay != Economy.QuakeDays[0])
                 return;
             int before = bond;
-            bond = Mathf.Max(0, bond - FixingQuakeBondLoss);
-            bondNote = $"Depremde dolap Elif'in üstüne devrildi: aile bağı -{before - bond}";
+            var what = new List<string>();
+            if (!purchased.Contains(ShopItem.Fixing))
+            {
+                bond -= FixingQuakeBondLoss;
+                what.Add("dolap Elif'in üstüne devrildi");
+            }
+            if (!purchased.Contains(ShopItem.Bag))
+            {
+                bond -= BagQuakeBondLoss;
+                what.Add("evde fener bile yoktu");
+            }
+            bond = Mathf.Max(0, bond);
+            if (bond < before)
+                bondNote = $"Depremde {string.Join(", ", what)}: aile bağı -{before - bond}";
         }
 
         IEnumerator Shake(float seconds, float strength)
@@ -986,9 +1068,15 @@ namespace Dropy.Gameplay
         public void DebugSetRetrofit(bool on)
         {
             if (on)
+            {
                 purchased.Add(ShopItem.Retrofit);
+                boughtOn[ShopItem.Retrofit] = Mathf.Max(day, 1);
+            }
             else
+            {
                 purchased.Remove(ShopItem.Retrofit);
+                boughtOn.Remove(ShopItem.Retrofit);
+            }
         }
 
         public void DebugFillBond() => bond = BondMax;
@@ -1011,7 +1099,7 @@ namespace Dropy.Gameplay
         /// <summary>Atlanan akşam: kira düşer, karşılanmayan aile istekleri sabah bağdan gider.</summary>
         void SimulateEvening()
         {
-            money -= Mathf.Min(money, Economy.Rent);
+            money -= Economy.Rent;
             var requests = story != null && !Estranged ? story.needs.Where(n => n.day == day).ToList() : new List<FamilyNeed>();
             ApplyMorning(requests);
         }
@@ -1044,6 +1132,7 @@ namespace Dropy.Gameplay
                 ApplyMorning(eveningRequests);
             }
             submitted = false;
+            bribeAccepted = false;
             current = null;
             if (paused)
                 SetPaused(false);

@@ -22,13 +22,17 @@ MonoBehaviour:
   foundation: 0
   columns: 0
   hasShearWall: 0
-  labConcrete: 25
+  labConcrete: 20
   soil: 1
   note: 
   noteAnswer: 
   damage: 0
   hammerConcrete: 0
   approveFeeOverride: 0
+  bribe: 0
+  bribeOffer: 
+  bribeAcceptedLine: 
+  bribeRefusedLine: 
   dialogue: {fileID: 0}
   callbacks: []
   introLines:
@@ -39,10 +43,10 @@ MonoBehaviour:
     answer: "Ge\xE7en ay ba\u015Fka bir b\xFCroda bir saat bekletip geri \xE7evirdiler.
       K\xE2\u011F\u0131tlar\u0131m tam ama."
   - question: "Beton s\u0131n\u0131f\u0131 ne?"
-    answer: "Raporda ne yaz\u0131yorsa o. Fazlas\u0131na param yetmedi a\xE7\u0131k\xE7as\u0131."
+    answer: "K\xFCnyede yaz\u0131yor, C25. Fazlas\u0131na param yetmedi a\xE7\u0131k\xE7as\u0131."
   approvedLine: "Ger\xE7ekten mi? Allah raz\u0131 olsun!"
   shearWallLine: Perde mi? Masraf ama... peki, ekletiriz.
-  rejectedLine: "Ama... her \u015Fey yazd\u0131\u011F\u0131 gibiydi."
+  rejectedLine: "C20 mi? Betoncu bana C25 diye satt\u0131... Annemlere ne diyece\u011Fim?"
   rejectPressure: []
-  collapseHeadline: 
+  collapseHeadline: "K\u0131y\u0131 Evleri \xE7\xF6kt\xFC: betonu C20 \xE7\u0131kt\u0131"
   standingLine: 

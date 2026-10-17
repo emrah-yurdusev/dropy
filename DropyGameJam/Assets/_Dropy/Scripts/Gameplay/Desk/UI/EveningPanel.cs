@@ -225,7 +225,7 @@ namespace Dropy.Gameplay
                 $"<size=34><b>{day}. gün akşamı</b></size>\n\n" +
                 $"Bugünkü mühürler   <b>+{Ui.Money(income)}</b>\n" +
                 $"Kira   <b>-{Ui.Money(rent)}</b>" +
-                (rent < Economy.Rent ? "\n<size=80%><i>Kiranın tamamı ödenemedi.</i></size>" : "") +
+                (money < 0 ? $"\n<color=#a3221b><b>Borç   {Ui.Money(-money)}</b></color>" : "") +
                 bondLine +
                 "\n\n<size=80%>Eve yürünmez. Alışveriş telefondan.</size>";
             phoneFooter.text = !shopOpen ? "Dükkân kapandı."
@@ -291,11 +291,11 @@ namespace Dropy.Gameplay
             }
             foreach (var pair in rows)
             {
-                // Ev onarımı ancak ilk depremde ev hasar aldıktan sonra satılır.
-                bool offered = shopDay >= Shop.AvailableFrom(pair.Key);
+                // Ev onarımı ancak ilk depremde ev hasar aldıktan sonra satılır; sabitleme ilk depremden sonra kalkar.
+                bool owned = purchased.Contains(pair.Key);
+                bool offered = owned || Shop.Offered(pair.Key, shopDay);
                 pair.Value.button.gameObject.SetActive(offered);
                 int price = Shop.Price(pair.Key);
-                bool owned = purchased.Contains(pair.Key);
                 string state = owned ? "<color=#6fdc8c>Alındı</color>" : $"{Ui.Money(price)}";
                 pair.Value.label.text = $"{Shop.Name(pair.Key)}\n<size=85%>{state}</size>";
                 pair.Value.button.interactable = shopOpen && !owned && money >= price;
