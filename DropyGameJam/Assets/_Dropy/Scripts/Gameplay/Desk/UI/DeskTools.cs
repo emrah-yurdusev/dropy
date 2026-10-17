@@ -31,6 +31,9 @@ namespace Dropy.Gameplay
 
         public Seal Active { get; private set; }
 
+        /// <summary>Eldeki mühür değişti (None = bırakıldı). İmleç buna göre damgaya döner.</summary>
+        public event System.Action<Seal> ActiveChanged;
+
         public void Build(RectTransform trayParent, RectTransform canvasRoot)
         {
             canvasRect = canvasRoot;
@@ -98,6 +101,7 @@ namespace Dropy.Gameplay
                 pair.Value.image.color = pair.Key == seal ? SelectedColor : SlotColor;
             foreach (var pair in ghosts)
                 pair.Value.gameObject.SetActive(pair.Key == seal);
+            ActiveChanged?.Invoke(seal);
         }
 
         void Update()

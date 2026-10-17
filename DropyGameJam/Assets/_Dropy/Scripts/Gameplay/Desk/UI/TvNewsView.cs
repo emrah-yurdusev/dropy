@@ -27,6 +27,7 @@ namespace Dropy.Gameplay
         RawImage videoImage;
         VideoPlayer video;
         RenderTexture videoTexture;
+        AspectRatioFitter videoFit;
         Image graphic;
         TextMeshProUGUI graphicLabel;
         GameObject live;
@@ -128,6 +129,9 @@ namespace Dropy.Gameplay
 
             videoImage = Ui.Rect("AnchorVideo", area).Stretch().gameObject.AddComponent<RawImage>();
             videoImage.raycastTarget = false;
+            // Video hangi oranda olursa olsun spiker alanını ezmeden doldurur (taşan kısmı ekran maskesi keser).
+            videoFit = videoImage.gameObject.AddComponent<AspectRatioFitter>();
+            videoFit.aspectMode = AspectRatioFitter.AspectMode.EnvelopeParent;
             video = videoImage.gameObject.AddComponent<VideoPlayer>();
             video.playOnAwake = false;
             video.isLooping = true;
@@ -219,9 +223,10 @@ namespace Dropy.Gameplay
         /// <summary>Yayını gösterir, oyuncu tıklayınca (Space / Enter da olur) kapanır.</summary>
         public IEnumerator Show(TvBroadcast broadcast)
         {
-            Fill(broadcast);
+            // Önce aç: kapalı nesnedeki VideoPlayer oynatılamaz.
             root.gameObject.SetActive(true);
             root.SetAsLastSibling();
+            Fill(broadcast);
             showing = true;
             yield return Fade(0f, 1f, 0.35f);
             // İlk yarım saniye tıklama sayılmaz ki önceki ekrandan kalan tık yanlışlıkla geçirmesin.
@@ -260,12 +265,16 @@ namespace Dropy.Gameplay
             silhouette.SetActive(clip == null && style.anchor == null);
             if (clip != null)
             {
-                if (videoTexture == null)
+                int width = Mathf.Max(2, (int)clip.width), height = Mathf.Max(2, (int)clip.height);
+                if (videoTexture == null || videoTexture.width != width || videoTexture.height != height)
                 {
-                    videoTexture = new RenderTexture(960, 540, 0);
+                    if (videoTexture != null)
+                        videoTexture.Release();
+                    videoTexture = new RenderTexture(width, height, 0);
                     video.targetTexture = videoTexture;
                     videoImage.texture = videoTexture;
                 }
+                videoFit.aspectRatio = width / (float)height;
                 video.clip = clip;
                 video.Play();
             }

@@ -68,6 +68,8 @@ namespace Dropy.Gameplay
         [SerializeField] StoryData story;
         [Tooltip("Sabah televizyonu ve final gazetesinin görünüşü ve sabit yazıları. Boşsa varsayılanlar kullanılır")]
         [SerializeField] NewsStyle newsStyle;
+        [Tooltip("Mühür eldeyken imleç (Texture Type: Cursor). Boş olan yerine koddan çizilen damga gelir")]
+        [SerializeField] StampCursorSet stampCursors = new StampCursorSet();
         [Tooltip("Sırayla 18 dosya: her gün 3 tane")]
         [SerializeField] BuildingCase[] cases;
         [Tooltip("Vakada karakter seçilmemişse sırayla bunlar kullanılır")]
@@ -130,7 +132,11 @@ namespace Dropy.Gameplay
             bond = story != null ? story.bondStart : 3;
         }
 
-        void OnDestroy() => Time.timeScale = 1f;
+        void OnDestroy()
+        {
+            Time.timeScale = 1f;
+            stampCursors.Apply(Seal.None);
+        }
 
         void Start() => week = StartCoroutine(RunWeek(0, eveningFirst: false));
 
@@ -160,6 +166,7 @@ namespace Dropy.Gameplay
             inspection.StampFilter = CanStamp;
             inspection.HammerRequested = UseHammer;
             inspection.FieldAsked += OnFieldAsked;
+            inspection.Tools.ActiveChanged += seal => stampCursors.Apply(paused ? Seal.None : seal);
 
             dialogue = canvasGo.AddComponent<DialogueUI>();
             dialogue.Build(root, deskCamera);
@@ -196,6 +203,7 @@ namespace Dropy.Gameplay
         void SetPaused(bool value)
         {
             paused = value;
+            stampCursors.Apply(value ? Seal.None : inspection.Tools.Active);
             Time.timeScale = value ? 0f : 1f;
             AudioListener.pause = value;
             hud.SetPaused(value);

@@ -19,17 +19,17 @@ MonoBehaviour:
   clockFormat: "G\xDCN {0} \xB7 08:30"
   dayTitleFormat: "G\xDCN {0}"
   continueHint: "Devam etmek i\xE7in t\u0131kla"
-  tvFrame: {fileID: 0}
+  tvFrame: {fileID: 21300000, guid: cd004d96de4396b468d86d06ade2f3d9, type: 3}
   studioBackground: {fileID: 0}
   anchor: {fileID: 0}
-  defaultAnchorClip: {fileID: 0}
+  defaultAnchorClip: {fileID: 32900000, guid: 0d1b1c465ae881a449b60d5353dba960, type: 3}
   backdrop: {r: 0.16, g: 0.13, b: 0.11, a: 0.97}
   studio: {r: 0.07, g: 0.23, b: 0.39, a: 1}
   breakingColor: {r: 0.75, g: 0.13, b: 0.11, a: 1}
   tickerColor: {r: 0.95, g: 0.76, b: 0.19, a: 1}
   tickerSpeed: 110
   scanlines: 0.25
-  tvFont: {fileID: 0}
+  tvFont: {fileID: 11400000, guid: e387129084390544e8e9c3ad256e2506, type: 2}
   masthead: "KENT GAZETES\u0130"
   issue: "Say\u0131 1842"
   price: "Fiyat\u0131 10 TL"
@@ -50,18 +50,18 @@ MonoBehaviour:
     so\u011Fuk."
   adTitle: "DEPREM \xC7ANTASI"
   adLine: "su \xB7 fener \xB7 d\xFCd\xFCk \xB7 ilk yard\u0131m"
-  paperTexture: {fileID: 0}
-  playerPhoto: {fileID: 0}
-  mugshotPhoto: {fileID: 0}
+  paperTexture: {fileID: 21300000, guid: 51bd05b73a7e7a0489caf46a31c3fe8b, type: 3}
+  playerPhoto: {fileID: 21300000, guid: fb13fe33fc79a174d9c8fd2421761fff, type: 3}
+  mugshotPhoto: {fileID: 21300000, guid: 18521b532a08351429d2ecb8d6aff0a3, type: 3}
   paper: {r: 0.92, g: 0.9, b: 0.84, a: 1}
   ink: {r: 0.1, g: 0.09, b: 0.07, a: 1}
   fillerInk: {r: 0.42, g: 0.4, b: 0.35, a: 1}
   tilt: -0.6
   fillerWave: 3
   inkRoughness: 0.8
-  mastheadFont: {fileID: 0}
-  headlineFont: {fileID: 0}
-  bodyFont: {fileID: 0}
+  mastheadFont: {fileID: 11400000, guid: 0be9a4dac97669b498a250c0c00f74ab, type: 2}
+  headlineFont: {fileID: 11400000, guid: e387129084390544e8e9c3ad256e2506, type: 2}
+  bodyFont: {fileID: 11400000, guid: 9fa5d6c3244ecbd49abbc675a40ea760, type: 2}
   texts:
     headlineAllStanding: "\u0130sk\xE2n verilen binalar\u0131n hepsi ayakta"
     headlineEmptyFallen: "{0} bina \xE7\xF6kt\xFC, hi\xE7birinde can kayb\u0131 yok"

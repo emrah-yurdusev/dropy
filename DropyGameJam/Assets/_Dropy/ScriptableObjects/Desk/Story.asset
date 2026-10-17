@@ -48,7 +48,7 @@ MonoBehaviour:
     - "AFAD: Her evde su, fener ve d\xFCd\xFCk olan bir deprem \xE7antas\u0131 bulunsun"
     - "Hava: par\xE7al\u0131 bulutlu, 14\xB0"
     graphicLabel: FAY HATTI
-    graphic: {fileID: 0}
+    graphic: {fileID: 21300000, guid: 007806ca1b3aedc42a2d2b203327b5b6, type: 3}
     clip: {fileID: 0}
   - day: 2
     headline: "Depremde yaralanmalar\u0131n \xE7o\u011Fu devrilen e\u015Fyadan"
@@ -56,7 +56,7 @@ MonoBehaviour:
     - "Uzmanlar: Uzun dolaplar\u0131 ve kitapl\u0131klar\u0131 duvara sabitleyin"
     - "Belediye: \u0130sk\xE2n ba\u015Fvurular\u0131 bu hafta h\u0131zland\u0131r\u0131l\u0131yor"
     graphicLabel: "DOLABI SAB\u0130TLE"
-    graphic: {fileID: 0}
+    graphic: {fileID: 21300000, guid: 3818c5677a4f33544a9580812a4665a6, type: 3}
     clip: {fileID: 0}
   - day: 3
     headline: "D\xFCn \xF6\u011Fleden sonra hafif bir sars\u0131nt\u0131 hissedildi"
@@ -64,7 +64,7 @@ MonoBehaviour:
     - "Uzmanlar tedirgin: sars\u0131nt\u0131lar s\xFCrebilir"
     - "AFAD: Deprem an\u0131nda \xE7\xF6k, kapan, tutun"
     graphicLabel: SARSINTI
-    graphic: {fileID: 0}
+    graphic: {fileID: 21300000, guid: 6d3a679a458b6fd40874d5644660451b, type: 3}
     clip: {fileID: 0}
   - day: 4
     headline: "D\xFCnk\xFC depremin ard\u0131ndan hasar tespit \xE7al\u0131\u015Fmalar\u0131
@@ -73,7 +73,7 @@ MonoBehaviour:
     - "Uzmanlar art\xE7\u0131 depremlere kar\u015F\u0131 uyard\u0131"
     - "K\u0131z\u0131lay: \xC7ad\u0131r kentte yard\u0131m noktalar\u0131 a\xE7\u0131ld\u0131"
     graphicLabel: "HASAR TESP\u0130T\u0130"
-    graphic: {fileID: 0}
+    graphic: {fileID: 21300000, guid: ab4770e435e380e4185c5b7610d57a97, type: 3}
     clip: {fileID: 0}
   - day: 5
     headline: "Hasarl\u0131 binalara girilmemesi \xE7a\u011Fr\u0131s\u0131 yap\u0131ld\u0131"
@@ -82,7 +82,7 @@ MonoBehaviour:
       ediyor"
     - "Belediye: Onar\u0131m izni ba\u015Fvurular\u0131 s\xFCr\xFCyor"
     graphicLabel: "HASARLI B\u0130NA"
-    graphic: {fileID: 0}
+    graphic: {fileID: 21300000, guid: a02227c26b134a547a229c802309a8dd, type: 3}
     clip: {fileID: 0}
   - day: 6
     headline: "Son iki g\xFCnde onlarca sars\u0131nt\u0131 kaydedildi"
@@ -90,7 +90,7 @@ MonoBehaviour:
     - "Vatanda\u015Flar tedirgin"
     - "AFAD: Deprem \xE7antan\u0131z\u0131 kap\u0131n\u0131n yan\u0131nda tutun"
     graphicLabel: "ART\xC7I"
-    graphic: {fileID: 0}
+    graphic: {fileID: 21300000, guid: 91aa83b435f030d4596095871d9c2d7b, type: 3}
     clip: {fileID: 0}
   radio: []
   tremors:
