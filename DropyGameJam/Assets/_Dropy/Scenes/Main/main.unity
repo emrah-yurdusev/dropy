@@ -4050,6 +4050,9 @@ MonoBehaviour:
   - {fileID: 11400000, guid: 1986bdf522e0ac144b57f71a1ed2b462, type: 2}
   - {fileID: 11400000, guid: 05a98307ff5209f4c847b60b61d512a9, type: 2}
   defaultContractors:
+  - {fileID: 5024131338571193578, guid: 4bf0b221d989af84188d00ed9c869613, type: 3}
+  - {fileID: 8567182205158294849, guid: 64e470ade627ea54d8f85cc0c76e5dfb, type: 3}
+  - {fileID: 8184606563911969415, guid: ea51d197abccb734e80c7cb4eb76738b, type: 3}
   - {fileID: 4505210945888876964, guid: 5e9f8a618b0dffa448370ab8616ce086, type: 3}
   - {fileID: 7493389791816327554, guid: aaa0b14b0a190e5498e844caf86c6e03, type: 3}
   - {fileID: 1908980133230793377, guid: 6823acef784bb114fa75908d92f4cd8e, type: 3}
