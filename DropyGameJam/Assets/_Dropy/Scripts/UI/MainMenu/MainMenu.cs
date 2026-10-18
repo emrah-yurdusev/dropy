@@ -457,6 +457,8 @@ namespace Dropy.Menu
         {
             if (hoverSound != null)
                 sfxSource.PlayOneShot(hoverSound, GameAudio.SfxVolume * 0.6f);
+            else
+                Sfx.Hover();
         }
 
         static float EaseOutCubic(float x) => 1f - Mathf.Pow(1f - x, 3f);

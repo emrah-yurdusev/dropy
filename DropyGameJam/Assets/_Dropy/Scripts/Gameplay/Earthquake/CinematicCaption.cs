@@ -107,6 +107,7 @@ namespace Dropy.Gameplay
             StartCoroutine(FadeTo(textGroup, 1f, 0.25f));
             for (int i = 0; i < lines.Count; i++)
             {
+                Sfx.Whoosh();
                 StartCoroutine(Reveal(AddRow(lines[i], i == 0)));
                 if (i < lines.Count - 1)
                     yield return new WaitForSeconds(lineInterval);

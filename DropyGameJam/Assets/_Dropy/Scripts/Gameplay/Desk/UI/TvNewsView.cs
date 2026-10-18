@@ -228,7 +228,9 @@ namespace Dropy.Gameplay
             root.SetAsLastSibling();
             Fill(broadcast);
             showing = true;
+            Sfx.TvOn();
             yield return Fade(0f, 1f, 0.35f);
+            Sfx.Breaking();
             // İlk yarım saniye tıklama sayılmaz ki önceki ekrandan kalan tık yanlışlıkla geçirmesin.
             for (float t = 0f; t < 0.5f; t += Time.unscaledDeltaTime)
                 yield return null;

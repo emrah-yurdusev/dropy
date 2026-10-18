@@ -44,6 +44,7 @@ namespace Dropy.Gameplay
                 Destroy(sheet.gameObject);
             BuildSheet(page);
             Show();
+            Sfx.Newspaper();
         }
 
         /// <summary>Son yazılan sayfayı yeniden açar (karneden dönerken).</summary>

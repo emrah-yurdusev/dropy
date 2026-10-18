@@ -147,6 +147,7 @@ namespace Dropy.Gameplay
             bodyText.ForceMeshUpdate();
             int total = bodyText.textInfo.characterCount;
             float shown = 0f;
+            int voiced = 0;
             yield return null;
             while (shown < total)
             {
@@ -154,7 +155,15 @@ namespace Dropy.Gameplay
                 if (AdvancePressed())
                     shown = total;
                 shown += charsPerSecond * SpeedMultiplier * Dropy.Core.GameSettings.TextSpeedMultiplier * Time.deltaTime;
-                bodyText.maxVisibleCharacters = Mathf.Min(total, Mathf.FloorToInt(shown));
+                int visible = Mathf.Min(total, Mathf.FloorToInt(shown));
+                bodyText.maxVisibleCharacters = visible;
+                // İki harfte bir hece mırıltısı; tıklayıp yazıyı geçince susar.
+                if (shown < total && visible >= voiced + 2)
+                {
+                    voiced = visible;
+                    if (char.IsLetter(bodyText.textInfo.characterInfo[visible - 1].character))
+                        Sfx.Talk(speaker);
+                }
                 yield return null;
             }
             bubble.localScale = Vector3.one;

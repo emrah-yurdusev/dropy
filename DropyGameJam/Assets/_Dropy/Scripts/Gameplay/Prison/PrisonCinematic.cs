@@ -23,6 +23,7 @@ namespace Dropy.Gameplay
         {
             var sequence = AdditiveCinematic.Find<CellSequence>(scene);
             var caption = AdditiveCinematic.Find<CinematicCaption>(scene);
+            Sfx.Prison(true);
             yield return new WaitForSeconds(CalmBeforeDoor);
             if (sequence != null)
             {
@@ -35,6 +36,7 @@ namespace Dropy.Gameplay
             // Sahne kendi kendine kapanmaz: yazılar okunur, oyuncu tıklayınca geçilir.
             if (caption != null)
                 yield return caption.WaitForContinue(ReadTime);
+            Sfx.Prison(false);
         }
     }
 }

@@ -228,6 +228,7 @@ namespace Dropy.Gameplay
             dragOffset = rect.anchoredPosition - local;
             rect.localScale = Vector3.one * 1.04f;
             shadow.color = new Color(0f, 0f, 0f, 0.45f);
+            Sfx.PaperSlide();
         }
 
         public void OnDrag(PointerEventData eventData)
@@ -244,6 +245,7 @@ namespace Dropy.Gameplay
         {
             rect.localScale = Vector3.one;
             shadow.color = new Color(0f, 0f, 0f, 0.35f);
+            Sfx.Paper();
             Dropped?.Invoke(this);
         }
     }

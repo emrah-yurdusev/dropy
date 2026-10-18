@@ -205,6 +205,7 @@ namespace Dropy.Gameplay
 
         IEnumerator Stroke(List<Vector2> points, float speed)
         {
+            Sfx.Pen();
             float budget = 0f;
             for (int i = 1; i < points.Count; i++)
             {

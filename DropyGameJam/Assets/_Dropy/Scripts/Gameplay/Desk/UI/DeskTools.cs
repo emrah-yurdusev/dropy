@@ -65,6 +65,7 @@ namespace Dropy.Gameplay
         void AddSlot(RectTransform tray, Seal seal, string title, Color labelColor)
         {
             var button = Ui.Button(tray, seal.ToString(), title, SlotColor, labelColor, 19f);
+            ButtonClickSound.Skip(button);
             button.onClick.AddListener(() => Select(Active == seal ? Seal.None : seal));
             slots[seal] = new Slot
             {
@@ -99,6 +100,13 @@ namespace Dropy.Gameplay
 
         public void Select(Seal seal)
         {
+            if (seal != Active)
+            {
+                if (seal == Seal.None)
+                    Sfx.StampDrop();
+                else
+                    Sfx.StampPick();
+            }
             Active = seal;
             foreach (var pair in slots)
                 pair.Value.image.color = pair.Key == seal ? SelectedColor : SlotColor;

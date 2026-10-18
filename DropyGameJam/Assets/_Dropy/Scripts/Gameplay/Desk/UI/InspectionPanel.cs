@@ -156,12 +156,14 @@ namespace Dropy.Gameplay
             hammer.GetComponentInChildren<TextMeshProUGUI>().richText = true;
             ((RectTransform)hammer.transform).Place(new Vector2(0.5f, 0f), new Vector2(0.5f, 1f), new Vector2(0f, -12f), new Vector2(280f, 56f));
             hammer.interactable = left > 0;
+            ButtonClickSound.Skip(hammer);
             hammer.onClick.AddListener(() =>
             {
                 if (HammerRequested != null && !HammerRequested())
                     return;
                 HammerUsed = true;
                 hammer.interactable = false;
+                Sfx.Hammer();
                 report.AddField(new DocumentField
                 {
                     key = FieldKey.Hammer,

@@ -286,6 +286,7 @@ namespace Dropy.Gameplay
                 var label = button.GetComponentInChildren<TextMeshProUGUI>();
                 label.richText = true;
                 var captured = item;
+                ButtonClickSound.Skip(button);
                 button.onClick.AddListener(() => BuyClicked?.Invoke(captured));
 
                 var chip = Ui.Image(chips, item + "Chip", Owned, Ui.Rounded).gameObject;
@@ -472,6 +473,7 @@ namespace Dropy.Gameplay
                 var label = pay.GetComponentInChildren<TextMeshProUGUI>();
                 label.richText = true;
                 var need = message.request;
+                ButtonClickSound.Skip(pay);
                 pay.onClick.AddListener(() => PayClicked?.Invoke(need));
                 requestRows[need] = new ItemRow { button = pay, label = label };
             }
