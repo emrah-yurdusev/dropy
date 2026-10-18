@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: Cengiz
   m_EditorClassIdentifier: 
   displayName: Cengiz Bey
-  prefab: {fileID: 0}
+  prefab: {fileID: 4505210945888876964, guid: 5e9f8a618b0dffa448370ab8616ce086, type: 3}
   personality: {fileID: 11400000, guid: deaedd36189b47f42b1697c3771788fc, type: 2}
   overrides:
     address: 

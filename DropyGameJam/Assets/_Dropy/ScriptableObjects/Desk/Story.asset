@@ -22,12 +22,12 @@ MonoBehaviour:
       ve ek rapor. Uyuyorsa onay, uymuyorsa red."
     - "Onay 1500 lira har\xE7, red s\u0131f\u0131r. Ak\u015Fam kira kesilir. Kolay
       gelsin."
-  - day: 3
+  - day: 4
     caller: "M\xFCd\xFCr (telefon)"
     lines:
     - "Alo, benim. Uzmanlar bu gece i\xE7in uyar\u0131yor; b\xFCy\xFCk deprem bekleniyor."
-    - "Bug\xFCn son iki dosya. \xC7ekici al; k\xE2\u011F\u0131da de\u011Fil, betona
-      g\xFCven."
+    - "Bug\xFCn son iki dosya. \xC7ekicini iyi kullan; k\xE2\u011F\u0131da de\u011Fil,
+      betona g\xFCven."
   news:
   - day: 1
     headline: "Uzmanlar b\xF6lgedeki fay hatt\u0131na dikkat \xE7ekiyor"
@@ -48,6 +48,15 @@ MonoBehaviour:
     graphic: {fileID: 21300000, guid: 3818c5677a4f33544a9580812a4665a6, type: 3}
     clip: {fileID: 0}
   - day: 3
+    headline: "Mahallenizdeki toplanma alan\u0131n\u0131 bug\xFCnden \xF6\u011Frenin"
+    ticker:
+    - "AFAD: Toplanma alanlar\u0131 belediye panolar\u0131nda ve e-Devlet'te"
+    - "Uzmanlar: Ailenizle bulu\u015Fma noktas\u0131 belirleyin"
+    forecast: "Uzmanlar: Fay hatt\u0131nda gerilim art\u0131yor."
+    graphicLabel: TOPLANMA ALANI
+    graphic: {fileID: 21300000, guid: 8307f090dfeaf6a41ba123d47e7dab37, type: 3}
+    clip: {fileID: 0}
+  - day: 4
     headline: "D\xFCn \xF6\u011Fleden sonra sars\u0131nt\u0131 hissedildi; uzmanlar
       bu gece i\xE7in uyar\u0131yor"
     ticker:
@@ -59,6 +68,7 @@ MonoBehaviour:
     clip: {fileID: 0}
   radio: []
   tremors:
+  - 0
   - 0
   - 0.02
   - 0
@@ -100,7 +110,7 @@ MonoBehaviour:
     threshold: 0
     timing: 1
     fileOfDay: 1
-  - day: 2
+  - day: 3
     sender: Bilinmeyen numara
     family: 0
     text: "Kimse bir \u015Fey demez. -O"
@@ -111,7 +121,7 @@ MonoBehaviour:
     threshold: 0
     timing: 0
     fileOfDay: 0
-  - day: 2
+  - day: 3
     sender: Bilinmeyen numara
     family: 0
     text: "Pi\u015Fman olacaks\u0131n. -O"
@@ -119,6 +129,18 @@ MonoBehaviour:
     item: 0
     other: {fileID: 11400000, guid: 9ac03a467c981484cb0d0e4e6f4b1b83, type: 2}
     seal: 2
+    threshold: 0
+    timing: 0
+    fileOfDay: 0
+  - day: 3
+    sender: "E\u015Fin"
+    family: 1
+    text: "\xD6\u011Fleden sonraki sars\u0131nt\u0131y\u0131 hissettin mi? Elif korkudan
+      masan\u0131n alt\u0131na girmi\u015F. Ak\u015Fam erken gel."
+    condition: 0
+    item: 0
+    other: {fileID: 0}
+    seal: 0
     threshold: 0
     timing: 0
     fileOfDay: 0

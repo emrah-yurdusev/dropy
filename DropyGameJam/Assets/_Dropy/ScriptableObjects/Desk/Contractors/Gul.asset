@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: Gul
   m_EditorClassIdentifier: 
   displayName: "G\xFCl Han\u0131m"
-  prefab: {fileID: 0}
+  prefab: {fileID: 8567182205158294849, guid: 64e470ade627ea54d8f85cc0c76e5dfb, type: 3}
   personality: {fileID: 11400000, guid: 30280a737b2c04146bc7a0f920f734ac, type: 2}
   overrides:
     address: 

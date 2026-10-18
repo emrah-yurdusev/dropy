@@ -32,8 +32,8 @@ MonoBehaviour:
     fields:
     - field: claimed
       defensive: 0
-      text: "{kunye} d\xF6kt\xFCk {hitap}. Han\u0131m\u0131n \xE7eyizini satsam bundan
-        iyisini d\xF6kemezdim."
+      text: "{rapor} d\xF6kt\xFCk {hitap}, rapor ortada. Han\u0131m\u0131n \xE7eyizini
+        satsam bundan iyisini d\xF6kemezdim."
     - field: lab
       defensive: 0
       text: Laboratuvar da {rapor} dedi, ikisi bir.

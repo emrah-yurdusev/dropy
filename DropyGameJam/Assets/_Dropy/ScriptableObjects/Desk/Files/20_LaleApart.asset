@@ -1,0 +1,53 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b53e488de2e93c841b0e8998a55e2701, type: 3}
+  m_Name: 20_LaleApart
+  m_EditorClassIdentifier: 
+  contractorName: Kerem Bey
+  contractor: {fileID: 11400000, guid: 69fc7b4d000291f4799cc7cef03e7514, type: 2}
+  contractorPrefab: {fileID: 0}
+  buildingName: Lale Apart
+  floors: 4
+  claimedConcrete: 30
+  groundUse: 1
+  groundFloorHeight: 4
+  foundation: 0
+  columns: 0
+  hasShearWall: 0
+  labConcrete: 30
+  soil: 1
+  note: 
+  noteAnswer: 
+  damage: 0
+  illegalFloors: 0
+  hammerConcrete: 0
+  approveFeeOverride: 0
+  bribe: 0
+  bribeOffer: 
+  bribeAcceptedLine: 
+  bribeRefusedLine: 
+  dialogue: {fileID: 0}
+  callbacks: []
+  introLines:
+  - "Lale Apart! Altta konsept bir market a\xE7\u0131yoruz, \xFCst\xFCnde alt\u0131
+    daire. Hepsi \xF6n sat\u0131\u015Fta gitti {hitap}!"
+  questions:
+  - question: "Zemin kat tavan\u0131 ka\xE7 metre?"
+    answer: "Tam d\xF6rt metre {hitap}! Projede ne yaz\u0131yorsa o, bir santim \u015Fa\u015Fmad\u0131k."
+  - question: "Zemin katta ta\u015F\u0131y\u0131c\u0131 duvar var m\u0131?"
+    answer: "Yok, ba\u015Ftan sona cam vitrin. Konsept bu, a\xE7\u0131kl\u0131k laz\u0131m."
+  approvedLine: 
+  shearWallLine: 
+  rejectedLine: 
+  rejectPressure: []
+  collapseHeadline: "Lale Apart'\u0131n zemin kat\u0131 \xE7\xF6kt\xFC"
+  standingLine: 'Lale Apart ayakta: perde vitrini de aileleri de korudu.'

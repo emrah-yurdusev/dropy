@@ -17,7 +17,7 @@ MonoBehaviour:
   contractorPrefab: {fileID: 0}
   buildingName: "Ada Konutlar\u0131"
   floors: 3
-  claimedConcrete: 30
+  claimedConcrete: 20
   groundUse: 0
   groundFloorHeight: 2.8
   foundation: 0
@@ -25,10 +25,11 @@ MonoBehaviour:
   hasShearWall: 0
   labConcrete: 30
   soil: 0
-  note: "Balkon 15 cm ta\u015F\u0131yor"
+  note: 
   noteAnswer: 
   damage: 0
-  hammerConcrete: 0
+  illegalFloors: 0
+  hammerConcrete: 30
   approveFeeOverride: 0
   bribe: 0
   bribeOffer: 
@@ -37,14 +38,15 @@ MonoBehaviour:
   dialogue: {fileID: 0}
   callbacks: []
   introLines:
-  - "Ada Konutlar\u0131, \xFC\xE7 kat. Balkonu biraz ta\u015F\u0131rd\u0131k, han\u0131m
-    geni\u015F olsun dedi."
+  - "Ada Konutlar\u0131, \xFC\xE7 kat. Betonu \u015Fehrin laboratuvar\u0131nda test
+    ettirdik, rapor ekte {hitap}."
   questions:
-  - question: "Balkon neden ta\u015Fm\u0131\u015F?"
-    answer: "Han\u0131m \xE7ay i\xE7ecek yer istedi {hitap}. On be\u015F santim,
-      g\xF6r\xFCnt\xFC meselesi."
+  - question: "K\xFCnyede neden C20 yaz\u0131yor?"
+    answer: "K\xFCnyeyi ye\u011Fenim doldurdu {hitap}, rakam\u0131 yanl\u0131\u015F
+      yazm\u0131\u015F. D\xF6kt\xFC\u011F\xFCm\xFCz beton raporda yaz\u0131yor."
   - question: Betonu kim test etti?
-    answer: "\u015Eehrin laboratuvar\u0131. Rapor ekte, a\xE7\u0131n bak\u0131n."
+    answer: "\u015Eehrin laboratuvar\u0131. \u0130\xE7iniz rahat etmezse \xE7eki\xE7le
+      vurun, g\xF6r\xFCn."
   approvedLine: 
   shearWallLine: 
   rejectedLine: 

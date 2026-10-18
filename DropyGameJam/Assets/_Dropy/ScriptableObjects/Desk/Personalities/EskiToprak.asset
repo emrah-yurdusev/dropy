@@ -1,0 +1,57 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f3fcd023ca25f0e469d4a301ff89633e, type: 3}
+  m_Name: EskiToprak
+  m_EditorClassIdentifier: 
+  typeName: EskiToprak
+  description: "K\u0131rk y\u0131ll\u0131k usta. K\xE2\u011F\u0131da de\u011Fil eline
+    g\xFCvenir, laboratuvar\u0131 k\xFC\xE7\xFCmser; kabad\u0131r ama yalan s\xF6ylemez."
+  lines:
+    address: evlat
+    typingSpeed: 0.95
+    greetings:
+    - "Selam\xFCnaleyk\xFCm {hitap}. K\u0131rk y\u0131ld\u0131r bina dikerim, k\xE2\u011F\u0131t
+      i\u015Fi bana g\xF6re de\u011Fil."
+    firmHonest:
+    - "Kitap kitap... Bakal\u0131m kitab\u0131n bildi\u011Fi neymi\u015F."
+    firmDishonest:
+    - "Kitab\u0131 yazan bir g\xFCn har\xE7 kar\u0131\u015Ft\u0131rs\u0131n da g\xF6rs\xFCn
+      {hitap}."
+    softHonest:
+    - Eyvallah {hitap}.
+    softDishonest:
+    - Eyvallah. Ben kendi betonuma kefilim.
+    fields:
+    - field: claimed
+      defensive: 1
+      text: "{kunye} yazd\u0131m, {kunye} d\xF6kt\xFCm. K\u0131rk y\u0131l\u0131n
+        ustas\u0131 yalan yazmaz."
+    - field: lab
+      defensive: 1
+      text: "Laboratuvar m\u0131? Numuneyi g\xFCne\u015Fte bekletmi\u015Flerdir {hitap}.
+        Betonu ben kendi elimle kar\u0131\u015Ft\u0131rd\u0131m."
+    - field: hammer
+      defensive: 1
+      text: "O alet ne anlar betondan? Elimi vursam s\xF6ylerim ka\xE7 oldu\u011Funu."
+    tics:
+    - "K\u0131rk y\u0131l {hitap}, k\u0131rk y\u0131l."
+    - "Bizim zaman\u0131m\u0131zda k\xE2\u011F\u0131t m\u0131 vard\u0131?"
+    approved:
+    - "Hah \u015F\xF6yle! Usta mal\u0131, g\xF6n\xFCl rahatl\u0131\u011F\u0131yla
+      ta\u015F\u0131ns\u0131nlar."
+    rejected:
+    - "K\u0131rk y\u0131ll\u0131k ustaya k\xE2\u011F\u0131t m\u0131 \xF6\u011Fretiyorsunuz?
+      ...Peki. Yeniden d\xF6kt\xFCr\xFCr\xFCz."
+    shearWall: []
+    unjustReject:
+    - "K\xE2\u011F\u0131d\u0131n\u0131z bile beton {rapor} diyor. K\u0131rk y\u0131ll\u0131k
+      eme\u011Fi neden \xE7iziyorsunuz?"

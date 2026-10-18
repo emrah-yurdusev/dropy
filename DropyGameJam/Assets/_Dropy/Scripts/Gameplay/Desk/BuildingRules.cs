@@ -35,33 +35,33 @@ namespace Dropy.Gameplay
     }
 
     /// <summary>
-    /// Döngü: 3 gün, günde 2 dosya (6 dosya). 3. günün son dosyasından sonra deprem olur; 2. gün hafif sarsıntı.
+    /// Döngü: 4 gün, günde 2 dosya (8 dosya). 4. günün son dosyasından sonra deprem olur; 3. günün 2. dosyasında hafif sarsıntı.
     /// Mühür iskândır: onaylanan binaya aileler taşınır, reddedilen bina boş kalır.
     /// Rakamlar dürüst tam yola göre ayarlıdır: 1–2. günün harcı, kira düşünce çanta + sabitlemeye (500 + 1.000)
-    /// tam yeter, kasa 0'da biter. Aileye ödenen her istek bir güvenlik önleminden ya da rüşvetten çıkar.
+    /// tam yeter; 3. günün harcı son akşama 500 TL bırakır. Aileye ödenen her istek bir güvenlik önleminden ya da rüşvetten çıkar.
     /// Değiştirmeden önce o hesabı yeniden yap (üretici script denetler).
     /// Yanlış onaya para cezası yok: depremde onayladığın bina çökerse hapse girersin. Kasa eksiye düşebilir (borç).
     /// </summary>
     public static class Economy
     {
-        public const int Days = 3;
+        public const int Days = 4;
         public const int FilesPerDay = 2;
         public const int StartMoney = 0;
         public const int ApproveFee = 1500;
         public const int ShearWallFee = 1000;
         public const int Rent = 500;
         /// <summary>Harç her gün alınır. Kira ve dükkân yalnız akşamı olan günlerde (son günden önce).</summary>
-        public const int LastPaidDay = 3;
+        public const int LastPaidDay = 4;
         /// <summary>Bu günlerin son dosyasından sonra deprem olur.</summary>
-        public static readonly int[] QuakeDays = { 3 };
+        public static readonly int[] QuakeDays = { 4 };
 
         public static bool IsQuakeDay(int day) => System.Array.IndexOf(QuakeDays, day) >= 0;
 
         /// <summary>Son akşam: dükkân bu akşamdan sonra kapanır.</summary>
         public static int LastEvening => Days - 1;
 
-        /// <summary>Çekiç 3. günden itibaren gelir ve günde bu kadar kullanılabilir; hangi dosyanın ölçüleceği oyuncunun kararı.</summary>
-        public const int HammerDay = 3;
+        /// <summary>Çekiç 1. günden (öğreticiyle) gelir ve günde bu kadar kullanılabilir; hangi dosyanın ölçüleceği oyuncunun kararı.</summary>
+        public const int HammerDay = 1;
         public const int HammerPerDay = 1;
 
         public static int Day(int fileIndex) => fileIndex / FilesPerDay + 1;
@@ -118,9 +118,10 @@ namespace Dropy.Gameplay
         {
             switch (flaw)
             {
-                case Flaw.BadConcrete: return 1;
+                // 1. gün öğretici bütün temel kuralları gösterir: beton (1. dosya), yumuşak kat ve kolon (2. dosya).
+                case Flaw.BadConcrete:
                 case Flaw.SoftStory:
-                case Flaw.CutColumn: return 2;
+                case Flaw.CutColumn: return 1;
                 case Flaw.SandFoundation: return 3;
                 default: return 4;
             }

@@ -16,18 +16,19 @@ MonoBehaviour:
   contractor: {fileID: 11400000, guid: ea67b244deb3f8845ae56e869be2caec, type: 2}
   contractorPrefab: {fileID: 0}
   buildingName: "K\u0131y\u0131 Evleri"
-  floors: 2
-  claimedConcrete: 25
-  groundUse: 0
-  groundFloorHeight: 2.8
+  floors: 4
+  claimedConcrete: 30
+  groundUse: 1
+  groundFloorHeight: 4.5
   foundation: 0
-  columns: 0
+  columns: 1
   hasShearWall: 0
-  labConcrete: 20
+  labConcrete: 30
   soil: 1
   note: 
   noteAnswer: 
   damage: 0
+  illegalFloors: 0
   hammerConcrete: 0
   approveFeeOverride: 0
   bribe: 0
@@ -37,15 +38,19 @@ MonoBehaviour:
   dialogue: {fileID: 0}
   callbacks: []
   introLines:
-  - "\u0130lk kez dosya getiriyorum. \u0130ki katl\u0131 k\xFC\xE7\xFCk bir ev; annemle
-    babam oturacak."
+  - "\u0130lk kez dosya getiriyorum. Altta bakkal olacak, \xFCst\xFCnde \xFC\xE7
+    daire; birinde annemle babam oturacak."
   questions:
-  - question: "Beton s\u0131n\u0131f\u0131 ne?"
-    answer: "K\xFCnyede yaz\u0131yor {hitap}, {kunye}. Fazlas\u0131na param yetmedi
-      a\xE7\u0131k\xE7as\u0131."
+  - question: "Zemin kat\u0131n tavan\u0131 neden bu kadar y\xFCksek?"
+    answer: "Bakkal y\xFCksek raf istedi {hitap}... Tavan\u0131 biraz kald\u0131rd\u0131k."
+  - question: Kolonlar neden kesik?
+    answer: "K-kesik mi? Usta, d\xFCkk\xE2n ferah olsun diye ortadakini alm\u0131\u015F...
+      Bana sa\u011Flam dedi."
   approvedLine: 
-  shearWallLine: 
-  rejectedLine: "C20 mi? Betoncu bana C25 diye satt\u0131... Annemlere ne diyece\u011Fim?"
+  shearWallLine: "Perde mi? Olur {hitap}, ekletirim... Kolonu da d\xFCzeltir mi peki?"
+  rejectedLine: "Kolon mu? Ustaya g\xFCvenmi\u015Ftim... Annemlere ne diyece\u011Fim?"
   rejectPressure: []
-  collapseHeadline: "K\u0131y\u0131 Evleri \xE7\xF6kt\xFC: betonu C20 \xE7\u0131kt\u0131"
-  standingLine: 
+  collapseHeadline: "K\u0131y\u0131 Evleri \xE7\xF6kt\xFC: kolonu kesilmi\u015F zemin
+    kat g\xF6\xE7t\xFC"
+  standingLine: "K\u0131y\u0131 Evleri hi\xE7 yap\u0131lmad\u0131; Nuri Usta kolonlar\u0131
+    ba\u015Ftan d\xF6k\xFCyor."

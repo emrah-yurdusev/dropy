@@ -11,17 +11,27 @@ namespace Dropy.Gameplay
     /// Kırmızı kalemle öğretici: belgeler açılınca o güne ve dosyaya ait hamleleri (<see cref="TutorialData"/>)
     /// sırayla ekrana çizer: hedefin etrafına daire, iki hedef arasına ok, yanına el yazısıyla not. Çizgi kalem
     /// gidiyormuş gibi uçtan uca uzar. Oyuncuyu durdurmaz (tıklamalar alttaki belgelere geçer), mühür basılınca silinir;
-    /// her hamle oyunda bir kez gösterilir.
+    /// her hamle oyunda bir kez gösterilir. Yeni hamle çizilirken öncekiler soluklaşır; notlar birbirinin üstüne binmez.
     /// </summary>
     public class PenTutorial : MonoBehaviour
     {
         const float ReferenceWidth = 1920f;
         const float Thickness = 5f;
+        /// <summary>Yeni hamle çizilirken öncekiler bu saydamlığa iner: göz hep son hamlede kalır.</summary>
+        const float PastAlpha = 0.35f;
+        const float NoteMargin = 24f;
+        /// <summary>El yazısı eğik ve not hafif döndürülmüş: ölçülen genişliğin biraz fazlası ayrılır.</summary>
+        const float SlantAllowance = 30f;
 
         TutorialData data;
         RectTransform overlay;
+        /// <summary>Çizilmekte olan hamlenin katmanı; çizgiler ve not buna eklenir.</summary>
+        RectTransform layer;
         System.Func<TutorialTarget, RectTransform> resolve;
         readonly HashSet<TutorialStep> shown = new HashSet<TutorialStep>();
+        readonly List<CanvasGroup> layers = new List<CanvasGroup>();
+        /// <summary>Ekrandaki notların kapladığı alanlar: yeni not bunlarla çakışmayan bir yere yazılır.</summary>
+        readonly List<Rect> placedNotes = new List<Rect>();
         Coroutine running;
 
         public void Build(RectTransform root, TutorialData tutorial, System.Func<TutorialTarget, RectTransform> resolver)
@@ -51,6 +61,8 @@ namespace Dropy.Gameplay
             if (running != null)
                 StopCoroutine(running);
             running = null;
+            layers.Clear();
+            placedNotes.Clear();
             if (overlay == null)
                 return;
             foreach (Transform child in overlay)
@@ -70,6 +82,10 @@ namespace Dropy.Gameplay
                 if (a == null)
                     continue;
                 var b = Bounds(step.to);
+                foreach (var past in layers)
+                    past.alpha = PastAlpha;
+                layer = Ui.Rect("Step", overlay).Stretch();
+                layers.Add(layer.gameObject.AddComponent<CanvasGroup>());
                 yield return Draw(step, a.Value, b);
                 for (float t = 0f; t < data.pause; t += Time.unscaledDeltaTime)
                     yield return null;
@@ -95,12 +111,19 @@ namespace Dropy.Gameplay
         IEnumerator Draw(TutorialStep step, Rect a, Rect? b)
         {
             var strokes = new List<List<Vector2>>();
-            Vector2 notePos;
+            // Notun aday yerleri (sol kenar ortası), tercih sırasıyla; boyut not ölçülünce belli olur.
+            System.Func<Vector2, List<Vector2>> spots;
             switch (step.shape)
             {
                 case PenShape.Underline:
                     strokes.Add(Underline(a));
-                    notePos = new Vector2(a.xMin, a.yMin - 20f);
+                    spots = size => new List<Vector2>
+                    {
+                        new Vector2(a.xMin, a.yMin - size.y / 2f - 16f),
+                        new Vector2(a.xMin, a.yMax + size.y / 2f + 16f),
+                        new Vector2(a.xMax - size.x - SlantAllowance, a.yMax + size.y / 2f + 16f),
+                        new Vector2(a.xMin - size.x - SlantAllowance - 20f, a.center.y),
+                    };
                     break;
                 case PenShape.Arrow:
                 case PenShape.DoubleArrow:
@@ -111,13 +134,30 @@ namespace Dropy.Gameplay
                     strokes.AddRange(Head(curve[curve.Count - 2], curve[curve.Count - 1]));
                     if (step.shape == PenShape.DoubleArrow)
                         strokes.AddRange(Head(curve[1], curve[0]));
-                    var mid = curve[curve.Count / 2];
                     var dir = (curve[curve.Count - 1] - curve[0]).normalized;
-                    notePos = mid + new Vector2(-dir.y, dir.x) * 34f;
+                    var normal = new Vector2(-dir.y, dir.x);
+                    spots = size =>
+                    {
+                        var list = new List<Vector2>();
+                        float away = 34f + size.y / 2f;
+                        foreach (float along in new[] { 0.5f, 0.35f, 0.65f, 0.2f, 0.8f })
+                        {
+                            var p = curve[Mathf.RoundToInt(along * (curve.Count - 1))];
+                            list.Add(p + normal * away - new Vector2(size.x / 2f, 0f));
+                            list.Add(p - normal * away - new Vector2(size.x / 2f, 0f));
+                        }
+                        return list;
+                    };
                     break;
                 default:
                     strokes.Add(Circle(a));
-                    notePos = new Vector2(a.xMax + 26f, a.center.y + a.height * 0.2f + 14f);
+                    spots = size => new List<Vector2>
+                    {
+                        new Vector2(a.xMax + 26f, a.center.y + a.height * 0.2f + 14f),
+                        new Vector2(a.xMin - 26f - size.x - SlantAllowance, a.center.y),
+                        new Vector2(a.center.x - (size.x + SlantAllowance) / 2f, a.yMin - size.y / 2f - 22f),
+                        new Vector2(a.center.x - (size.x + SlantAllowance) / 2f, a.yMax + size.y / 2f + 22f),
+                    };
                     break;
             }
 
@@ -125,7 +165,7 @@ namespace Dropy.Gameplay
             foreach (var stroke in strokes)
                 yield return Stroke(stroke, speed);
             if (!string.IsNullOrEmpty(step.note))
-                yield return Note(step.note, notePos);
+                yield return Note(step.note, spots);
         }
 
         IEnumerator Stroke(List<Vector2> points, float speed)
@@ -145,7 +185,7 @@ namespace Dropy.Gameplay
 
         void Segment(Vector2 a, Vector2 b)
         {
-            var line = Ui.Image(overlay, "Ink", data.ink, raycast: false).rectTransform;
+            var line = Ui.Image(layer, "Ink", data.ink, raycast: false).rectTransform;
             var delta = b - a;
             line.anchorMin = line.anchorMax = new Vector2(0.5f, 0.5f);
             line.pivot = new Vector2(0.5f, 0.5f);
@@ -154,9 +194,13 @@ namespace Dropy.Gameplay
             line.localRotation = Quaternion.Euler(0f, 0f, Mathf.Atan2(delta.y, delta.x) * Mathf.Rad2Deg);
         }
 
-        IEnumerator Note(string text, Vector2 position)
+        /// <summary>
+        /// Notu aday yerlerden ekrana tam sığan ve önceki notlarla çakışmayan ilkine yazar; hiçbiri olmazsa ekrana sığan ilkine,
+        /// o da yoksa ilk adayı kenarlara kıstırır.
+        /// </summary>
+        IEnumerator Note(string text, System.Func<Vector2, List<Vector2>> spots)
         {
-            var note = Ui.Text(overlay, "Note", text, 34f, data.ink, TextAlignmentOptions.MidlineLeft, FontStyles.Bold);
+            var note = Ui.Text(layer, "Note", text, 34f, data.ink, TextAlignmentOptions.MidlineLeft, FontStyles.Bold);
             if (data.font != null)
                 note.font = data.font;
             note.textWrappingMode = TextWrappingModes.NoWrap;
@@ -165,10 +209,26 @@ namespace Dropy.Gameplay
             rt.anchorMin = rt.anchorMax = new Vector2(0.5f, 0.5f);
             rt.pivot = new Vector2(0f, 0.5f);
             rt.sizeDelta = size;
-            // Ekrandan taşmasın: sağ kenara gelirse sola kaydır.
+
             var r = overlay.rect;
-            position.x = Mathf.Clamp(position.x, r.xMin + 10f, r.xMax - size.x - 10f);
-            position.y = Mathf.Clamp(position.y, r.yMin + size.y, r.yMax - size.y);
+            var screen = Rect.MinMaxRect(r.xMin + NoteMargin, r.yMin + NoteMargin, r.xMax - NoteMargin, r.yMax - NoteMargin);
+            var candidates = spots(size);
+            System.Func<Vector2, Rect> area = p => new Rect(p.x, p.y - size.y / 2f, size.x + SlantAllowance, size.y);
+            System.Func<Rect, bool> fits = n => screen.Contains(n.min) && screen.Contains(n.max);
+            System.Func<Rect, bool> free = n => !placedNotes.Any(o => o.Overlaps(new Rect(n.x - 6f, n.y - 6f, n.width + 12f, n.height + 12f)));
+            Vector2 position;
+            if (candidates.Any(p => fits(area(p)) && free(area(p))))
+                position = candidates.First(p => fits(area(p)) && free(area(p)));
+            else if (candidates.Any(p => fits(area(p))))
+                position = candidates.First(p => fits(area(p)));
+            else
+            {
+                position = candidates[0];
+                position.x = Mathf.Clamp(position.x, screen.xMin, screen.xMax - size.x - SlantAllowance);
+                position.y = Mathf.Clamp(position.y, screen.yMin + size.y / 2f, screen.yMax - size.y / 2f);
+            }
+            placedNotes.Add(area(position));
+
             rt.anchoredPosition = position - r.center;
             rt.localRotation = Quaternion.Euler(0f, 0f, -3f);
             note.maxVisibleCharacters = 0;

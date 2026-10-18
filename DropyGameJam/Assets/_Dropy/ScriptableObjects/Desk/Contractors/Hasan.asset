@@ -1,0 +1,31 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4f92cf41a1ab2d3458cfda3176bbe13a, type: 3}
+  m_Name: Hasan
+  m_EditorClassIdentifier: 
+  displayName: Hasan Usta
+  prefab: {fileID: 6109957602794137753, guid: 38a414c0f200f86468e52f306b8b949d, type: 3}
+  personality: {fileID: 11400000, guid: 57d1bb7b250bfe24e86405bb71e89d9d, type: 2}
+  overrides:
+    address: 
+    typingSpeed: 0
+    greetings: []
+    firmHonest: []
+    firmDishonest: []
+    softHonest: []
+    softDishonest: []
+    fields: []
+    tics: []
+    approved: []
+    rejected: []
+    shearWall: []
+    unjustReject: []

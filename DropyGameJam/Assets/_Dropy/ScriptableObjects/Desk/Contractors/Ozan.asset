@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: Ozan
   m_EditorClassIdentifier: 
   displayName: Ozan Bey
-  prefab: {fileID: 0}
+  prefab: {fileID: 7493389791816327554, guid: aaa0b14b0a190e5498e844caf86c6e03, type: 3}
   personality: {fileID: 11400000, guid: 8218003d5ba15854f9a0fa5b11ccf385, type: 2}
   overrides:
     address: 

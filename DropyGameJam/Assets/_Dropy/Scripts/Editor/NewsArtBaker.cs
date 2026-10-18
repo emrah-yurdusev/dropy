@@ -236,14 +236,16 @@ namespace Dropy.EditorTools
             var style = Style();
             var font = style.tvFont;
             var story = AssetDatabase.LoadAssetAtPath<StoryData>(BuildCaseFiles.StoryPath);
-            var drawings = new (string file, System.Action<RectTransform, TMP_FontAsset> draw)[]
+            // day: görselin bağlandığı sabah haberi (0 = şimdilik hiçbir güne bağlı değil).
+            var drawings = new (string file, System.Action<RectTransform, TMP_FontAsset> draw, int day)[]
             {
-                ("Haber_1_FayHatti", DrawFault),
-                ("Haber_2_Dolap", DrawCabinet),
-                ("Haber_3_Sarsinti", DrawSeismograph),
-                ("Haber_4_HasarTespiti", DrawDamageSurvey),
-                ("Haber_5_HasarliBina", DrawCrackedBuilding),
-                ("Haber_6_Artci", DrawAftershocks),
+                ("Haber_1_FayHatti", DrawFault, 1),
+                ("Haber_2_Dolap", DrawCabinet, 2),
+                ("Haber_7_ToplanmaAlani", DrawAssemblyArea, 3),
+                ("Haber_3_Sarsinti", DrawSeismograph, 4),
+                ("Haber_4_HasarTespiti", DrawDamageSurvey, 0),
+                ("Haber_5_HasarliBina", DrawCrackedBuilding, 0),
+                ("Haber_6_Artci", DrawAftershocks, 0),
             };
             for (int i = 0; i < drawings.Length; i++)
             {
@@ -255,7 +257,7 @@ namespace Dropy.EditorTools
                     tex = stage.Capture();
                 }
                 var sprite = SaveSprite(drawings[i].file, tex, Vector4.zero);
-                var news = story != null ? story.News(i + 1) : null;
+                var news = story != null && drawings[i].day > 0 ? story.News(drawings[i].day) : null;
                 if (news != null)
                     news.graphic = sprite;
             }
@@ -289,6 +291,30 @@ namespace Dropy.EditorTools
             Dot(page, Ink, 640, 250, 18);
             Label(page, font, "LİMAN", 28, Ink, 660, 250, 200, 40, TextAlignmentOptions.Left);
             Title(page, font, "FAY HATTI", "Kent 1. derece deprem kuşağında");
+        }
+
+        /// <summary>Yeşil "toplanma alanı" tabelası: dört insan ve yön oku.</summary>
+        static void DrawAssemblyArea(RectTransform page, TMP_FontAsset font)
+        {
+            var green = new Color(0.12f, 0.5f, 0.27f);
+            Box(page, new Color(0.62f, 0.6f, 0.55f), 512, 150, 18, 160);
+            Box(page, Ink, 512, 400, 548, 388);
+            Box(page, green, 512, 400, 536, 376);
+            Box(page, Color.white, 512, 400, 500, 340);
+            Box(page, green, 512, 400, 484, 324);
+            for (int i = 0; i < 4; i++)
+            {
+                float x = 362 + i * 100;
+                Dot(page, Color.white, x, 445, 46);
+                Box(page, Color.white, x, 365, 52, 100);
+                Box(page, Color.white, x - 14, 290, 18, 64);
+                Box(page, Color.white, x + 14, 290, 18, 64);
+            }
+            Label(page, font, "TOPLANMA ALANI", 44, Color.white, 262, 520, 500, 50, TextAlignmentOptions.Center, FontStyles.Bold);
+            Line(page, new Vector2(820, 400), new Vector2(960, 400), 22f, green);
+            Line(page, new Vector2(960, 400), new Vector2(915, 445), 22f, green);
+            Line(page, new Vector2(960, 400), new Vector2(915, 355), 22f, green);
+            Title(page, font, "TOPLANMA ALANI", "Mahallenizdeki alanı bugünden öğrenin");
         }
 
         static void DrawCabinet(RectTransform page, TMP_FontAsset font)

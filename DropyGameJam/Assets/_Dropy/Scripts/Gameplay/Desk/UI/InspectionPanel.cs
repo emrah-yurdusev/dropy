@@ -8,7 +8,7 @@ namespace Dropy.Gameplay
 {
     /// <summary>
     /// "Belgeleri İncele" modu: ekran %40 / %20 / %40 bölünür.
-    /// Solda yönetmelik, sağda proje künyesi, ek rapor (3. günden itibaren altında çekiç), bina incelemesi ve mühürler;
+    /// Solda yönetmelik, sağda proje künyesi, ek rapor (altında çekiç), bina incelemesi ve mühürler;
     /// ortada karakter görünmeye devam eder. Mühürlü künye ortaya sürüklenince ya da "Teslim Et"e basınca karar verilir.
     /// </summary>
     public class InspectionPanel : MonoBehaviour

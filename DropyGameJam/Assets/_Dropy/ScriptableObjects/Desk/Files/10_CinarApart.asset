@@ -29,6 +29,7 @@ MonoBehaviour:
   noteAnswer: "Laboratuvar acele etti {hitap}, bir k\xFCp yeter dediler. Sonu\xE7
     ayn\u0131 \xE7\u0131kar."
   damage: 0
+  illegalFloors: 0
   hammerConcrete: 18
   approveFeeOverride: 0
   bribe: 0

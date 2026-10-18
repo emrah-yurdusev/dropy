@@ -15,7 +15,7 @@ MonoBehaviour:
   font: {fileID: 11400000, guid: 44b72ae845005104db4344c5600be5b0, type: 2}
   ink: {r: 0.82, g: 0.12, b: 0.1, a: 1}
   penSpeed: 1500
-  pause: 0.35
+  pause: 1
   steps:
   - day: 1
     fileOfDay: 0
@@ -30,37 +30,9 @@ MonoBehaviour:
       field: 
       topic: 0
       seal: 0
-    note: 1) Betona bak
+    note: "1) K\xFCnyedeki betona bak"
   - day: 1
     fileOfDay: 0
-    shape: 2
-    from:
-      kind: 1
-      field: claimed
-      topic: 0
-      seal: 0
-    to:
-      kind: 2
-      field: 
-      topic: 1
-      seal: 0
-    note: "2) Kitapla kar\u015F\u0131la\u015Ft\u0131r"
-  - day: 1
-    fileOfDay: 0
-    shape: 2
-    from:
-      kind: 2
-      field: 
-      topic: 1
-      seal: 0
-    to:
-      kind: 3
-      field: 
-      topic: 0
-      seal: 1
-    note: 3) Uyuyorsa ONAY
-  - day: 1
-    fileOfDay: 1
     shape: 3
     from:
       kind: 1
@@ -72,9 +44,9 @@ MonoBehaviour:
       field: lab
       topic: 0
       seal: 0
-    note: "Farkl\u0131ysa EK RAPOR ge\xE7erli!"
+    note: "2) Farkl\u0131ysa EK RAPOR ge\xE7erli!"
   - day: 1
-    fileOfDay: 1
+    fileOfDay: 0
     shape: 2
     from:
       kind: 1
@@ -86,64 +58,8 @@ MonoBehaviour:
       field: 
       topic: 1
       seal: 0
-    note: "Kitapta var m\u0131?"
-  - day: 2
-    fileOfDay: 0
-    shape: 0
-    from:
-      kind: 1
-      field: use
-      topic: 0
-      seal: 0
-    to:
-      kind: 0
-      field: 
-      topic: 0
-      seal: 0
-    note: Yeni kural!
-  - day: 2
-    fileOfDay: 0
-    shape: 2
-    from:
-      kind: 1
-      field: height
-      topic: 0
-      seal: 0
-    to:
-      kind: 2
-      field: 
-      topic: 2
-      seal: 0
-    note: Kitap ne diyor?
-  - day: 2
-    fileOfDay: 0
-    shape: 1
-    from:
-      kind: 3
-      field: 
-      topic: 0
-      seal: 3
-    to:
-      kind: 0
-      field: 
-      topic: 0
-      seal: 0
-    note: "Kurtarman\u0131n yolu var"
-  - day: 2
-    fileOfDay: 1
-    shape: 0
-    from:
-      kind: 1
-      field: columns
-      topic: 0
-      seal: 0
-    to:
-      kind: 0
-      field: 
-      topic: 0
-      seal: 0
-    note: Kolona dikkat
-  - day: 3
+    note: "3) Kitapta var m\u0131? C25/30/35"
+  - day: 1
     fileOfDay: 0
     shape: 0
     from:
@@ -156,4 +72,102 @@ MonoBehaviour:
       field: 
       topic: 0
       seal: 0
-    note: "K\xE2\u011F\u0131da g\xFCvenme: \xF6l\xE7! (g\xFCnde 1)"
+    note: "4) Emin ol: \xE7eki\xE7le \xF6l\xE7! (g\xFCnde 1)"
+  - day: 1
+    fileOfDay: 0
+    shape: 2
+    from:
+      kind: 2
+      field: 
+      topic: 4
+      seal: 0
+    to:
+      kind: 3
+      field: 
+      topic: 0
+      seal: 1
+    note: 5) Hepsi uyuyorsa ONAY
+  - day: 1
+    fileOfDay: 1
+    shape: 0
+    from:
+      kind: 1
+      field: use
+      topic: 0
+      seal: 0
+    to:
+      kind: 0
+      field: 
+      topic: 0
+      seal: 0
+    note: "1) Alt\u0131 market mi?"
+  - day: 1
+    fileOfDay: 1
+    shape: 2
+    from:
+      kind: 1
+      field: height
+      topic: 0
+      seal: 0
+    to:
+      kind: 2
+      field: 
+      topic: 2
+      seal: 0
+    note: "2) Tavan 4 m+ = yumu\u015Fak kat"
+  - day: 1
+    fileOfDay: 1
+    shape: 1
+    from:
+      kind: 3
+      field: 
+      topic: 0
+      seal: 3
+    to:
+      kind: 0
+      field: 
+      topic: 0
+      seal: 0
+    note: "3) Tek kusur buysa PERDE kurtar\u0131r"
+  - day: 1
+    fileOfDay: 1
+    shape: 0
+    from:
+      kind: 1
+      field: columns
+      topic: 0
+      seal: 0
+    to:
+      kind: 0
+      field: 
+      topic: 0
+      seal: 0
+    note: "4) Ama kolon KES\u0130K!"
+  - day: 1
+    fileOfDay: 1
+    shape: 0
+    from:
+      kind: 5
+      field: 
+      topic: 0
+      seal: 0
+    to:
+      kind: 0
+      field: 
+      topic: 0
+      seal: 0
+    note: "5) B\xFCy\xFCte\xE7le bak: k\u0131rm\u0131z\u0131 = kusur"
+  - day: 1
+    fileOfDay: 1
+    shape: 2
+    from:
+      kind: 2
+      field: 
+      topic: 3
+      seal: 0
+    to:
+      kind: 3
+      field: 
+      topic: 0
+      seal: 2
+    note: '6) Perde kurtarmaz: RED'

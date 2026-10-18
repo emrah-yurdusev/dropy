@@ -14,7 +14,7 @@ namespace Dropy.Gameplay
     /// <summary>
     /// İskân bürosu masa akışı: 6 gün, günde 3 dosya. Müteahhit kapıdan girer, karşıya oturur, konuşur;
     /// oyuncu yönetmeliğe, künyeye ve ek rapora bakıp künyeye mühür basar (onay: aileler taşınır, red: bina boş kalır).
-    /// Akşam kira düşer, telefondan alışveriş yapılır. 3. ve 6. günün son dosyasından sonra deprem olur.
+    /// Akşam kira düşer, telefondan alışveriş yapılır. 4. günün son dosyasından sonra deprem olur.
     /// Arayüzü (Canvas, EventSystem) kendisi kurar; sahnede yalnızca bu bileşen ve referanslar gerekir.
     /// </summary>
     public class DeskManager : MonoBehaviour
@@ -961,6 +961,9 @@ namespace Dropy.Gameplay
                 case TutorialTargetKind.Hammer:
                     var hammer = inspection.GetComponentsInChildren<Button>().FirstOrDefault(b => b.name == "Hammer");
                     return hammer != null ? (RectTransform)hammer.transform : null;
+                case TutorialTargetKind.Building:
+                    var viewer = inspection.GetComponentInChildren<BuildingViewer>();
+                    return viewer != null ? (RectTransform)viewer.transform : null;
                 default:
                     return null;
             }

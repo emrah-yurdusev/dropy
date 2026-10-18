@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: Nuri
   m_EditorClassIdentifier: 
   displayName: Nuri Usta
-  prefab: {fileID: 0}
+  prefab: {fileID: 8184606563911969415, guid: ea51d197abccb734e80c7cb4eb76738b, type: 3}
   personality: {fileID: 11400000, guid: cf93ec234f7b5524bb69680040fc2663, type: 2}
   overrides:
     address: 

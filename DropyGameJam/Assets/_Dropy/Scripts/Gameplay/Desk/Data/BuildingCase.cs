@@ -88,7 +88,7 @@ namespace Dropy.Gameplay
         [Tooltip("Ruhsattan fazla çıkılmış kat. Künyede yazmaz; bina incelemesinde büyüteçle kırmızı görünür. Kuralı değiştirmez")]
         [Min(0)] public int illegalFloors;
 
-        [Header("Çekiç (3. günden itibaren)")]
+        [Header("Çekiç")]
         [Tooltip("Çekicin okuduğu beton. 0 ise laboratuvar değeriyle aynı okunur")]
         public int hammerConcrete;
 

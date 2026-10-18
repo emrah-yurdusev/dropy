@@ -18,7 +18,8 @@ namespace Dropy.Gameplay
         [Tooltip("Belgede bir satır (alan anahtarıyla: claimed, lab, use, height, columns...)")] Field,
         [Tooltip("Yönetmelikte bir konunun sekmesi")] RuleTab,
         [Tooltip("Mühür tepsisindeki bir mühür")] Seal,
-        [Tooltip("Ek rapordaki çekiç düğmesi")] Hammer
+        [Tooltip("Ek rapordaki çekiç düğmesi")] Hammer,
+        [Tooltip("Bina incelemesi kartı (döndürülebilir maket, büyüteç)")] Building
     }
 
     [System.Serializable]
@@ -50,6 +51,7 @@ namespace Dropy.Gameplay
 
     /// <summary>
     /// Fragman tarzı öğretici: belgeler açılınca ekrana kırmızı kalemle daire, ok ve el yazısı notlar çizilir.
+    /// Yalnız 1. gün: 1. dosya beton, ek raporun önceliği ve çekiç; 2. dosya yumuşak kat (perde) ve kesik kolon.
     /// Oyuncuyu durdurmaz (tıklamalar geçer), mühür basılınca silinir; her hamle oyunda bir kez gösterilir.
     /// </summary>
     [CreateAssetMenu(menuName = "Dropy/Masa/Kalem Öğretici", fileName = "Tutorial")]

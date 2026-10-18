@@ -1,0 +1,55 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b53e488de2e93c841b0e8998a55e2701, type: 3}
+  m_Name: 19_CesmeApartmani
+  m_EditorClassIdentifier: 
+  contractorName: Hasan Usta
+  contractor: {fileID: 11400000, guid: 4edbdd0f5e101974cac7775d000d2502, type: 2}
+  contractorPrefab: {fileID: 0}
+  buildingName: "\xC7e\u015Fme Apartman\u0131"
+  floors: 5
+  claimedConcrete: 30
+  groundUse: 0
+  groundFloorHeight: 2.8
+  foundation: 0
+  columns: 0
+  hasShearWall: 0
+  labConcrete: 20
+  soil: 0
+  note: 
+  noteAnswer: 
+  damage: 0
+  illegalFloors: 0
+  hammerConcrete: 20
+  approveFeeOverride: 0
+  bribe: 0
+  bribeOffer: 
+  bribeAcceptedLine: 
+  bribeRefusedLine: 
+  dialogue: {fileID: 0}
+  callbacks: []
+  introLines:
+  - "\xC7e\u015Fme Apartman\u0131, be\u015F kat. Temelinden \xE7at\u0131s\u0131na
+    kendi ellerimle diktim {hitap}."
+  questions:
+  - question: "Ek raporda neden C20 yaz\u0131yor?"
+    answer: "Laboratuvar numuneyi \xFC\xE7 g\xFCn g\xFCne\u015Fte bekletmi\u015F
+      {hitap}. Betonu ben kar\u0131\u015Ft\u0131rd\u0131m, C30'dur o."
+  - question: "Betonu nas\u0131l \xF6l\xE7t\xFCn\xFCz?"
+    answer: "G\xF6z karar\u0131 {hitap}. K\u0131rk y\u0131ld\u0131r elim terazidir,
+      \u015Fa\u015Fmaz."
+  approvedLine: 
+  shearWallLine: 
+  rejectedLine: 
+  rejectPressure: []
+  collapseHeadline: "\xC7e\u015Fme Apartman\u0131 \xE7\xF6kt\xFC: betonu C20 \xE7\u0131kt\u0131"
+  standingLine: "\xC7e\u015Fme Apartman\u0131 ayakta."

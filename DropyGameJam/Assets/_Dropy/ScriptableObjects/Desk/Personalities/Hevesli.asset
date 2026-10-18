@@ -1,0 +1,52 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f3fcd023ca25f0e469d4a301ff89633e, type: 3}
+  m_Name: Hevesli
+  m_EditorClassIdentifier: 
+  typeName: Hevesli
+  description: "Gen\xE7, heyecanl\u0131 giri\u015Fimci. H\u0131zl\u0131 konu\u015Fur,
+    her \u015Feye 'konsept' der; k\xF6t\xFC niyetli de\u011Fil ama riski g\xF6rmez."
+  lines:
+    address: abi
+    typingSpeed: 1.35
+    greetings:
+    - "G\xFCnayd\u0131n {hitap}! \xC7ok heyecanl\u0131y\u0131m, ilk projem bu."
+    firmHonest:
+    - "Tabii tabii, kurallar \xF6nemli, bak\u0131n l\xFCtfen!"
+    firmDishonest:
+    - "Kural m\u0131? Ama konsept... Neyse, bak\u0131n siz."
+    softHonest:
+    - "S\xFCpersiniz {hitap}, te\u015Fekk\xFCrler!"
+    softDishonest:
+    - "S\xFCper! Zaten her \u015Fey \xE7ok modern."
+    fields:
+    - field: use
+      defensive: 1
+      text: "Altta konsept market var {hitap}! Kahve k\xF6\u015Fesi, organik raflar,
+        tam bir deneyim."
+    - field: height
+      defensive: 1
+      text: "{tavan} metre! Tavan y\xFCksek olunca mek\xE2n nefes al\u0131yor."
+    - field: shearwall
+      defensive: 1
+      text: "Perde koyarsak vitrin kapan\u0131r {hitap}, konsepti \xF6ld\xFCr\xFCr."
+    tics:
+    - "Sosyal medyada \xE7ok tutacak."
+    - "\xD6n sat\u0131\u015Flar u\xE7tu {hitap}."
+    approved:
+    - "Harika! A\xE7\u0131l\u0131\u015Fta ilk kahve benden {hitap}!"
+    rejected:
+    - "Red mi? Ama \xF6n sat\u0131\u015Flar... Yat\u0131r\u0131mc\u0131ya ne diyece\u011Fim?"
+    shearWall:
+    - "Perde mi? Vitrin biraz daral\u0131r ama... olur, g\xFCvenlik de bir konsept!"
+    unjustReject:
+    - "Ama beton {rapor}, kolonlar tam... Neyi eksik g\xF6rd\xFCn\xFCz {hitap}?"

@@ -8,7 +8,7 @@ using Dropy.Gameplay;
 namespace Dropy.EditorTools
 {
     /// <summary>
-    /// Masanın içeriğini asset olarak yazar ve açık sahnedeki DeskManager'a bağlar: 6 dosya (3 gün × 2), müteahhitler,
+    /// Masanın içeriğini asset olarak yazar ve açık sahnedeki DeskManager'a bağlar: 8 dosya (4 gün × 2), müteahhitler,
     /// kişilik tipleri, gün gün açılan yönetmelik ve hikâye (telefon, televizyon, mesajlar, aile istekleri, sarsıntı).
     /// Dosyalar, yönetmelik ve hikâye her çalıştırmada yeniden yazılır. Kişilik ve müteahhit dosyaları yalnızca yoksa
     /// oluşturulur: Inspector'da yapılan konuşma düzenlemeleri tekrar çalıştırınca kaybolmaz.
@@ -23,20 +23,23 @@ namespace Dropy.EditorTools
         public const string TutorialPath = "Assets/_Dropy/ScriptableObjects/Desk/Tutorial.asset";
         const string VeyselPrefab = "Assets/_Dropy/Prefabs/Characters/Veysel_LowPoly.prefab";
         const string SefaPrefab = "Assets/_Dropy/Prefabs/Characters/SefaBey_LowPoly.prefab";
+        const string CharacterFolder = "Assets/_Dropy/Prefabs/Characters/";
 
-        /// <summary>Oyun sırası: 3 gün × 2 dosya. Eski (18 dosyalık döngüden) asset'ler adları değişmesin diye korunur.</summary>
+        /// <summary>Oyun sırası: 4 gün × 2 dosya. Eski (18 dosyalık döngüden) asset'ler adları değişmesin diye korunur.</summary>
         public static readonly string[] Paths =
         {
             Folder + "/01_AdaKonutlari.asset",
             Folder + "/02_KiyiEvleri.asset",
             Folder + "/05_PazarMarket.asset",
+            Folder + "/19_CesmeApartmani.asset",
+            Folder + "/20_LaleApart.asset",
             Folder + "/12_OgrenciYurdu.asset",
             Folder + "/10_CinarApart.asset",
             Folder + "/03_MaviApart.asset",
         };
 
         // Dosya sırası (0'dan): hikâye bağlantıları bunlara göre kurulur.
-        const int Yurt = 3;
+        const int Yurt = 5;
 
         [MenuItem("Dropy/Dosyaları Üret")]
         public static void Build()
@@ -60,32 +63,37 @@ namespace Dropy.EditorTools
 
         // ---------------------------------------------------------------- kalem öğretici
 
-        /// <summary>Öğretici yoksa oluşturur; varsa dokunmaz (Inspector'da değiştirilen notlar kalır).</summary>
+        /// <summary>
+        /// Öğretici yalnız 1. gündedir: 1. dosya beton, ek raporun önceliği ve çekiç; 2. dosya yumuşak kat (perde) ve kesik kolon.
+        /// Adımlar her çalıştırmada yeniden yazılır; font, mürekkep rengi ve hız gibi Inspector ayarları korunur.
+        /// </summary>
         static TutorialData WriteTutorial()
         {
             var tutorial = AssetDatabase.LoadAssetAtPath<TutorialData>(TutorialPath);
-            if (tutorial != null)
-                return tutorial;
-            tutorial = ScriptableObject.CreateInstance<TutorialData>();
+            if (tutorial == null)
+            {
+                tutorial = ScriptableObject.CreateInstance<TutorialData>();
+                AssetDatabase.CreateAsset(tutorial, TutorialPath);
+            }
+            // Hamleler arası bekleme: notu okumaya vakit kalsın.
+            tutorial.pause = 1f;
             tutorial.steps = new List<TutorialStep>
             {
-                // 1. gün, Veysel: künye → kitap → mühür.
-                Step(1, 0, PenShape.Circle, FieldTarget(FieldKey.Claimed), null, "1) Betona bak"),
-                Step(1, 0, PenShape.Arrow, FieldTarget(FieldKey.Claimed), RuleTarget(RuleTopic.Beton), "2) Kitapla karşılaştır"),
-                Step(1, 0, PenShape.Arrow, RuleTarget(RuleTopic.Beton), SealTarget(Seal.Approve), "3) Uyuyorsa ONAY"),
-                // 1. gün, Nuri: künye ile ek rapor çelişiyor.
-                Step(1, 1, PenShape.DoubleArrow, FieldTarget(FieldKey.Claimed), FieldTarget(FieldKey.Lab), "Farklıysa EK RAPOR geçerli!"),
-                Step(1, 1, PenShape.Arrow, FieldTarget(FieldKey.Lab), RuleTarget(RuleTopic.Beton), "Kitapta var mı?"),
-                // 2. gün, Cengiz: yumuşak kat ve üçüncü mühür.
-                Step(2, 0, PenShape.Circle, FieldTarget(FieldKey.Use), null, "Yeni kural!"),
-                Step(2, 0, PenShape.Arrow, FieldTarget(FieldKey.Height), RuleTarget(RuleTopic.YumusakKat), "Kitap ne diyor?"),
-                Step(2, 0, PenShape.Underline, SealTarget(Seal.ShearWall), null, "Kurtarmanın yolu var"),
-                // 2. gün, Ozan: kolon.
-                Step(2, 1, PenShape.Circle, FieldTarget(FieldKey.Columns), null, "Kolona dikkat"),
-                // 3. gün, Gül Hanım: çekiç.
-                Step(3, 0, PenShape.Circle, new TutorialTarget { kind = TutorialTargetKind.Hammer }, null, "Kâğıda güvenme: ölç! (günde 1)"),
+                // 1. gün, Veysel: künye C20, ek rapor C30, çekiç C30 → ONAY.
+                Step(1, 0, PenShape.Circle, FieldTarget(FieldKey.Claimed), null, "1) Künyedeki betona bak"),
+                Step(1, 0, PenShape.DoubleArrow, FieldTarget(FieldKey.Claimed), FieldTarget(FieldKey.Lab), "2) Farklıysa EK RAPOR geçerli!"),
+                Step(1, 0, PenShape.Arrow, FieldTarget(FieldKey.Lab), RuleTarget(RuleTopic.Beton), "3) Kitapta var mı? C25/30/35"),
+                Step(1, 0, PenShape.Circle, new TutorialTarget { kind = TutorialTargetKind.Hammer }, null, "4) Emin ol: çekiçle ölç! (günde 1)"),
+                Step(1, 0, PenShape.Arrow, RuleTarget(RuleTopic.Cekic), SealTarget(Seal.Approve), "5) Hepsi uyuyorsa ONAY"),
+                // 1. gün, Nuri: market + yüksek tavan = yumuşak kat (perde kurtarır) ama kolon kesik → RED.
+                Step(1, 1, PenShape.Circle, FieldTarget(FieldKey.Use), null, "1) Altı market mi?"),
+                Step(1, 1, PenShape.Arrow, FieldTarget(FieldKey.Height), RuleTarget(RuleTopic.YumusakKat), "2) Tavan 4 m+ = yumuşak kat"),
+                Step(1, 1, PenShape.Underline, SealTarget(Seal.ShearWall), null, "3) Tek kusur buysa PERDE kurtarır"),
+                Step(1, 1, PenShape.Circle, FieldTarget(FieldKey.Columns), null, "4) Ama kolon KESİK!"),
+                Step(1, 1, PenShape.Circle, new TutorialTarget { kind = TutorialTargetKind.Building }, null, "5) Büyüteçle bak: kırmızı = kusur"),
+                Step(1, 1, PenShape.Arrow, RuleTarget(RuleTopic.Kolon), SealTarget(Seal.Reject), "6) Perde kurtarmaz: RED"),
             };
-            AssetDatabase.CreateAsset(tutorial, TutorialPath);
+            EditorUtility.SetDirty(tutorial);
             return tutorial;
         }
 
@@ -108,18 +116,25 @@ namespace Dropy.EditorTools
             var manipulatif = PersonalityAsset("Manipulatif", "Kibar ama tehditkâr. Aileyi, parayı ve tanıdıklarını koz olarak kullanır.", Manipulatif);
             var tatliDilli = PersonalityAsset("TatliDilli", "Tatlı dilli teyze. Börek ikram eder, torunlarından bahseder; dikkati kusurdan başka yere çeker.", TatliDilli);
             var profesyonel = PersonalityAsset("Profesyonel", "Sakin, net, belgeye hâkim. Tutarsızlığı baştan söyler, haksız rede kayıt düşer.", Profesyonel);
+            var eskiToprak = PersonalityAsset("EskiToprak", "Kırk yıllık usta. Kâğıda değil eline güvenir, laboratuvarı küçümser; kabadır ama yalan söylemez.", EskiToprak);
+            var hevesli = PersonalityAsset("Hevesli", "Genç, heyecanlı girişimci. Hızlı konuşur, her şeye 'konsept' der; kötü niyetli değil ama riski görmez.", Hevesli);
 
+            // Her müteahhidin kendi modeli var: dosya sırası değişince kimse başkasının yüzüyle gelmez.
             return new Dictionary<string, ContractorProfile>
             {
                 ["Veysel"] = ContractorAsset("Veysel", "Veysel Bey", samimi, AssetDatabase.LoadAssetAtPath<GameObject>(VeyselPrefab)),
-                ["Nuri"] = ContractorAsset("Nuri", "Nuri Usta", cekingen),
-                ["Cengiz"] = ContractorAsset("Cengiz", "Cengiz Bey", isAdami),
-                ["Ozan"] = ContractorAsset("Ozan", "Ozan Bey", manipulatif),
-                ["Gul"] = ContractorAsset("Gul", "Gül Hanım", tatliDilli),
-                // 3. günün ikinci dosyası: önceki dosyadaki Gül Hanım'la aynı modeli paylaşmasın diye erkek.
+                ["Nuri"] = ContractorAsset("Nuri", "Nuri Usta", cekingen, Character("Karakter_LowPoly")),
+                ["Cengiz"] = ContractorAsset("Cengiz", "Cengiz Bey", isAdami, Character("BusinessMale_1_LowPolyStyle")),
+                ["Hasan"] = ContractorAsset("Hasan", "Hasan Usta", eskiToprak, Character("Abi_LowPoly")),
+                ["Kerem"] = ContractorAsset("Kerem", "Kerem Bey", hevesli, Character("BusinessMale_4_LowPolyStyle (2)")),
+                ["Ozan"] = ContractorAsset("Ozan", "Ozan Bey", manipulatif, Character("BusinessMale_3_LowPolyStyle")),
+                ["Gul"] = ContractorAsset("Gul", "Gül Hanım", tatliDilli, Character("Kadin_LowPoly")),
+                // 4. günün ikinci dosyası: önceki dosyadaki Gül Hanım'la aynı modeli paylaşmasın diye erkek.
                 ["Sefa"] = ContractorAsset("Sefa", "Sefa Bey", profesyonel, AssetDatabase.LoadAssetAtPath<GameObject>(SefaPrefab)),
             };
         }
+
+        static GameObject Character(string name) => AssetDatabase.LoadAssetAtPath<GameObject>(CharacterFolder + name + ".prefab");
 
         /// <summary>Kişilik dosyası yoksa oluşturur ve başlangıç cümlelerini yazar; varsa dokunmaz (Inspector düzenlemeleri kalır).</summary>
         static Personality PersonalityAsset(string file, string description, System.Action<VoiceLines> fill)
@@ -137,12 +152,20 @@ namespace Dropy.EditorTools
             return asset;
         }
 
+        /// <summary>Müteahhit dosyası yoksa oluşturur; varsa yalnız boş model alanını doldurur (konuşma düzenlemeleri kalır).</summary>
         static ContractorProfile ContractorAsset(string file, string displayName, Personality personality, GameObject prefab = null)
         {
             string path = $"{ContractorFolder}/{file}.asset";
             var asset = AssetDatabase.LoadAssetAtPath<ContractorProfile>(path);
             if (asset != null)
+            {
+                if (asset.prefab == null && prefab != null)
+                {
+                    asset.prefab = prefab;
+                    EditorUtility.SetDirty(asset);
+                }
                 return asset;
+            }
             asset = ScriptableObject.CreateInstance<ContractorProfile>();
             asset.displayName = displayName;
             asset.personality = personality;
@@ -165,7 +188,7 @@ namespace Dropy.EditorTools
             Add(v.firmDishonest, "Kitap da bizim kitap {hitap}, bir göz atın yeter.");
             Add(v.softHonest, "Eyvallah {hitap}, buyurun.");
             Add(v.softDishonest, "Eyvallah, eyvallah. Kâğıtlar tertemiz zaten.");
-            Field(v, FieldKey.Claimed, false, "{kunye} döktük {hitap}. Hanımın çeyizini satsam bundan iyisini dökemezdim.");
+            Field(v, FieldKey.Claimed, false, "{rapor} döktük {hitap}, rapor ortada. Hanımın çeyizini satsam bundan iyisini dökemezdim.");
             Field(v, FieldKey.Lab, false, "Laboratuvar da {rapor} dedi, ikisi bir.");
             Field(v, FieldKey.Note, false, "\"{not}\" mı? Görüntü meselesi {hitap}, binaya bir zararı yok.");
             Add(v.tics, "Çay söyleyeyim mi?", "Hanım da selam söyledi.", "Otuz yılın ustasıyım ben.");
@@ -261,6 +284,43 @@ namespace Dropy.EditorTools
             Add(v.unjustReject, "Ek rapor {rapor} diyor; kitaba göre geçerli olan o. Kararınızı kayda geçiriyorum.");
         }
 
+        static void EskiToprak(VoiceLines v)
+        {
+            v.address = "evlat";
+            v.typingSpeed = 0.95f;
+            Add(v.greetings, "Selamünaleyküm {hitap}. Kırk yıldır bina dikerim, kâğıt işi bana göre değil.");
+            Add(v.firmHonest, "Kitap kitap... Bakalım kitabın bildiği neymiş.");
+            Add(v.firmDishonest, "Kitabı yazan bir gün harç karıştırsın da görsün {hitap}.");
+            Add(v.softHonest, "Eyvallah {hitap}.");
+            Add(v.softDishonest, "Eyvallah. Ben kendi betonuma kefilim.");
+            Field(v, FieldKey.Claimed, true, "{kunye} yazdım, {kunye} döktüm. Kırk yılın ustası yalan yazmaz.");
+            Field(v, FieldKey.Lab, true, "Laboratuvar mı? Numuneyi güneşte bekletmişlerdir {hitap}. Betonu ben kendi elimle karıştırdım.");
+            Field(v, FieldKey.Hammer, true, "O alet ne anlar betondan? Elimi vursam söylerim kaç olduğunu.");
+            Add(v.tics, "Kırk yıl {hitap}, kırk yıl.", "Bizim zamanımızda kâğıt mı vardı?");
+            Add(v.approved, "Hah şöyle! Usta malı, gönül rahatlığıyla taşınsınlar.");
+            Add(v.rejected, "Kırk yıllık ustaya kâğıt mı öğretiyorsunuz? ...Peki. Yeniden döktürürüz.");
+            Add(v.unjustReject, "Kâğıdınız bile beton {rapor} diyor. Kırk yıllık emeği neden çiziyorsunuz?");
+        }
+
+        static void Hevesli(VoiceLines v)
+        {
+            v.address = "abi";
+            v.typingSpeed = 1.35f;
+            Add(v.greetings, "Günaydın {hitap}! Çok heyecanlıyım, ilk projem bu.");
+            Add(v.firmHonest, "Tabii tabii, kurallar önemli, bakın lütfen!");
+            Add(v.firmDishonest, "Kural mı? Ama konsept... Neyse, bakın siz.");
+            Add(v.softHonest, "Süpersiniz {hitap}, teşekkürler!");
+            Add(v.softDishonest, "Süper! Zaten her şey çok modern.");
+            Field(v, FieldKey.Use, true, "Altta konsept market var {hitap}! Kahve köşesi, organik raflar, tam bir deneyim.");
+            Field(v, FieldKey.Height, true, "{tavan} metre! Tavan yüksek olunca mekân nefes alıyor.");
+            Field(v, FieldKey.ShearWall, true, "Perde koyarsak vitrin kapanır {hitap}, konsepti öldürür.");
+            Add(v.tics, "Sosyal medyada çok tutacak.", "Ön satışlar uçtu {hitap}.");
+            Add(v.approved, "Harika! Açılışta ilk kahve benden {hitap}!");
+            Add(v.rejected, "Red mi? Ama ön satışlar... Yatırımcıya ne diyeceğim?");
+            Add(v.shearWall, "Perde mi? Vitrin biraz daralır ama... olur, güvenlik de bir konsept!");
+            Add(v.unjustReject, "Ama beton {rapor}, kolonlar tam... Neyi eksik gördünüz {hitap}?");
+        }
+
         // ---------------------------------------------------------------- dosyalar
 
         class Spec
@@ -310,29 +370,55 @@ namespace Dropy.EditorTools
         {
             var list = new List<Spec>();
 
-            // ---- 1. gün: beton. Temiz bina + kitapta yazmayan kusur; künye temiz ama ek rapor çürük.
-            var s = File("Ada Konutları", "Veysel", 3, 30, 30, SoilType.Kaya, Seal.Approve,
-                    "Ada Konutları, üç kat. Balkonu biraz taşırdık, hanım geniş olsun dedi.")
-                .Ask("Balkon neden taşmış?", "Hanım çay içecek yer istedi {hitap}. On beş santim, görüntü meselesi.")
-                .Ask("Betonu kim test etti?", "Şehrin laboratuvarı. Rapor ekte, açın bakın.")
+            // ---- 1. gün: öğretici. Beton, ek raporun önceliği ve çekiç; sonra yumuşak kat (perde) ve kesik kolon.
+            // Künyede C20 yazıyor ama ek rapor da çekiç de C30: geçerli olan ek rapor, bina sağlam → ONAY.
+            var s = File("Ada Konutları", "Veysel", 3, 20, 30, SoilType.Kaya, Seal.Approve,
+                    "Ada Konutları, üç kat. Betonu şehrin laboratuvarında test ettirdik, rapor ekte {hitap}.")
+                .Ask("Künyede neden C20 yazıyor?", "Künyeyi yeğenim doldurdu {hitap}, rakamı yanlış yazmış. Döktüğümüz beton raporda yazıyor.")
+                .Ask("Betonu kim test etti?", "Şehrin laboratuvarı. İçiniz rahat etmezse çekiçle vurun, görün.")
                 .News("Ada Konutları çöktü", "Ada Konutları ayakta: Veysel Bey mahalleye çay dağıttı.");
-            s.note = "Balkon 15 cm taşıyor";
+            s.hammer = 30;
             list.Add(s);
 
-            s = File("Kıyı Evleri", "Nuri", 2, 25, 20, SoilType.Kil, Seal.Reject,
-                    "İlk kez dosya getiriyorum. İki katlı küçük bir ev; annemle babam oturacak.")
-                .Ask("Beton sınıfı ne?", "Künyede yazıyor {hitap}, {kunye}. Fazlasına param yetmedi açıkçası.")
-                .News("Kıyı Evleri çöktü: betonu C20 çıktı");
-            s.rejected = "C20 mi? Betoncu bana C25 diye sattı... Annemlere ne diyeceğim?";
+            // Altı market, tavan 4,5 m: tek kusur bu olsa perdeyle kurtulurdu; ama kolon da kesik → yalnız RED.
+            s = File("Kıyı Evleri", "Nuri", 4, 30, 30, SoilType.Kil, Seal.Reject,
+                    "İlk kez dosya getiriyorum. Altta bakkal olacak, üstünde üç daire; birinde annemle babam oturacak.")
+                .Ask("Zemin katın tavanı neden bu kadar yüksek?", "Bakkal yüksek raf istedi {hitap}... Tavanı biraz kaldırdık.")
+                .Ask("Kolonlar neden kesik?", "K-kesik mi? Usta, dükkân ferah olsun diye ortadakini almış... Bana sağlam dedi.")
+                .News("Kıyı Evleri çöktü: kolonu kesilmiş zemin kat göçtü", "Kıyı Evleri hiç yapılmadı; Nuri Usta kolonları baştan döküyor.");
+            s.use = GroundUse.Market;
+            s.height = 4.5f;
+            s.columns = ColumnState.Kesik;
+            s.rejected = "Kolon mu? Ustaya güvenmiştim... Annemlere ne diyeceğim?";
+            s.shearWall = "Perde mi? Olur {hitap}, ekletirim... Kolonu da düzeltir mi peki?";
             list.Add(s);
 
-            // ---- 2. gün: yumuşak kat ve kesik kolon; rüşvet. Ozan'ın dosyasında hafif sarsıntı.
+            // ---- 2. gün: öğreticisiz pratik. Tek kusuru yumuşak kat olan bina (perde), sonra ek raporu çürük usta işi.
             s = File("Pazar Market", "Cengiz", 4, 30, 30, SoilType.Kil, Seal.ShearWall,
                     "Zemine zincir market giriyor, kira garantili. Tavanı yüksek tuttuk, raflar sığsın diye.")
                 .Ask("Zemin katta duvar var mı?", "Market bu {hitap}, duvar olur mu? Baştan başa cam vitrin.")
                 .News("Pazar Market'in zemin katı çöktü", "Pazar Market ayakta: perde zemin katı tuttu.");
             s.use = GroundUse.Market;
             s.height = 4.5f;
+            list.Add(s);
+
+            // Künye C30 ama ek rapor (ve çekiç) C20: 1. günün tersi, bu kez geçerli olan rapor binayı düşürür → RED.
+            s = File("Çeşme Apartmanı", "Hasan", 5, 30, 20, SoilType.Kaya, Seal.Reject,
+                    "Çeşme Apartmanı, beş kat. Temelinden çatısına kendi ellerimle diktim {hitap}.")
+                .Ask("Ek raporda neden C20 yazıyor?", "Laboratuvar numuneyi üç gün güneşte bekletmiş {hitap}. Betonu ben karıştırdım, C30'dur o.")
+                .Ask("Betonu nasıl ölçtünüz?", "Göz kararı {hitap}. Kırk yıldır elim terazidir, şaşmaz.")
+                .News("Çeşme Apartmanı çöktü: betonu C20 çıktı", "Çeşme Apartmanı ayakta.");
+            s.hammer = 20;
+            list.Add(s);
+
+            // ---- 3. gün: yumuşak kat sınırı (tavan tam 4 m → perde), sonra kesik kolon ve rüşvet. Ozan'ın dosyasında hafif sarsıntı.
+            s = File("Lale Apart", "Kerem", 4, 30, 30, SoilType.Kil, Seal.ShearWall,
+                    "Lale Apart! Altta konsept bir market açıyoruz, üstünde altı daire. Hepsi ön satışta gitti {hitap}!")
+                .Ask("Zemin kat tavanı kaç metre?", "Tam dört metre {hitap}! Projede ne yazıyorsa o, bir santim şaşmadık.")
+                .Ask("Zemin katta taşıyıcı duvar var mı?", "Yok, baştan sona cam vitrin. Konsept bu, açıklık lazım.")
+                .News("Lale Apart'ın zemin katı çöktü", "Lale Apart ayakta: perde vitrini de aileleri de korudu.");
+            s.use = GroundUse.Market;
+            s.height = 4f;
             list.Add(s);
 
             // Ozan sarsıntının hemen ardından girer: sallantıyı geçiştirir (cevap kartı açmasın diye soru sormaz).
@@ -355,7 +441,7 @@ namespace Dropy.EditorTools
                 .Press(PressureCondition.Otherwise, "Bu şehirde herkes beni tanır. Bugün reddedersiniz, yarın kapınızı kimse çalmaz.");
             list.Add(s);
 
-            // ---- 3. gün: çekiç (günde 1). Tatlı dilli tuzak, sonra dürüst ama künyesi karışık son sınav. Gün sonunda deprem.
+            // ---- 4. gün: çekiç tuzağı (kâğıtlar temiz, çekiç çürük) ve künyesi karışık dürüst dosya. Gün sonunda deprem.
             s = File("Çınar Apart", "Gul", 3, 30, 30, SoilType.Kaya, Seal.Reject,
                     "Kapıları yeşil boyadık, projede kahverengi yazıyordu. Torunum yeşil sever; sorun olur mu?")
                 .Ask("Ne zaman taşınacaklar?", "Bu hafta {hitap}. Torunlar bayramı orada geçirsin istiyorum.")
@@ -448,11 +534,11 @@ namespace Dropy.EditorTools
                 },
                 new PhoneCall
                 {
-                    day = 3,
+                    day = 4,
                     lines = new List<string>
                     {
                         "Alo, benim. Uzmanlar bu gece için uyarıyor; büyük deprem bekleniyor.",
-                        "Bugün son iki dosya. Çekici al; kâğıda değil, betona güven.",
+                        "Bugün son iki dosya. Çekicini iyi kullan; kâğıda değil, betona güven.",
                     }
                 },
             };
@@ -467,16 +553,19 @@ namespace Dropy.EditorTools
                 News(oldNews, 2, "DOLABI SABİTLE", "Depremde yaralanmaların çoğu devrilen eşyadan",
                     "Hafif sarsıntılar kaydediliyor. Uzmanlar tedirgin.",
                     "Uzmanlar: Uzun dolapları ve kitaplıkları duvara sabitleyin", "Belediye: İskân başvuruları bu hafta hızlandırılıyor"),
-                News(oldNews, 3, "SARSINTI", "Dün öğleden sonra sarsıntı hissedildi; uzmanlar bu gece için uyarıyor",
+                News(oldNews, 3, "TOPLANMA ALANI", "Mahallenizdeki toplanma alanını bugünden öğrenin",
+                    "Uzmanlar: Fay hattında gerilim artıyor.",
+                    "AFAD: Toplanma alanları belediye panolarında ve e-Devlet'te", "Uzmanlar: Ailenizle buluşma noktası belirleyin"),
+                News(oldNews, 4, "SARSINTI", "Dün öğleden sonra sarsıntı hissedildi; uzmanlar bu gece için uyarıyor",
                     "Uzmanlar uyarıyor: Bu gece büyük deprem bekleniyor!",
                     "AFAD: Deprem anında çök, kapan, tutun", "Uzmanlar: Çantanızı kapının yanında tutun"),
             };
             story.radio = new List<string>();
 
-            // 2. gün, ikinci dosyada (Ozan) hafif sarsıntı; ertesi sabah televizyon çatlakları okur.
-            story.tremors = new List<float> { 0f, 0.02f, 0f };
+            // 3. gün, ikinci dosyada (Ozan) hafif sarsıntı; ertesi sabah televizyon çatlakları okur.
+            story.tremors = new List<float> { 0f, 0f, 0.02f, 0f };
 
-            // Akşam en fazla üç mesaj: dünkü isteğe cevap, günün olayı, bugünkü istek. Gün içi mesaj: Ozan'ın dosyasında.
+            // Akşam en fazla üç mesaj: dünkü isteğe cevap, günün olayı, bugünkü istek. Gün içi mesaj: 2. günün 2. dosyasında.
             story.messages = new List<PhoneMessage>
             {
                 Msg(1, Wife, "Kira kesildi. Elif okulda tatbikat yapmış, çok korkmuş. Bir deprem çantası alalım mı?"),
@@ -484,8 +573,9 @@ namespace Dropy.EditorTools
                 During(2, 1, NotBought(2, Wife, "Elif yine çantayı sordu. Bir de odasındaki dolap çok uzun; öğretmen duvara vidalayın demiş.", ShopItem.Bag)),
                 During(2, 1, Bought(2, Wife, "Çanta kapının yanında, Elif fenerini içine koydu. Ama odasındaki dolap çok uzun; öğretmen duvara vidalayın demiş.", ShopItem.Bag)),
 
-                Sealed(2, Unknown, "Kimse bir şey demez. -O", cases[Yurt], Seal.Approve),
-                Sealed(2, Unknown, "Pişman olacaksın. -O", cases[Yurt], Seal.Reject),
+                Sealed(3, Unknown, "Kimse bir şey demez. -O", cases[Yurt], Seal.Approve),
+                Sealed(3, Unknown, "Pişman olacaksın. -O", cases[Yurt], Seal.Reject),
+                Msg(3, Wife, "Öğleden sonraki sarsıntıyı hissettin mi? Elif korkudan masanın altına girmiş. Akşam erken gel."),
             };
 
             story.bondStart = 3;
@@ -516,10 +606,13 @@ namespace Dropy.EditorTools
             return story;
         }
 
-        /// <summary>Günün haberi; aynı günün eski kaydına Inspector'dan bağlanmış görsel ve video varsa korunur.</summary>
+        /// <summary>
+        /// Günün haberi; aynı başlıklı eski kayda Inspector'dan bağlanmış görsel ve video varsa korunur
+        /// (gün sırası değişse de görsel haberiyle birlikte gider).
+        /// </summary>
         static DailyNews News(List<DailyNews> old, int day, string label, string headline, string forecast, params string[] ticker)
         {
-            var previous = old.Find(n => n.day == day);
+            var previous = old.Find(n => n.graphicLabel == label);
             return new DailyNews
             {
                 day = day,
@@ -604,7 +697,7 @@ namespace Dropy.EditorTools
                 },
                 new RegulationPage
                 {
-                    day = 2, title = "Yumuşak kat", topic = RuleTopic.YumusakKat,
+                    day = 1, title = "Yumuşak kat", topic = RuleTopic.YumusakKat,
                     body = "Zemin kat <b>market</b> ve tavanı <b>4 m ya da daha yüksek</b>, perde yoksa: yumuşak kat.\n\n" +
                            "PERDE EKLE ya da RED.",
                     why = "Zemin katı dükkân olup duvarları kaldırılan binalarda deprem yükü o katta toplanır ve kat " +
@@ -612,13 +705,13 @@ namespace Dropy.EditorTools
                 },
                 new RegulationPage
                 {
-                    day = 2, title = "Kolon", topic = RuleTopic.Kolon,
+                    day = 1, title = "Kolon", topic = RuleTopic.Kolon,
                     body = "Kolon <b>kesik</b> ise yalnız RED. Perde kesik kolonu kurtarmaz.",
                     why = "Kolon binanın taşıyıcısıdır; yer açmak için kesilen kolon bütün binayı riske atar."
                 },
                 new RegulationPage
                 {
-                    day = 3, title = "Çekiç", topic = RuleTopic.Cekic,
+                    day = 1, title = "Çekiç", topic = RuleTopic.Cekic,
                     body = "<b>Çekiç</b> betonun gerçek dayanımını ölçer. Çekicin okuduğu beton iki kâğıdı da geçersiz kılar.\n\n" +
                            $"Çekiç <b>günde {Economy.HammerPerDay} kez</b> kullanılabilir: hangi dosyayı ölçeceğini sen seçersin.",
                     why = "Schmidt çekici beton yüzeyinin sertliğinden dayanımını tahmin eder; kâğıttaki değeri sahada " +
@@ -630,8 +723,8 @@ namespace Dropy.EditorTools
 
         // ---------------------------------------------------------------- denetim
 
-        /// <summary>Dürüst yol son akşam (çanta + sabitleme alındıktan sonra) kasada bunu bırakır.</summary>
-        const int HonestSpare = 0;
+        /// <summary>Dürüst yol son akşam (çanta + sabitleme alındıktan sonra) kasada bunu bırakır: istekleri de ödeyen sabitlemeye yetişemez.</summary>
+        const int HonestSpare = 500;
 
         /// <summary>Kurallardan çıkan mühürün tasarımdaki mühürle ve ekonominin dürüst yolla tuttuğunu denetler.</summary>
         static void Verify(List<BuildingCase> cases)
@@ -688,6 +781,8 @@ namespace Dropy.EditorTools
             System.Func<BuildingCase, Seal> approveAll = c => Seal.Approve;
             System.Func<BuildingCase, Seal> rejectAll = c => Seal.Reject;
             var full = Plan((1, ShopItem.Bag), (2, ShopItem.Fixing));
+            // Rüşvet 3. günde gelir: sabitlemeyi o akşam alır.
+            var fullLate = Plan((1, ShopItem.Bag), (2, ShopItem.Fixing), (3, ShopItem.Fixing));
 
             ok &= Expect("Dürüst, tam hazırlık, istek ödemez", Simulate(cases, story, honest, new int[0], full),
                 r => r.jailedDay == 0 && r.bought.Count == 2 && r.estrangedDay == 0);
@@ -697,7 +792,7 @@ namespace Dropy.EditorTools
                 r => r.jailedDay == 0 && !r.bought.Contains(ShopItem.Fixing));
             ok &= Expect("Dürüst, hiçbir şey almaz, hiçbir istek ödemez", Simulate(cases, story, honest, new int[0], Plan()),
                 r => r.jailedDay == 0 && r.estrangedDay == Economy.QuakeDays[0]);
-            ok &= Expect("Rüşvet alır, her şeyi öder", Simulate(cases, story, bribe, new[] { 1, 2 }, full),
+            ok &= Expect("Rüşvet alır, her şeyi öder", Simulate(cases, story, bribe, new[] { 1, 2 }, fullLate),
                 r => r.bought.Count == 2 && r.jailedDay == Economy.QuakeDays[0]);
             ok &= Expect("Her şeyi onaylar", Simulate(cases, story, approveAll, new int[0], full),
                 r => r.jailedDay == Economy.QuakeDays[0]);

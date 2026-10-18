@@ -33,7 +33,7 @@ MonoBehaviour:
       projede yazandan \xE7ok daha zay\u0131f \xE7\u0131kt\u0131\u011F\u0131 g\xF6r\xFCld\xFC."
   - title: "Yumu\u015Fak kat"
     topic: 2
-    day: 2
+    day: 1
     body: "Zemin kat <b>market</b> ve tavan\u0131 <b>4 m ya da daha y\xFCksek</b>,
       perde yoksa: yumu\u015Fak kat.\n\nPERDE EKLE ya da RED."
     why: "Zemin kat\u0131 d\xFCkk\xE2n olup duvarlar\u0131 kald\u0131r\u0131lan binalarda
@@ -41,13 +41,13 @@ MonoBehaviour:
       en s\u0131k g\xF6r\xFClen y\u0131k\u0131lma bi\xE7imlerinden biri buydu."
   - title: Kolon
     topic: 3
-    day: 2
+    day: 1
     body: "Kolon <b>kesik</b> ise yaln\u0131z RED. Perde kesik kolonu kurtarmaz."
     why: "Kolon binan\u0131n ta\u015F\u0131y\u0131c\u0131s\u0131d\u0131r; yer a\xE7mak
       i\xE7in kesilen kolon b\xFCt\xFCn binay\u0131 riske atar."
   - title: "\xC7eki\xE7"
     topic: 4
-    day: 3
+    day: 1
     body: "<b>\xC7eki\xE7</b> betonun ger\xE7ek dayan\u0131m\u0131n\u0131 \xF6l\xE7er.
       \xC7ekicin okudu\u011Fu beton iki k\xE2\u011F\u0131d\u0131 da ge\xE7ersiz k\u0131lar.\n\n\xC7eki\xE7
       <b>g\xFCnde 1 kez</b> kullan\u0131labilir: hangi dosyay\u0131 \xF6l\xE7ece\u011Fini
