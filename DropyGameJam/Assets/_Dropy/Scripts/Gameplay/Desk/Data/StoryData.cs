@@ -47,7 +47,7 @@ namespace Dropy.Gameplay
     public class PhoneCall
     {
         [Min(1)] public int day = 1;
-        public string caller = "Müdür (telefon)";
+        public string caller = "Müdür";
         [TextArea(2, 4)] public List<string> lines = new List<string>();
     }
 

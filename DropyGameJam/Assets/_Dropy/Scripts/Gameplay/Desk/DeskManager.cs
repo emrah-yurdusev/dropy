@@ -63,6 +63,8 @@ namespace Dropy.Gameplay
         [SerializeField] Transform exitPoint;
         [Tooltip("Varsa müteahhit bu kapıyı açıp girer/çıkar")]
         [SerializeField] Door door;
+        [Tooltip("Müdür arayınca konuşma balonu bunun üstünde çıkar. Boşsa sahnede \"Telefon\" adlı nesne aranır")]
+        [SerializeField] Transform deskPhone;
 
         [Header("İçerik")]
         [SerializeField] RegulationData regulations;
@@ -401,12 +403,14 @@ namespace Dropy.Gameplay
         {
             if (story == null)
                 yield break;
+            if (deskPhone == null)
+                deskPhone = GameObject.Find("Telefon")?.transform;
             foreach (var call in story.calls.Where(c => c.day == day))
             {
                 Sfx.Buzz();
                 yield return new WaitForSeconds(0.8f);
                 foreach (var line in call.lines)
-                    yield return dialogue.Say(call.caller, line, null, waitForClick: true);
+                    yield return dialogue.Say(call.caller, line, deskPhone, waitForClick: true);
                 dialogue.HideBubble();
             }
         }
