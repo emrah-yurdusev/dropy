@@ -20,8 +20,9 @@ namespace Dropy.EditorTools
         const string MaterialFolder = "Assets/_Dropy/Art/Materials/Trailer";
         const string PrisonSource = "Assets/_Dropy/Scenes/Hapishane/Hapishane.unity";
         const string OfficeSource = "Assets/_Dropy/Scenes/Main/main.unity";
-        // Yüzü (FaceController) ve humanoid iskeleti olan müteahhit; kollar ve ağız ancak böyle oynar.
+        // Yüzü (FaceController) ve humanoid iskeleti olan müteahhitler; kollar ve ağız ancak böyle oynar.
         const string ContractorPrefab = "Assets/_Dropy/Prefabs/Characters/SefaBey_LowPoly.prefab";
+        const string WorriedContractorPrefab = "Assets/_Dropy/Prefabs/Characters/Abi_LowPoly.prefab";
         const string StampModel = "Assets/PolygonalMind/LowPolyOffice/Props/mesh_stamp.fbx";
         const string HeadlineFont = "Assets/_Dropy/Art/Fonts/Oswald SDF.asset";
         const string BodyFont = "Assets/_Dropy/Art/Fonts/OldStandard SDF.asset";
@@ -105,9 +106,26 @@ namespace Dropy.EditorTools
         {
             var scene = CopyScene(OfficeSource, "Trailer_Ofis_Muteahhit");
             var cam = Camera.main;
-            var npc = SeatContractor(cam.transform, out _);
+            var npc = SeatContractor(cam.transform, out _, WorriedContractorPrefab);
+            // Endişeli: kaşlar içten kalkık (Sad), eller karın hizasında ovuşturulur, öne eğilir, bakışı kaçar.
             var talker = npc.AddComponent<TrailerTalker>();
-            talker.expression = FaceExpression.Happy;
+            talker.expression = FaceExpression.Sad;
+            talker.tempo = 1.7f;
+            // Eller göğüs-karın hizasında kalsın, yüzü kapatmasın.
+            talker.lift = 10f;
+            talker.liftSwing = 6f;
+            talker.elbow = 26f;
+            talker.elbowSwing = 10f;
+            // Dirsekler gövdeye yapışık, eller önde birleşik (eksi = içe).
+            talker.spread = -14f;
+            talker.spreadSwing = 4f;
+            talker.open = -4f;
+            talker.openSwing = 6f;
+            talker.wristSwing = 45f;
+            talker.nod = 3f;
+            talker.lean = 6f;
+            talker.glance = 16f;
+            talker.mouthSpeed = 14f;
 
             var camera = cam.gameObject.AddComponent<TrailerCamera>();
             camera.target = npc.transform;
@@ -225,7 +243,7 @@ namespace Dropy.EditorTools
         // ---------------------------------------------------------------- Ortak
 
         /// <summary>main sahnesinin kopyasından oyun akışını kaldırır, müteahhidi misafir koltuğuna oturtur.</summary>
-        static GameObject SeatContractor(Transform lookTarget, out GameObject desk)
+        static GameObject SeatContractor(Transform lookTarget, out GameObject desk, string prefabPath = ContractorPrefab)
         {
             var manager = Object.FindFirstObjectByType<DeskManager>(FindObjectsInactive.Include);
             var chair = manager != null ? new SerializedObject(manager).FindProperty("visitorChair").objectReferenceValue as Chair : null;
@@ -240,7 +258,7 @@ namespace Dropy.EditorTools
             }
             desk = GameObject.Find("Ofis_Oda/Mobilya/Masa");
 
-            var npc = (GameObject)PrefabUtility.InstantiatePrefab(AssetDatabase.LoadAssetAtPath<GameObject>(ContractorPrefab));
+            var npc = (GameObject)PrefabUtility.InstantiatePrefab(AssetDatabase.LoadAssetAtPath<GameObject>(prefabPath));
             npc.name = "Muteahhit";
             npc.transform.SetPositionAndRotation(chair.SitPoint.position, chair.SitPoint.rotation);
             if (npc.TryGetComponent<NavMeshAgent>(out var agent))

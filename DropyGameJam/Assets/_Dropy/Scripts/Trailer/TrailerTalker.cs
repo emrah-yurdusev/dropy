@@ -40,6 +40,8 @@ namespace Dropy.Trailer
         [Header("Kafa ve gövde")]
         public float nod = 5f;
         public float lean = 3f;
+        [Tooltip("Endişeli kaçamak bakışlar: kafa ara ara yana ve aşağı kayar (derece, 0 = yok)")]
+        public float glance;
 
         [Header("Ağız")]
         public bool moveMouth = true;
@@ -100,6 +102,14 @@ namespace Dropy.Trailer
             {
                 float beat = Mathf.Sin(t * 4.2f) * Noise(5f, t * 0.8f);
                 head.rotation = Quaternion.AngleAxis(nod * energy * beat, right) * Quaternion.AngleAxis(nod * 0.6f * energy * Noise(6f, t * 0.5f), Vector3.up) * head.rotation;
+                if (glance > 0f)
+                {
+                    // Bakış çoğu zaman kamerada, arada hızlıca yana ve aşağı kaçar.
+                    float away = Noise(7f, t * 0.45f);
+                    float shift = Mathf.Sign(away) * Mathf.SmoothStep(0f, 1f, Mathf.InverseLerp(0.15f, 0.45f, Mathf.Abs(away)));
+                    head.rotation = Quaternion.AngleAxis(glance * shift * current, Vector3.up)
+                        * Quaternion.AngleAxis(glance * 0.5f * Mathf.Abs(shift) * current, right) * head.rotation;
+                }
             }
 
             if (moveMouth && openMouth != null)
