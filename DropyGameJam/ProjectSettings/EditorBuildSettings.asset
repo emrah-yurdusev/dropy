@@ -15,8 +15,8 @@ EditorBuildSettings:
     path: Assets/Scenes/SampleScene.unity
     guid: 99c9720ab356a0642a771bea13969a05
   - enabled: 1
-    path: Assets/_Dropy/Scenes/Deprem/Deprem.unity
-    guid: 8bf29b5887b50234ca5c1b4b20a90794
+    path: Assets/_Dropy/Scenes/Deprem/Deprem_LowPoly.unity
+    guid: c3274c5a9c8530f48a193fc5087523ae
   - enabled: 1
     path: Assets/_Dropy/Scenes/Hapishane/Hapishane.unity
     guid: 6ced14beb9858e7418d89583a30376cf

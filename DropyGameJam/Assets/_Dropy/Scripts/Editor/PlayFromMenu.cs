@@ -15,7 +15,11 @@ namespace Dropy.EditorTools
         const string MenuPath = "Dropy/Play: Ana menüden başla";
         const string PrefKey = "Dropy.PlayFromMenu";
 
-        static PlayFromMenu() => EditorApplication.delayCall += Apply;
+        static PlayFromMenu()
+        {
+            EditorApplication.delayCall += Apply;
+            EditorSceneManager.activeSceneChangedInEditMode += (_, _) => Apply();
+        }
 
         static bool Enabled
         {
@@ -37,7 +41,10 @@ namespace Dropy.EditorTools
             return true;
         }
 
+        // Trailer sahneleri (Scenes/Trailer) çekim için tek başına açılır; menüden başlamaz.
         static void Apply() =>
-            EditorSceneManager.playModeStartScene = Enabled ? AssetDatabase.LoadAssetAtPath<SceneAsset>(ScenePath) : null;
+            EditorSceneManager.playModeStartScene = Enabled && !EditorSceneManager.GetActiveScene().path.Contains("/Trailer/")
+                ? AssetDatabase.LoadAssetAtPath<SceneAsset>(ScenePath)
+                : null;
     }
 }

@@ -197,7 +197,7 @@ namespace Dropy.Gameplay
             dialogue.Build(root, deskCamera);
 
             hud = canvasGo.AddComponent<DeskHud>();
-            hud.Build(root, newsStyle != null ? newsStyle : NewsStyle.Default);
+            hud.Build(root, newsStyle != null ? newsStyle : NewsStyle.Default, tutorial != null ? tutorial.font : null);
             hud.BuildTracker(root,
                 d => story != null && story.News(d) != null ? story.News(d).forecast : null,
                 Economy.IsQuakeDay,
@@ -356,7 +356,7 @@ namespace Dropy.Gameplay
             var family = story != null
                 ? story.needs.Select(n => (n, paidNeeds.Contains(n)))
                 : Enumerable.Empty<(FamilyNeed, bool)>();
-            hud.ShowFinal(results, boughtOn, family, Estranged, money, DeskHud.ReportCard(results), HomeOutcome,
+            hud.ShowFinal(results, boughtOn, family, Estranged, money, HomeOutcome,
                 bonusPaid ? PerfectBonus : 0);
         }
 

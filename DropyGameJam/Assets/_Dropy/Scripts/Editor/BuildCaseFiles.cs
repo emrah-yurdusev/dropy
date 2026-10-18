@@ -144,11 +144,11 @@ namespace Dropy.EditorTools
                 ["Nuri"] = ContractorAsset("Nuri", "Nuri Usta", cekingen, Character("Karakter_LowPoly")),
                 ["Cengiz"] = ContractorAsset("Cengiz", "Cengiz Bey", isAdami, Character("BusinessMale_1_LowPolyStyle")),
                 ["Hasan"] = ContractorAsset("Hasan", "Hasan Usta", eskiToprak, Character("Abi_LowPoly")),
-                ["Kerem"] = ContractorAsset("Kerem", "Kerem Bey", hevesli, Character("BusinessMale_4_LowPolyStyle (2)")),
+                ["Kerem"] = ContractorAsset("Kerem", "Kerem Bey", hevesli, AssetDatabase.LoadAssetAtPath<GameObject>(SefaPrefab)),
                 ["Ozan"] = ContractorAsset("Ozan", "Ozan Bey", manipulatif, Character("BusinessMale_3_LowPolyStyle")),
                 ["Gul"] = ContractorAsset("Gul", "Gül Hanım", tatliDilli, Character("Kadin_LowPoly")),
                 // 4. günün ikinci dosyası: önceki dosyadaki Gül Hanım'la aynı modeli paylaşmasın diye erkek.
-                ["Sefa"] = ContractorAsset("Sefa", "Sefa Bey", profesyonel, AssetDatabase.LoadAssetAtPath<GameObject>(SefaPrefab)),
+                ["Sefa"] = ContractorAsset("Sefa", "Sefa Bey", profesyonel, Character("BusinessMale_4_LowPolyStyle (2)")),
             };
         }
 

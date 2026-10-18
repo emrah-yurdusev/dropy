@@ -8,7 +8,7 @@ namespace Dropy.Gameplay
     /// <summary>Deprem ara sahnesi: binalar sallanır, yıkılacak olan çöker, altta manşetler belirir.</summary>
     public static class EarthquakeCinematic
     {
-        public const string SceneName = "Deprem";
+        public const string SceneName = "Deprem_LowPoly";
         const float CalmBeforeQuake = 1.2f;
         /// <summary>Çöküş animasyonunda bina ~2. saniyede yıkılmaya başlar; manşet onunla gelir.</summary>
         const float CaptionDelay = 2.6f;
