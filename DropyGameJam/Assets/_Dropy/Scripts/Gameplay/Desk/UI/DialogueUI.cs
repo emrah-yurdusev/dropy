@@ -18,10 +18,17 @@ namespace Dropy.Gameplay
         static readonly Color NameColor = new Color(0.75f, 0.25f, 0.15f);
         static readonly Color ChoiceColor = new Color(0.17f, 0.36f, 0.62f);
 
-        [SerializeField, Min(1f)] float charsPerSecond = 45f;
+        [SerializeField, Min(1f)] float charsPerSecond = 70f;
+        /// <summary>Balonun giremeyeceği üst şerit (referans çözünürlükte piksel).</summary>
+        const float TopReserved = 170f;
+        /// <summary>Yandaki balonla başın arası (referans çözünürlükte piksel).</summary>
+        const float SideGap = 80f;
 
         /// <summary>Konuşanın yazı hızı çarpanı (müteahhidin kişiliğinden; telefon ve müdür için 1).</summary>
         public float SpeedMultiplier { get; set; } = 1f;
+
+        /// <summary>Balon üst şeride (gün göstergesi, harç bildirimi) girmesin: ayakta yürüyen müteahhidin tepkisi için.</summary>
+        public bool KeepClearOfTop { get; set; }
         [Tooltip("Balonun kafanın ne kadar üstünde duracağı (metre)")]
         [SerializeField] float headOffset = 0.32f;
 
@@ -88,8 +95,20 @@ namespace Dropy.Gameplay
             RectTransformUtility.ScreenPointToLocalPointInRectangle(canvasRect, screen, null, out var local);
             var half = canvasRect.rect.size * 0.5f;
             float w = bubble.rect.width * 0.5f;
+            float h = bubble.rect.height;
+            // Balon başın üstüne sığmıyorsa (uzun metin ya da ayaktaki müteahhit) başa binmez, başın yanına geçer;
+            // yandayken üst şeride (gün göstergesi, harç bildirimi) de girmez.
+            float topMargin = KeepClearOfTop ? TopReserved : 16f;
+            bool beside = local.y > half.y - h - topMargin;
+            if (beside)
+            {
+                float towardCenter = local.x > 0f ? -1f : 1f;
+                local.x += towardCenter * (w + SideGap);
+                local.y = Mathf.Clamp(local.y - h * 0.6f, -half.y + 16f, half.y - h - TopReserved);
+            }
             local.x = Mathf.Clamp(local.x, -half.x + w + 16f, half.x - w - 16f);
-            local.y = Mathf.Clamp(local.y, -half.y + 16f, half.y - bubble.rect.height - 16f);
+            local.y = Mathf.Clamp(local.y, -half.y + 16f, half.y - h - topMargin);
+            tail.gameObject.SetActive(!beside);
             bubble.anchoredPosition = local;
             continueHint.localScale = Vector3.one * (0.8f + 0.2f * Mathf.Sin(Time.unscaledTime * 6f));
         }

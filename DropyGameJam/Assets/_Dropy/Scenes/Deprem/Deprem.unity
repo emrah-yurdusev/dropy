@@ -26405,6 +26405,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   lineInterval: 1.4
+  font: {fileID: 11400000, guid: e387129084390544e8e9c3ad256e2506, type: 2}
+  breakingLabel: "SON DAK\u0130KA"
+  channel: "K6 HABER  \xB7  CANLI"
 --- !u!1001 &1654544411
 PrefabInstance:
   m_ObjectHideFlags: 0

@@ -80,18 +80,14 @@ namespace Dropy.EditorTools
             tutorial.steps = new List<TutorialStep>
             {
                 // 1. gün, Veysel: künye C20, ek rapor C30, çekiç C30 → ONAY.
-                Step(1, 0, PenShape.Circle, FieldTarget(FieldKey.Claimed), null, "1) Künyedeki betona bak"),
+                Step(1, 0, PenShape.Arrow, FieldTarget(FieldKey.Claimed), RuleTarget(RuleTopic.Beton), "1) Künyedeki beton kitapta var mı? C25/30/35"),
                 Step(1, 0, PenShape.DoubleArrow, FieldTarget(FieldKey.Claimed), FieldTarget(FieldKey.Lab), "2) Farklıysa EK RAPOR geçerli!"),
-                Step(1, 0, PenShape.Arrow, FieldTarget(FieldKey.Lab), RuleTarget(RuleTopic.Beton), "3) Kitapta var mı? C25/30/35"),
-                Step(1, 0, PenShape.Circle, new TutorialTarget { kind = TutorialTargetKind.Hammer }, null, "4) Emin ol: çekiçle ölç! (günde 1)"),
-                Step(1, 0, PenShape.Arrow, RuleTarget(RuleTopic.Cekic), SealTarget(Seal.Approve), "5) Hepsi uyuyorsa ONAY"),
+                Step(1, 0, PenShape.Circle, new TutorialTarget { kind = TutorialTargetKind.Hammer }, null, "3) Emin ol: çekiçle ölç! (günde 1)"),
                 // 1. gün, Nuri: market + yüksek tavan = yumuşak kat (perde kurtarır) ama kolon kesik → RED.
-                Step(1, 1, PenShape.Circle, FieldTarget(FieldKey.Use), null, "1) Altı market mi?"),
-                Step(1, 1, PenShape.Arrow, FieldTarget(FieldKey.Height), RuleTarget(RuleTopic.YumusakKat), "2) Tavan 4 m+ = yumuşak kat"),
-                Step(1, 1, PenShape.Underline, SealTarget(Seal.ShearWall), null, "3) Tek kusur buysa PERDE kurtarır"),
-                Step(1, 1, PenShape.Circle, FieldTarget(FieldKey.Columns), null, "4) Ama kolon KESİK!"),
-                Step(1, 1, PenShape.Circle, new TutorialTarget { kind = TutorialTargetKind.Building }, null, "5) Büyüteçle bak: kırmızı = kusur"),
-                Step(1, 1, PenShape.Arrow, RuleTarget(RuleTopic.Kolon), SealTarget(Seal.Reject), "6) Perde kurtarmaz: RED"),
+                Step(1, 1, PenShape.Arrow, FieldTarget(FieldKey.Height), RuleTarget(RuleTopic.YumusakKat), "1) Altı market + tavan 4 m+ = yumuşak kat"),
+                Step(1, 1, PenShape.Underline, SealTarget(Seal.ShearWall), null, "2) Tek kusur buysa PERDE kurtarır"),
+                Step(1, 1, PenShape.Circle, FieldTarget(FieldKey.Columns), null, "3) Ama kolon KESİK!"),
+                Step(1, 1, PenShape.Circle, new TutorialTarget { kind = TutorialTargetKind.Building }, null, "4) Büyüteçle bak: kırmızı = kusur"),
             };
             EditorUtility.SetDirty(tutorial);
             return tutorial;
@@ -527,9 +523,8 @@ namespace Dropy.EditorTools
                     day = 1,
                     lines = new List<string>
                     {
-                        "Alo? Hayırlı olsun, ilk günün. Binalar bitti, aileler taşınmak için iskân bekliyor.",
+                        "Alo? Hayırlı olsun!",
                         "Lafa değil kâğıda bak: solda yönetmelik, sağda künye ve ek rapor. Uyuyorsa onay, uymuyorsa red.",
-                        $"Onay {Economy.ApproveFee} lira harç, red sıfır. Akşam kira kesilir. Kolay gelsin.",
                     }
                 },
                 new PhoneCall

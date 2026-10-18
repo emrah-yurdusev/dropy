@@ -37,6 +37,10 @@ namespace Dropy.Gameplay
         const int FastWalkDay = 2;
         const float FirstDayWalkMultiplier = 1.8f;
         const float FastWalkMultiplier = 1.95f;
+        /// <summary>Oyunun ilk müteahhidi (atlanamayan giriş) bunun katı daha hızlı yürür: ofis görünsün ama beklenmesin.</summary>
+        const float FirstVisitorWalkBoost = 1.5f;
+        /// <summary>Kapıya yürürken söylenen tepki balonu en az/en çok bu kadar durur (okuma hızı kelime/saniye).</summary>
+        const float LeavingWordsPerSecond = 3.5f, MinLeavingHold = 1.5f, MaxLeavingHold = 4f;
         /// <summary>Gelişi/gidişi geçerken kararma süreleri (saniye).</summary>
         const float SkipFadeOut = 0.15f;
         const float SkipFadeIn = 0.25f;
@@ -448,7 +452,7 @@ namespace Dropy.Gameplay
             var go = Instantiate(prefab, spawnPoint.position, spawnPoint.rotation);
             visitor = go.GetComponent<NpcController>();
             visitorHead = FindDeep(go.transform, "Head") ?? HumanBone(go, HumanBodyBones.Head) ?? go.transform;
-            visitor.SetWalkSpeedMultiplier(day >= FastWalkDay ? FastWalkMultiplier : FirstDayWalkMultiplier);
+            visitor.SetWalkSpeedMultiplier((day >= FastWalkDay ? FastWalkMultiplier : FirstDayWalkMultiplier) * (index == 0 ? FirstVisitorWalkBoost : 1f));
             // Oyunun ilk müteahhidinde (Veysel Bey) geçiş yok: oyuncu ofisi, kapıyı ve oturuşu bir kez görsün.
             bool skippable = index > 0;
             if (!go.TryGetComponent<SeatedLife>(out var life))
@@ -520,13 +524,26 @@ namespace Dropy.Gameplay
             hud.SetInspectAvailable(false);
             inspection.ClearCase();
 
-            yield return React(buildingCase, result.seal);
+            // Müteahhit mühürü görünce hemen kalkar, tepkisini kapıya yürürken söyler. Rüşvet dosyasında (Ozan)
+            // eskisi gibi: önce oturup konuşur, sonra çıkar.
+            bool talkWhileLeaving = buildingCase.approveFeeOverride <= 0;
+            Coroutine talk = null;
+            if (talkWhileLeaving)
+                talk = StartCoroutine(ReactWhileLeaving(buildingCase, result.seal));
+            else
+                yield return React(buildingCase, result.seal);
 
             yield return Skippable(Leave(), skippable, () =>
             {
                 if (door != null)
                     door.SnapClosed();
             });
+            if (talk != null)
+            {
+                StopCoroutine(talk);
+                dialogue.HideBubble();
+                dialogue.KeepClearOfTop = false;
+            }
             visitorChair.Release(visitor);
             Destroy(visitor.gameObject);
             visitor = null;
@@ -823,7 +840,30 @@ namespace Dropy.Gameplay
             return result;
         }
 
+        /// <summary>Oturduğu yerde tepki: her cümle tıklama bekler (rüşvet dosyası).</summary>
         IEnumerator React(BuildingCase buildingCase, Seal seal)
+        {
+            foreach (var line in Reaction(buildingCase, seal))
+                yield return dialogue.Say(buildingCase.contractorName, line, visitorHead, waitForClick: true);
+            dialogue.HideBubble();
+        }
+
+        /// <summary>Kapıya yürürken tepki: balon müteahhidin başının üstünde kalır, okunacak kadar durup kendisi geçer.</summary>
+        IEnumerator ReactWhileLeaving(BuildingCase buildingCase, Seal seal)
+        {
+            dialogue.KeepClearOfTop = true;
+            foreach (var line in Reaction(buildingCase, seal))
+            {
+                yield return dialogue.Say(buildingCase.contractorName, line, visitorHead, waitForClick: false);
+                float hold = Mathf.Clamp(line.Split(' ').Length / LeavingWordsPerSecond, MinLeavingHold, MaxLeavingHold);
+                for (float t = 0f; t < hold; t += Time.deltaTime)
+                    yield return null;
+            }
+            dialogue.HideBubble();
+        }
+
+        /// <summary>Mühürden sonraki cümle(ler); yüz ifadesini ayarlar ve gazetenin alıntılayacağı sözü kaydeder.</summary>
+        List<string> Reaction(BuildingCase buildingCase, Seal seal)
         {
             string line = SealLine(buildingCase, seal);
             FaceExpression expression = seal == Seal.Reject ? FaceExpression.Angry
@@ -832,14 +872,12 @@ namespace Dropy.Gameplay
             if (results.Count > 0 && results[results.Count - 1].buildingCase == buildingCase)
                 results[results.Count - 1].spokenLine = line;
             visitor.Face?.SetExpression(expression);
-            yield return dialogue.Say(buildingCase.contractorName, line, visitorHead, waitForClick: true);
+            var lines = new List<string> { line };
             // Haksız red: dürüst müteahhit dosyasını savunur; oyuncu neyi kaçırdığını buradan da öğrenir.
             if (seal == Seal.Reject && BuildingRules.Flaws(buildingCase).Count == 0)
-                yield return dialogue.Say(buildingCase.contractorName,
-                    Voice.Line(buildingCase, v => v.unjustReject, null,
-                        "Beton {rapor}, kolon tam, temel yerinde. Yönetmelikte reddettirecek ne var?"),
-                    visitorHead, waitForClick: true);
-            dialogue.HideBubble();
+                lines.Add(Voice.Line(buildingCase, v => v.unjustReject, null,
+                    "Beton {rapor}, kolon tam, temel yerinde. Yönetmelikte reddettirecek ne var?"));
+            return lines;
         }
 
         /// <summary>Mühürden sonraki cümle: dosyanın kendi cümlesi, yoksa müteahhidin/kişiliğin, yoksa genel bir cümle.</summary>

@@ -16,12 +16,9 @@ MonoBehaviour:
   - day: 1
     caller: "M\xFCd\xFCr"
     lines:
-    - "Alo? Hay\u0131rl\u0131 olsun, ilk g\xFCn\xFCn. Binalar bitti, aileler ta\u015F\u0131nmak
-      i\xE7in isk\xE2n bekliyor."
+    - "Alo? Hay\u0131rl\u0131 olsun!"
     - "Lafa de\u011Fil k\xE2\u011F\u0131da bak: solda y\xF6netmelik, sa\u011Fda k\xFCnye
       ve ek rapor. Uyuyorsa onay, uymuyorsa red."
-    - "Onay 1500 lira har\xE7, red s\u0131f\u0131r. Ak\u015Fam kira kesilir. Kolay
-      gelsin."
   - day: 4
     caller: "M\xFCd\xFCr"
     lines:
