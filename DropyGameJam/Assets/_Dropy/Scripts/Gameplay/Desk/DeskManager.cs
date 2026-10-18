@@ -33,10 +33,10 @@ namespace Dropy.Gameplay
             public bool bribed;
         }
 
-        /// <summary>Müteahhitler biraz hızlı yürür (1. gün 1.2, 2. günden itibaren 1.3 kat); fazlası koşar adım görünür.</summary>
+        /// <summary>Müteahhitler hızlı yürür (1. gün 1.8, 2. günden itibaren 1.95 kat); animasyon hıza kendisi uyar.</summary>
         const int FastWalkDay = 2;
-        const float FirstDayWalkMultiplier = 1.2f;
-        const float FastWalkMultiplier = 1.3f;
+        const float FirstDayWalkMultiplier = 1.8f;
+        const float FastWalkMultiplier = 1.95f;
         /// <summary>Gelişi/gidişi geçerken kararma süreleri (saniye).</summary>
         const float SkipFadeOut = 0.15f;
         const float SkipFadeIn = 0.25f;

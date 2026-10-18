@@ -30,6 +30,8 @@ namespace Dropy.EditorTools
         const string StylePath = "Assets/_Dropy/ScriptableObjects/Desk/NewsStyle.asset";
         const string PlayerPrefab = "Assets/_Dropy/Prefabs/Characters/BusinessMale_4_LowPolyStyle.prefab";
         const string AnchorPrefab = "Assets/_Dropy/Prefabs/Characters/Kadin_LowPoly.prefab";
+        /// <summary>Spikerin kaşları videoda prefab'dakinden bu kadar önde durur ve en fazla bu kadar kalkar (metre).</summary>
+        const float AnchorBrowForward = 0.003f, AnchorBrowLift = 0.006f;
         const string ClipsPath = "Assets/_Dropy/Art/Animations/Characters/Humanoid/BusinessMan_Anims_Humanoid.fbx";
         const int BakeLayer = 31;
         const string Charset = " !\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~" +
@@ -500,6 +502,20 @@ namespace Dropy.EditorTools
                 stage.Light(new Vector3(30f, 15f, 0f), 1.15f);
                 stage.LookAt(head + new Vector3(0.12f, -0.12f, -1.8f), head + new Vector3(0.12f, -0.16f, 0f), 36f);
 
+                // Gözler ve ağız sabit; yalnız kaşlar konuşmaya eşlik eder. Baş sallanınca alna gömülmesinler diye biraz öndeler.
+                var face = anchor.GetComponentInChildren<FaceController>(true)?.transform;
+                var brows = new[] { face?.Find("Brow_L"), face?.Find("Brow_R") };
+                var browPos = new Vector3[2];
+                var browRot = new Quaternion[2];
+                for (int i = 0; i < 2; i++)
+                {
+                    if (brows[i] == null)
+                        continue;
+                    brows[i].localPosition += new Vector3(0f, 0f, AnchorBrowForward / face.lossyScale.z);
+                    browPos[i] = brows[i].localPosition;
+                    browRot[i] = brows[i].localRotation;
+                }
+
                 var headRest = headBone.localRotation;
                 var neckRest = neckBone != null ? neckBone.localRotation : Quaternion.identity;
                 var chestRest = chestBone != null ? chestBone.localRotation : Quaternion.identity;
@@ -530,6 +546,16 @@ namespace Dropy.EditorTools
                             neckBone.localRotation = neckRest * Quaternion.Euler(nod * 0.4f, yaw * 0.4f, 0f);
                         if (chestBone != null)
                             chestBone.localRotation = chestRest * Quaternion.Euler(Mathf.Sin(phase * 4f) * 0.8f, Mathf.Sin(phase) * 1.5f, 0f);
+                        // Kaş: vurgulu kelimelerde kalkar, iç uçları hafifçe yukarı döner (FaceController'ın eğim yönüyle aynı).
+                        float lift = Mathf.Pow(Mathf.Max(0f, Mathf.Sin(phase * 11f)), 3f) * talk + Mathf.Max(0f, Mathf.Sin(phase * 4f + 0.5f)) * 0.3f;
+                        for (int i = 0; i < 2; i++)
+                        {
+                            if (brows[i] == null)
+                                continue;
+                            float side = i == 0 ? -1f : 1f;
+                            brows[i].localPosition = browPos[i] + new Vector3(0f, lift * AnchorBrowLift / face.lossyScale.y, 0f);
+                            brows[i].localRotation = browRot[i] * Quaternion.Euler(0f, 0f, side * -7f * lift);
+                        }
                         var frame = stage.Capture();
                         encoder.AddFrame(frame);
                         Object.DestroyImmediate(frame);
@@ -708,6 +734,10 @@ namespace Dropy.EditorTools
                 var prefab = AssetDatabase.LoadAssetAtPath<GameObject>(prefabPath);
                 var go = (GameObject)PrefabUtility.InstantiatePrefab(prefab, scene);
                 go.transform.SetPositionAndRotation(position, Quaternion.Euler(0f, yaw, 0f));
+                // Editörde tek karede art arda çekim yapılıyor: deri her çekimde yeniden hesaplanmazsa kemikler dönerken
+                // gövde ilk pozda kalır, kafaya bağlı kaş/göz/ağız yüzün içine girer.
+                foreach (var skinned in go.GetComponentsInChildren<SkinnedMeshRenderer>(true))
+                    skinned.forceMatrixRecalculationPerRender = true;
                 return go;
             }
 

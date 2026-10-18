@@ -13,7 +13,7 @@ namespace Dropy.Gameplay
     }
 
     /// <summary>
-    /// Karakterin kaşlarını ve ağzını ifadeye göre hareket ettirir.
+    /// Karakterin kaşlarını ve ağzını ifadeye göre hareket ettirir; gözler ara sıra kırpılır, ifadeyle kısılır/açılır.
     /// Yüz parçaları Head kemiğinin altında durur; prefab'daki duruşları "dinlenme pozu" sayılır,
     /// ifadeler bu pozun üzerine ofset olarak uygulanır.
     /// Kullanım: GetComponentInChildren&lt;FaceController&gt;().SetExpression(FaceExpression.Angry);
@@ -75,6 +75,9 @@ namespace Dropy.Gameplay
         [SerializeField] Transform rightMouth;
         [Tooltip("Şaşırınca görünen açık ağız (prefab'da kapalı durur, script açar)")]
         [SerializeField] Transform openMouth;
+        [Tooltip("Nokta gözler (isteğe bağlı)")]
+        [SerializeField] Transform leftEye;
+        [SerializeField] Transform rightEye;
 
         [SerializeField] FaceExpression expression = FaceExpression.Neutral;
         [Tooltip("Geçiş yumuşaklığı (saniye). Küçük = daha sert/hızlı geçiş")]
@@ -83,6 +86,12 @@ namespace Dropy.Gameplay
         [Header("Görünüm")]
         [SerializeField] Color browColor = new Color(0.05f, 0.04f, 0.035f);
         [SerializeField] Color mouthColor = new Color(0.16f, 0.05f, 0.05f);
+        [SerializeField] Color eyeColor = new Color(0.04f, 0.035f, 0.03f);
+
+        [Header("Göz kırpma")]
+        [Tooltip("İki kırpma arasındaki süre aralığı (saniye)")]
+        [SerializeField] Vector2 blinkInterval = new Vector2(2.5f, 5.5f);
+        [SerializeField, Min(0.02f)] float blinkDuration = 0.12f;
 
         [Header("Kızgınken titreme")]
         [SerializeField, Min(0f)] float angryTremble = 0.0005f;
@@ -95,6 +104,11 @@ namespace Dropy.Gameplay
         Part leftMouthPart;
         Part rightMouthPart;
         Vector3 openMouthRestScale;
+        Vector3 leftEyeRestScale;
+        Vector3 rightEyeRestScale;
+        Vector2 currentEyeOpen = Vector2.one;
+        float nextBlink;
+        float blinkTimer;
         float currentOpen;
         FaceExpression baseExpression;
         float temporaryTimer;
@@ -132,6 +146,11 @@ namespace Dropy.Gameplay
             leftMouthPart = new Part(leftMouth, -1f);
             rightMouthPart = new Part(rightMouth, 1f);
             openMouthRestScale = openMouth.localScale;
+            if (leftEye != null)
+                leftEyeRestScale = leftEye.localScale;
+            if (rightEye != null)
+                rightEyeRestScale = rightEye.localScale;
+            nextBlink = Random.Range(blinkInterval.x, blinkInterval.y);
             baseExpression = expression;
             ApplyColors();
         }
@@ -163,6 +182,52 @@ namespace Dropy.Gameplay
             bool showOpen = currentOpen > 0.01f;
             if (openMouth.gameObject.activeSelf != showOpen)
                 openMouth.gameObject.SetActive(showOpen);
+
+            UpdateEyes(blend);
+        }
+
+        /// <summary>Gözler ifadeyle kısılır/açılır, arada bir kırpılır. Kırpma ifadenin üstüne biner.</summary>
+        void UpdateEyes(float blend)
+        {
+            if (leftEye == null && rightEye == null)
+                return;
+            currentEyeOpen = Vector2.Lerp(currentEyeOpen, EyeOpen(expression), blend);
+
+            nextBlink -= Time.deltaTime;
+            if (nextBlink <= 0f)
+            {
+                blinkTimer = blinkDuration;
+                nextBlink = Random.Range(blinkInterval.x, blinkInterval.y);
+            }
+            float blink = 1f;
+            if (blinkTimer > 0f)
+            {
+                blinkTimer -= Time.deltaTime;
+                // Kapanıp açılan üçgen eğri; en kapalı anda göz ince bir çizgi olur.
+                float k = Mathf.Clamp01(blinkTimer / blinkDuration);
+                blink = Mathf.Lerp(1f, 0.1f, 1f - Mathf.Abs(k * 2f - 1f));
+            }
+
+            // Şaşkınlıkta göz büyür; x olduğu gibi kalır, y açıklıktır.
+            float grow = expression == FaceExpression.Surprised ? 1.2f : 1f;
+            if (leftEye != null)
+                leftEye.localScale = Vector3.Scale(leftEyeRestScale, new Vector3(grow, currentEyeOpen.x * blink, 1f));
+            if (rightEye != null)
+                rightEye.localScale = Vector3.Scale(rightEyeRestScale, new Vector3(grow, currentEyeOpen.y * blink, 1f));
+        }
+
+        /// <summary>İfadeye göre göz açıklığı (x: sol, y: sağ göz).</summary>
+        static Vector2 EyeOpen(FaceExpression target)
+        {
+            switch (target)
+            {
+                case FaceExpression.Angry: return new Vector2(0.7f, 0.7f);
+                case FaceExpression.Sad: return new Vector2(0.8f, 0.8f);
+                case FaceExpression.Surprised: return new Vector2(1.25f, 1.25f);
+                case FaceExpression.Suspicious: return new Vector2(0.55f, 1f);
+                case FaceExpression.Happy: return new Vector2(0.75f, 0.75f);
+                default: return Vector2.one;
+            }
         }
 
         void OnValidate() => ApplyColors();
@@ -192,6 +257,7 @@ namespace Dropy.Gameplay
             var block = new MaterialPropertyBlock();
             SetColor(block, browColor, leftBrow, rightBrow);
             SetColor(block, mouthColor, leftMouth, rightMouth, openMouth);
+            SetColor(block, eyeColor, leftEye, rightEye);
         }
 
         static void SetColor(MaterialPropertyBlock block, Color color, params Transform[] parts)

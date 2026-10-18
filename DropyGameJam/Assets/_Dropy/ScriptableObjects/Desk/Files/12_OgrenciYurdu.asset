@@ -38,6 +38,7 @@ MonoBehaviour:
   dialogue: {fileID: 0}
   callbacks: []
   introLines:
+  - "Yer biraz oynadı. Siz keyfinizi bozmayın, bu şehrin binaları böyle şeylere alışık."
   - "Yurt acil, d\xF6nem ba\u015Fl\u0131yor. \u0130ki y\xFCz \xF6\u011Frenci kap\u0131da
     kalmas\u0131n."
   - "Siz onay\u0131 bas\u0131n, zahmetinize kar\u015F\u0131l\u0131k d\xF6rt bin.

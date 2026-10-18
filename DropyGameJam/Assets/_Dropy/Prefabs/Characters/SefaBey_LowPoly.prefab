@@ -66,7 +66,19 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 4502464588938875596, guid: 71b88e79ca0c28d428be947e955e6216, type: 3}
       propertyPath: m_LocalPosition.z
-      value: 0.012
+      value: 0.011194958
+      objectReference: {fileID: 0}
+    - target: {fileID: 5130559892460519430, guid: 71b88e79ca0c28d428be947e955e6216, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: -0.006029902
+      objectReference: {fileID: 0}
+    - target: {fileID: 5970939428638300372, guid: 71b88e79ca0c28d428be947e955e6216, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: -0.025200002
+      objectReference: {fileID: 0}
+    - target: {fileID: 5970939428638300372, guid: 71b88e79ca0c28d428be947e955e6216, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: -0.0059792353
       objectReference: {fileID: 0}
     - target: {fileID: 6215260714816115716, guid: 71b88e79ca0c28d428be947e955e6216, type: 3}
       propertyPath: m_Name
@@ -75,6 +87,10 @@ PrefabInstance:
     - target: {fileID: 6215260714816115716, guid: 71b88e79ca0c28d428be947e955e6216, type: 3}
       propertyPath: m_IsActive
       value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 6292772020301001010, guid: 71b88e79ca0c28d428be947e955e6216, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: -0.005652337
       objectReference: {fileID: 0}
     - target: {fileID: 7083836999586897473, guid: 71b88e79ca0c28d428be947e955e6216, type: 3}
       propertyPath: browColor.b
@@ -99,6 +115,14 @@ PrefabInstance:
     - target: {fileID: 7083836999586897473, guid: 71b88e79ca0c28d428be947e955e6216, type: 3}
       propertyPath: mouthColor.r
       value: 0.55
+      objectReference: {fileID: 0}
+    - target: {fileID: 7175972789448105863, guid: 71b88e79ca0c28d428be947e955e6216, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: -0.025200002
+      objectReference: {fileID: 0}
+    - target: {fileID: 7175972789448105863, guid: 71b88e79ca0c28d428be947e955e6216, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: -0.006457899
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []

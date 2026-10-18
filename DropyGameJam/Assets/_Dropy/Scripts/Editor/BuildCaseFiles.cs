@@ -22,6 +22,7 @@ namespace Dropy.EditorTools
         public const string StoryPath = "Assets/_Dropy/ScriptableObjects/Desk/Story.asset";
         public const string TutorialPath = "Assets/_Dropy/ScriptableObjects/Desk/Tutorial.asset";
         const string VeyselPrefab = "Assets/_Dropy/Prefabs/Characters/Veysel_LowPoly.prefab";
+        const string SefaPrefab = "Assets/_Dropy/Prefabs/Characters/SefaBey_LowPoly.prefab";
 
         /// <summary>Oyun sırası: 3 gün × 2 dosya. Eski (18 dosyalık döngüden) asset'ler adları değişmesin diye korunur.</summary>
         public static readonly string[] Paths =
@@ -115,7 +116,8 @@ namespace Dropy.EditorTools
                 ["Cengiz"] = ContractorAsset("Cengiz", "Cengiz Bey", isAdami),
                 ["Ozan"] = ContractorAsset("Ozan", "Ozan Bey", manipulatif),
                 ["Gul"] = ContractorAsset("Gul", "Gül Hanım", tatliDilli),
-                ["Selma"] = ContractorAsset("Selma", "Selma Hanım", profesyonel),
+                // 3. günün ikinci dosyası: önceki dosyadaki Gül Hanım'la aynı modeli paylaşmasın diye erkek.
+                ["Sefa"] = ContractorAsset("Sefa", "Sefa Bey", profesyonel, AssetDatabase.LoadAssetAtPath<GameObject>(SefaPrefab)),
             };
         }
 
@@ -333,7 +335,9 @@ namespace Dropy.EditorTools
             s.height = 4.5f;
             list.Add(s);
 
+            // Ozan sarsıntının hemen ardından girer: sallantıyı geçiştirir (cevap kartı açmasın diye soru sormaz).
             s = File("Öğrenci Yurdu", "Ozan", 5, 30, 30, SoilType.Kaya, Seal.Reject,
+                    "Yer biraz oynadı. Siz keyfinizi bozmayın, bu şehrin binaları böyle şeylere alışık.",
                     "Yurt acil, dönem başlıyor. İki yüz öğrenci kapıda kalmasın.",
                     "Siz onayı basın, zahmetinize karşılık dört bin. Kimse bir şey demez.")
                 .Ask("Kolonlar neden kesik?", "Odalar geniş olsun diye biraz açtık. Taşır {hitap}, taşır.")
@@ -361,7 +365,7 @@ namespace Dropy.EditorTools
             s.noteAnswer = "Laboratuvar acele etti {hitap}, bir küp yeter dediler. Sonuç aynı çıkar.";
             list.Add(s);
 
-            s = File("Mavi Apart", "Selma", 4, 20, 30, SoilType.Kil, Seal.Approve,
+            s = File("Mavi Apart", "Sefa", 4, 20, 30, SoilType.Kil, Seal.Approve,
                     "Mavi Apart, dört kat, sekiz daire. Hepsi satıldı; aileler bu akşam taşınmak istiyor.")
                 .Ask("Künyede neden farklı beton yazıyor?", "Stajyer eski projeden kopyalamış. Geçerli olan ek rapor: {rapor}.")
                 .News("Mavi Apart çöktü", "Mavi Apart ayakta: sekiz aile sabahı evinde karşıladı.");

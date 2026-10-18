@@ -207,11 +207,27 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 4502464588938875596, guid: 71b88e79ca0c28d428be947e955e6216, type: 3}
       propertyPath: m_LocalPosition.z
-      value: -0.01
+      value: -0.00591758
+      objectReference: {fileID: 0}
+    - target: {fileID: 5130559892460519430, guid: 71b88e79ca0c28d428be947e955e6216, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 0.0031703333
+      objectReference: {fileID: 0}
+    - target: {fileID: 5970939428638300372, guid: 71b88e79ca0c28d428be947e955e6216, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: -0.029399998
+      objectReference: {fileID: 0}
+    - target: {fileID: 5970939428638300372, guid: 71b88e79ca0c28d428be947e955e6216, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: -0.0047614197
       objectReference: {fileID: 0}
     - target: {fileID: 6215260714816115716, guid: 71b88e79ca0c28d428be947e955e6216, type: 3}
       propertyPath: m_Name
       value: Face
+      objectReference: {fileID: 0}
+    - target: {fileID: 6292772020301001010, guid: 71b88e79ca0c28d428be947e955e6216, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 0.0015942391
       objectReference: {fileID: 0}
     - target: {fileID: 7083836999586897473, guid: 71b88e79ca0c28d428be947e955e6216, type: 3}
       propertyPath: browColor.b
@@ -236,6 +252,14 @@ PrefabInstance:
     - target: {fileID: 7083836999586897473, guid: 71b88e79ca0c28d428be947e955e6216, type: 3}
       propertyPath: mouthColor.r
       value: 0.36
+      objectReference: {fileID: 0}
+    - target: {fileID: 7175972789448105863, guid: 71b88e79ca0c28d428be947e955e6216, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: -0.029399998
+      objectReference: {fileID: 0}
+    - target: {fileID: 7175972789448105863, guid: 71b88e79ca0c28d428be947e955e6216, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: -0.011151331
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []

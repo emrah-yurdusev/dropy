@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b53e488de2e93c841b0e8998a55e2701, type: 3}
   m_Name: 03_MaviApart
   m_EditorClassIdentifier: 
-  contractorName: "Selma Han\u0131m"
+  contractorName: Sefa Bey
   contractor: {fileID: 11400000, guid: 126b86e5bf7e5e84e937f6c274a5e275, type: 2}
   contractorPrefab: {fileID: 0}
   buildingName: Mavi Apart
@@ -28,6 +28,7 @@ MonoBehaviour:
   note: "Numune: 3 k\xFCp, 28 g\xFCnl\xFCk"
   noteAnswer: "\xDC\xE7 numune, yirmi sekiz g\xFCn beklendi. Usul\xFCne uygun."
   damage: 0
+  illegalFloors: 0
   hammerConcrete: 30
   approveFeeOverride: 0
   bribe: 0

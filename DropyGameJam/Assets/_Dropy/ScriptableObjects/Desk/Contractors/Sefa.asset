@@ -10,10 +10,10 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 4f92cf41a1ab2d3458cfda3176bbe13a, type: 3}
-  m_Name: Selma
+  m_Name: Sefa
   m_EditorClassIdentifier: 
-  displayName: "Selma Han\u0131m"
-  prefab: {fileID: 0}
+  displayName: Sefa Bey
+  prefab: {fileID: 8857029950995756909, guid: 14074826b5076484292140bf5682ecbf, type: 3}
   personality: {fileID: 11400000, guid: 7262d77e0fc48d44296f0b9ae193d721, type: 2}
   overrides:
     address: 
