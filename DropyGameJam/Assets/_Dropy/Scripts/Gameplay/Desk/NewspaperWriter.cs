@@ -14,7 +14,8 @@ namespace Dropy.Gameplay
 
         /// <summary>6. gün depreminden sonra, hapse girilmediyse.</summary>
         public static NewspaperPage Final(IList<DeskManager.CaseResult> results, IDictionary<ShopItem, int> boughtOn,
-            IEnumerable<(FamilyNeed need, bool paid)> family, bool estranged, int money, NewsStyle style)
+            IEnumerable<(FamilyNeed need, bool paid)> family, bool estranged, int money, NewsStyle style,
+            FamilyOutcome outcome = FamilyOutcome.HomeStood)
         {
             var t = style.texts;
             var collapsed = results.Where(r => r.fate == BuildingFate.Collapsed).ToList();
@@ -44,10 +45,25 @@ namespace Dropy.Gameplay
                 stories.RemoveAt(0);
             }
 
-            var home = Home(boughtOn, estranged, t);
+            var home = Home(boughtOn, estranged, t, outcome);
             page.verdict = home.verdict;
             home.verdict = null;
             page.boxes.Add(home);
+            // Ev yıkıldıysa ailenin haberi ikinci sütunun başına çıkar; ayakta kalan bina haberi kutuya iner.
+            string homeStory = HomeStory(outcome, t);
+            // Aile kurtarılamadıysa "can kaybı yok" manşeti yalan olur: manşet ailenin haberi olur.
+            if (outcome == FamilyOutcome.Lost && collapsed.Count == 0)
+            {
+                page.headline = t.headlineFamilyLost;
+                page.subhead = t.subheadFamilyLost;
+                homeStory = null;
+            }
+            if (homeStory != null)
+            {
+                if (page.story != null)
+                    stories.Insert(0, standing.First(r => r.buildingCase.standingLine == page.story));
+                page.story = homeStory;
+            }
             if (collapsed.Count > 0)
             {
                 var box = new NewsBox { title = t.boxCollapsed, column = 1 };
@@ -94,7 +110,8 @@ namespace Dropy.Gameplay
         }
 
         /// <summary>Depremde onayladığı bina çöktü: memurun tutuklandığı sayı.</summary>
-        public static NewspaperPage Jail(IList<DeskManager.CaseResult> results, IList<DeskManager.CaseResult> fallen, int quakeDay, NewsStyle style)
+        public static NewspaperPage Jail(IList<DeskManager.CaseResult> results, IList<DeskManager.CaseResult> fallen, int quakeDay, NewsStyle style,
+            IDictionary<ShopItem, int> boughtOn = null, FamilyOutcome outcome = FamilyOutcome.HomeStood)
         {
             var t = style.texts;
             var page = new NewspaperPage
@@ -124,27 +141,62 @@ namespace Dropy.Gameplay
                 court.lines.Add(t.courtBribe);
             court.inverted = true;
             page.boxes.Add(court);
+
+            // Tutuklanan memurun evi: rüşvetle onarıldıysa ayakta, değilse aileyi hazırlıklar kurtarır ya da kurtaramaz.
+            if (boughtOn != null)
+            {
+                var home = Home(boughtOn, false, t, outcome);
+                page.verdict = home.verdict;
+                home.verdict = null;
+                page.boxes.Add(home);
+            }
             return page;
         }
 
-        /// <summary>Evin kutusu: iki hazırlık ve ailenin sonu. Sabitleme Elif'i korur, çanta karanlık geceyi ve yardımı.</summary>
-        static NewsBox Home(IDictionary<ShopItem, int> boughtOn, bool estranged, NewspaperTexts t)
+        /// <summary>
+        /// Evin kutusu: iki hazırlık, onarım ve ailenin sonu. Ev ayaktaysa sabitleme Elif'i korur, çanta karanlık geceyi
+        /// ve yardımı; ev yıkıldıysa ikisi birlikte aileyi hayatta tutar.
+        /// </summary>
+        static NewsBox Home(IDictionary<ShopItem, int> boughtOn, bool estranged, NewspaperTexts t, FamilyOutcome outcome)
         {
             bool bag = boughtOn.ContainsKey(ShopItem.Bag);
             bool fixing = boughtOn.ContainsKey(ShopItem.Fixing);
+            bool repaired = boughtOn.ContainsKey(ShopItem.Repair);
             var box = new NewsBox { title = t.boxHome, column = 0 };
+            if (repaired)
+                box.lines.Add(Good + t.repairDone);
+            else if (outcome != FamilyOutcome.HomeStood)
+                box.lines.Add(Bad + t.repairNone);
             box.lines.Add(bag ? Good + t.bagReady : Bad + t.bagNone);
             box.lines.Add(fixing ? Good + t.fixingDone : Bad + t.fixingMissing);
 
-            if (bag && fixing)
+            if (outcome == FamilyOutcome.Survived)
+                box.verdict = t.verdictHomeLostSafe;
+            else if (outcome == FamilyOutcome.Injured)
+                box.verdict = bag ? t.verdictHomeLostNoFixing : t.verdictHomeLostNoBag;
+            else if (outcome == FamilyOutcome.Lost)
+                box.verdict = t.verdictHomeLostNone;
+            else if (bag && fixing)
                 box.verdict = t.verdictSafe;
             else if (fixing)
                 box.verdict = t.verdictNoBag;
             else
                 box.verdict = bag ? t.verdictNoFixing : t.verdictNone;
-            if (estranged)
+            if (estranged && outcome != FamilyOutcome.Lost)
                 box.verdict += " " + t.estrangedHouse;
             return box;
+        }
+
+        /// <summary>Ev yıkıldıysa ikinci sütunun başındaki aile haberi; ev ayaktaysa null.</summary>
+        static string HomeStory(FamilyOutcome outcome, NewspaperTexts t)
+        {
+            switch (outcome)
+            {
+                case FamilyOutcome.Survived: return t.homeStorySurvived;
+                case FamilyOutcome.Injured: return t.homeStoryInjured;
+                case FamilyOutcome.Lost: return t.homeStoryLost;
+                default: return null;
+            }
         }
 
         static NewsBox Box(string title, int column, params string[] lines)

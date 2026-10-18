@@ -70,23 +70,70 @@ namespace Dropy.Gameplay
     public enum ShopItem
     {
         Bag,
-        Fixing
+        Fixing,
+        /// <summary>Sarsıntıda çatlayan aile evinin onarımı: pahalı, yalnız rüşvet alındıysa satılır.</summary>
+        Repair
     }
 
     public static class Shop
     {
+        /// <summary>Hazırlık eşyaları (çanta, sabitleme): baskı cümleleri ve denetim bunlara bakar.</summary>
         public static readonly ShopItem[] Items = { ShopItem.Bag, ShopItem.Fixing };
+        /// <summary>Dükkânda listelenen her şey; onarım yalnız şartı tutunca görünür.</summary>
+        public static readonly ShopItem[] All = { ShopItem.Bag, ShopItem.Fixing, ShopItem.Repair };
 
-        public static int Price(ShopItem item) => item == ShopItem.Bag ? 500 : 1000;
+        public static int Price(ShopItem item)
+        {
+            switch (item)
+            {
+                case ShopItem.Bag: return 500;
+                case ShopItem.Fixing: return 1000;
+                default: return 3500;
+            }
+        }
 
-        public static string Name(ShopItem item) => item == ShopItem.Bag ? "Deprem çantası" : "Eşya sabitleme";
+        public static string Name(ShopItem item)
+        {
+            switch (item)
+            {
+                case ShopItem.Bag: return "Deprem çantası";
+                case ShopItem.Fixing: return "Eşya sabitleme";
+                default: return "Hasarlı evi onar";
+            }
+        }
 
-        public static int AvailableFrom(ShopItem item) => 1;
+        /// <summary>Onarım, depremden önceki son akşam (sarsıntının olduğu gün) gelir.</summary>
+        public static int AvailableFrom(ShopItem item) => item == ShopItem.Repair ? Economy.QuakeDays[0] - 1 : 1;
 
         /// <summary>Dükkân son akşama kadar açık; deprem o geceden sonra.</summary>
         public static int AvailableUntil(ShopItem item) => Economy.LastEvening;
 
         public static bool Offered(ShopItem item, int day) => day >= AvailableFrom(item) && day <= AvailableUntil(item);
+    }
+
+    public enum FamilyOutcome
+    {
+        /// <summary>Ev ayakta kaldı (hasar almadı ya da onarıldı); çanta ve sabitleme yalnız geceyi etkiler.</summary>
+        HomeStood,
+        /// <summary>Ev yıkıldı; sabit dolaplar enkazda boşluk bıraktı, çantadaki düdük ekipleri getirdi.</summary>
+        Survived,
+        /// <summary>Ev yıkıldı; iki hazırlıktan biri eksikti, aile yaralı kurtarıldı.</summary>
+        Injured,
+        /// <summary>Ev yıkıldı; hiçbir hazırlık yoktu, aile kurtarılamadı.</summary>
+        Lost
+    }
+
+    /// <summary>Aile evinin depremdeki sonu: sarsıntıda hasar aldıysa ve onarılmadıysa yıkılır.</summary>
+    public static class FamilyHome
+    {
+        public static FamilyOutcome Outcome(bool damaged, bool repaired, bool bag, bool fixing)
+        {
+            if (!damaged || repaired)
+                return FamilyOutcome.HomeStood;
+            if (bag && fixing)
+                return FamilyOutcome.Survived;
+            return bag || fixing ? FamilyOutcome.Injured : FamilyOutcome.Lost;
+        }
     }
 
     /// <summary>Yönetmelik: hangi kusur hangi gün kitaba girer, hangi mühür neyi kurtarır.</summary>

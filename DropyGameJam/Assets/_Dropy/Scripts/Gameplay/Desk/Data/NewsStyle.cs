@@ -68,6 +68,8 @@ namespace Dropy.Gameplay
         public Sprite playerPhoto;
         [Tooltip("Hapis sonundaki sabıka fotoğrafı. Boşsa noktalı baskı yer tutucu çizilir")]
         public Sprite mugshotPhoto;
+        [Tooltip("Akşam ekranındaki aile fotoğrafı (\"Biz, geçen bayram\"). Boşsa düz şekillerle çizilmiş yer tutucu")]
+        public Sprite familyPhoto;
         public Color paper = new Color(0.92f, 0.9f, 0.84f);
         public Color ink = new Color(0.1f, 0.09f, 0.07f);
         [Tooltip("Dalgalı dolgu yazının rengi")]
@@ -154,6 +156,19 @@ namespace Dropy.Gameplay
         public string verdictNoFixing = "Elif yaralandı. Çantadaki ilk yardım ve düdük sayesinde yardım çabuk geldi.";
         public string verdictNone = "Elif yaralandı. Karanlıkta ne su vardı ne fener; yardım ancak sabaha karşı geldi.";
         public string estrangedHouse = "Ailen seninle konuşmuyor.";
+
+        [Header("Sarsıntıda çatlayan ev")]
+        public string repairDone = "Sarsıntıda çatlayan ev onarıldı; depremde ayakta kaldı.";
+        public string repairNone = "Sarsıntıda çatlayan ev onarılmadı; depremde yıkıldı.";
+        public string verdictHomeLostSafe = "EVİN YIKILDI, AİLEN HAYATTA";
+        public string verdictHomeLostNoBag = "Ailen enkazdan yaralı kurtarıldı: dolaplar sabitti ama düdük yoktu, ekipler onları ancak sabaha karşı buldu.";
+        public string verdictHomeLostNoFixing = "Ailen enkazdan yaralı kurtarıldı: devrilen dolap Elif'i ezdi, çantadaki düdük ekipleri çabuk getirdi.";
+        public string verdictHomeLostNone = "Ailen enkazdan kurtarılamadı.";
+        public string homeStorySurvived = "Yıkılan evden sağ çıktılar: sabit dolaplar enkazda boşluk bıraktı, çantadaki düdüğü duyan ekipler aileyi kurtardı.";
+        public string homeStoryInjured = "İskân memurunun ailesi yıkılan evlerinden yaralı kurtarıldı.";
+        public string headlineFamilyLost = "İskân memurunun ailesi enkazdan kurtarılamadı";
+        public string subheadFamilyLost = "Sarsıntıda çatlayan ev onarılmamıştı; evde ne sabitlenmiş dolap vardı ne deprem çantası.";
+        public string homeStoryLost ="İskân memurunun ailesi yıkılan evlerinin enkazından kurtarılamadı. Evde ne sabitlenmiş dolap vardı ne deprem çantası.";
 
         [Header("Alt şerit")]
         [Tooltip("{0} = doğru, {1} = toplam dosya")]

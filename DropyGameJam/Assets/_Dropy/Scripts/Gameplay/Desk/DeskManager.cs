@@ -189,7 +189,7 @@ namespace Dropy.Gameplay
             hud.RestartClicked += Restart;
 
             evening = canvasGo.AddComponent<EveningPanel>();
-            evening.Build(root);
+            evening.Build(root, (newsStyle != null ? newsStyle : NewsStyle.Default).familyPhoto);
             evening.BuyClicked += Buy;
 
             pen = canvasGo.AddComponent<PenTutorial>();
@@ -326,7 +326,7 @@ namespace Dropy.Gameplay
             var family = story != null
                 ? story.needs.Select(n => (n, paidNeeds.Contains(n)))
                 : Enumerable.Empty<(FamilyNeed, bool)>();
-            hud.ShowFinal(results, boughtOn, family, Estranged, money, DeskHud.ReportCard(results));
+            hud.ShowFinal(results, boughtOn, family, Estranged, money, DeskHud.ReportCard(results), HomeOutcome);
         }
 
         /// <summary>
@@ -633,9 +633,10 @@ namespace Dropy.Gameplay
                 visitor.Face?.SetExpression(honest ? FaceExpression.Happy : FaceExpression.Suspicious);
                 // İlk kart kural/kitap tavrı, ikincisi yumuşak; kişilik ikisine de kendi tarzında tepki verir.
                 bool firm = picked == 0;
+                string topical = honest ? reply.honestReaction : reply.dishonestReaction;
                 string reaction = Voice.Line(buildingCase,
                     v => firm ? (honest ? v.firmHonest : v.firmDishonest) : (honest ? v.softHonest : v.softDishonest),
-                    null, honest ? reply.honestReaction : reply.dishonestReaction);
+                    reply.specific ? topical : null, topical);
                 yield return dialogue.Say(buildingCase.contractorName, reaction, visitorHead, waitForClick: true);
             }
 
@@ -892,7 +893,7 @@ namespace Dropy.Gameplay
             eveningRequests.Clear();
             eveningRequests.AddRange(requests);
             yield return evening.Run(day, income, rent, money, purchased, messages, paidNeeds,
-                bond, BondMax, bondNote, shopOpen: day <= Economy.LastEvening);
+                bond, BondMax, bondNote, shopOpen: day <= Economy.LastEvening, offered: OfferedTonight());
             bondNote = null;
             inEvening = false;
             ApplyMorning(eveningRequests);
@@ -910,6 +911,25 @@ namespace Dropy.Gameplay
         }
 
         int BondMax => story != null ? story.bondMax : 5;
+
+        /// <summary>Aile evi sarsıntıda hasar aldı: sarsıntının olduğu günün ikinci dosyasına gelindi.</summary>
+        bool HomeDamaged => story != null && results.GroupBy(r => r.day).Any(g => story.Tremor(g.Key) > 0f && g.Count() >= Economy.FilesPerDay);
+
+        /// <summary>Evin depremdeki sonu: hasarlıysa ve onarılmadıysa yıkılır; aileyi çanta ve sabitleme kurtarır.</summary>
+        FamilyOutcome HomeOutcome => FamilyHome.Outcome(HomeDamaged, purchased.Contains(ShopItem.Repair),
+            purchased.Contains(ShopItem.Bag), purchased.Contains(ShopItem.Fixing));
+
+        /// <summary>
+        /// Bu akşam dükkânda ne satılır. Ev onarımı pahalıdır ve yalnız ev sarsıntıda hasar aldıysa ve
+        /// oyuncu rüşvet aldıysa çıkar: dürüst kasa ona hiçbir zaman yetmez.
+        /// </summary>
+        HashSet<ShopItem> OfferedTonight()
+        {
+            var offered = new HashSet<ShopItem>(Shop.All.Where(i => Shop.Offered(i, day)));
+            if (!HomeDamaged || !results.Any(r => r.bribed))
+                offered.Remove(ShopItem.Repair);
+            return offered;
+        }
 
         string DebtMessage()
         {
@@ -1045,7 +1065,7 @@ namespace Dropy.Gameplay
                 jailed = true;
                 Sfx.Ambience(0f);
                 MusicDirector.Play(MusicCue.Final, 2f);
-                hud.ShowJail(results, fallen, quakeDay);
+                hud.ShowJail(results, fallen, quakeDay, boughtOn, HomeOutcome);
                 yield break;
             }
             ApplyQuakeToFamily(quakeDay);
@@ -1078,6 +1098,24 @@ namespace Dropy.Gameplay
                 captions.Add($"İskân verilmeyen {empty.Count} bina çöktü; hiçbirinde kimse yoktu");
 
             bool bag = purchased.Contains(ShopItem.Bag);
+            switch (HomeOutcome)
+            {
+                case FamilyOutcome.Survived:
+                    captions.Add("Ailenin sarsıntıda çatlayan evi yıkıldı");
+                    captions.Add("Sabit dolaplar enkazda boşluk bıraktı; çantadaki düdüğü duyan ekipler aileyi sağ çıkardı");
+                    return captions;
+                case FamilyOutcome.Injured:
+                    captions.Add("Ailenin sarsıntıda çatlayan evi yıkıldı");
+                    captions.Add(bag ? "Devrilen dolap Elif'i yaraladı; düdüğü duyan ekipler aileyi yaralı çıkardı"
+                        : "Dolaplar sabitti ama düdük yoktu; aile enkazdan saatler sonra yaralı çıkarıldı");
+                    return captions;
+                case FamilyOutcome.Lost:
+                    captions.Add("Ailenin sarsıntıda çatlayan evi yıkıldı");
+                    captions.Add("Ne sabit dolap vardı ne çanta; ailen enkazdan kurtarılamadı");
+                    return captions;
+            }
+            if (purchased.Contains(ShopItem.Repair))
+                captions.Add("Onarılan aile evi depremi ayakta karşıladı");
             captions.Add(purchased.Contains(ShopItem.Fixing)
                 ? "Ailenin evi sarsıldı; dolaplar sabitti, kimse yaralanmadı"
                 : "Ailenin evi sarsıldı; sabitlenmemiş dolap Elif'in üstüne devrildi");

@@ -26,6 +26,8 @@ namespace Dropy.Gameplay
             public string option;
             public string honestReaction;
             public string dishonestReaction;
+            /// <summary>Tepki konuya özel: kişiliğin genel "kitap" cümlesi yerine bu söylenir (ör. rüşvet sorusu).</summary>
+            public bool specific;
         }
 
         /// <summary>Dosyası temiz mi: yönetmelikte hiçbir kusuru yoksa müteahhit rahat konuşur.</summary>
@@ -146,8 +148,16 @@ namespace Dropy.Gameplay
         {
             string s = line.ToLower(Tr);
             if (Has(s, "dört bin", "zahmetinize"))
-                return Two("Rüşvet mi teklif ediyorsunuz?", "Teşekkür diyelim, teşekkür. Kimse bir şey demez.", null,
-                    "Dosyaya bakmadan bir şey demem.", "Bakın, bakın. Teklifim duruyor.", null);
+            {
+                var bribe = Two("Rüşvet mi teklif ediyorsunuz?", "Teşekkür diyelim, teşekkür. Kimse bir şey demez.",
+                    "Rüşvet mi? Ne çirkin kelime {hitap}. Ben ona \"mesai sonrası teşekkür\" diyorum. " +
+                    "Teşekkürü geri çevirenler bu koltukta pek uzun oturmaz ama.",
+                    "Dosyaya bakmadan bir şey demem.", "Bakın, bakın. Teklifim duruyor.",
+                    "Bakın tabii, acelem yok. Teklifim de kaçmaz; masada sizi bekler.");
+                foreach (var reply in bribe)
+                    reply.specific = true;
+                return bribe;
+            }
             if (Has(s, "indirim"))
                 return Two("Burada pazarlık yapılmaz.", "Peki peki, laf arasında dedim.", null,
                     "Önce dosyaya bakalım.", "Buyurun.", null);

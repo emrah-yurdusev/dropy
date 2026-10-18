@@ -135,8 +135,8 @@ MonoBehaviour:
   - day: 3
     sender: "E\u015Fin"
     family: 1
-    text: "\xD6\u011Fleden sonraki sars\u0131nt\u0131y\u0131 hissettin mi? Elif korkudan
-      masan\u0131n alt\u0131na girmi\u015F. Ak\u015Fam erken gel."
+    text: "\xD6\u011Fleden sonraki sars\u0131nt\u0131da evin duvarlar\u0131 \xE7atlad\u0131.
+      Elif korkudan masan\u0131n alt\u0131na girmi\u015F. Ak\u015Fam erken gel."
     condition: 0
     item: 0
     other: {fileID: 0}

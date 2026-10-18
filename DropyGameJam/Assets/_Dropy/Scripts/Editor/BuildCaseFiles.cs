@@ -575,7 +575,7 @@ namespace Dropy.EditorTools
 
                 Sealed(3, Unknown, "Kimse bir şey demez. -O", cases[Yurt], Seal.Approve),
                 Sealed(3, Unknown, "Pişman olacaksın. -O", cases[Yurt], Seal.Reject),
-                Msg(3, Wife, "Öğleden sonraki sarsıntıyı hissettin mi? Elif korkudan masanın altına girmiş. Akşam erken gel."),
+                Msg(3, Wife, "Öğleden sonraki sarsıntıda evin duvarları çatladı. Elif korkudan masanın altına girmiş. Akşam erken gel."),
             };
 
             story.bondStart = 3;
@@ -783,17 +783,21 @@ namespace Dropy.EditorTools
             var full = Plan((1, ShopItem.Bag), (2, ShopItem.Fixing));
             // Rüşvet 3. günde gelir: sabitlemeyi o akşam alır.
             var fullLate = Plan((1, ShopItem.Bag), (2, ShopItem.Fixing), (3, ShopItem.Fixing));
+            var repaired = Plan((1, ShopItem.Bag), (2, ShopItem.Fixing), (3, ShopItem.Fixing), (3, ShopItem.Repair));
 
             ok &= Expect("Dürüst, tam hazırlık, istek ödemez", Simulate(cases, story, honest, new int[0], full),
-                r => r.jailedDay == 0 && r.bought.Count == 2 && r.estrangedDay == 0);
+                r => r.jailedDay == 0 && r.bought.Count == 2 && r.estrangedDay == 0 && r.home == FamilyOutcome.Survived);
             ok &= Expect("Dürüst, geziyi öder, çantayı almaz", Simulate(cases, story, honest, new[] { 1 }, Plan((2, ShopItem.Fixing))),
-                r => r.jailedDay == 0 && r.bought.Contains(ShopItem.Fixing) && r.estrangedDay == 0);
+                r => r.jailedDay == 0 && r.bought.Contains(ShopItem.Fixing) && r.estrangedDay == 0 && r.home == FamilyOutcome.Injured);
             ok &= Expect("Dürüst, bütün istekleri öder", Simulate(cases, story, honest, new[] { 1, 2 }, full),
-                r => r.jailedDay == 0 && !r.bought.Contains(ShopItem.Fixing));
+                r => r.jailedDay == 0 && !r.bought.Contains(ShopItem.Fixing) && r.home == FamilyOutcome.Injured);
             ok &= Expect("Dürüst, hiçbir şey almaz, hiçbir istek ödemez", Simulate(cases, story, honest, new int[0], Plan()),
-                r => r.jailedDay == 0 && r.estrangedDay == Economy.QuakeDays[0]);
+                r => r.jailedDay == 0 && r.estrangedDay == Economy.QuakeDays[0] && r.home == FamilyOutcome.Lost);
             ok &= Expect("Rüşvet alır, her şeyi öder", Simulate(cases, story, bribe, new[] { 1, 2 }, fullLate),
                 r => r.bought.Count == 2 && r.jailedDay == Economy.QuakeDays[0]);
+            // Ev onarımı rüşvetle alınabilir: ev ayakta kalır ama memur yine hapse girer.
+            ok &= Expect("Rüşvet alır, evi onarır", Simulate(cases, story, bribe, new[] { 1, 2 }, repaired),
+                r => r.bought.Contains(ShopItem.Repair) && r.home == FamilyOutcome.HomeStood && r.jailedDay == Economy.QuakeDays[0]);
             ok &= Expect("Her şeyi onaylar", Simulate(cases, story, approveAll, new int[0], full),
                 r => r.jailedDay == Economy.QuakeDays[0]);
             ok &= Expect("Her şeyi reddeder", Simulate(cases, story, rejectAll, new int[0], full),
@@ -805,11 +809,12 @@ namespace Dropy.EditorTools
         class PathResult
         {
             public int money, bond, estrangedDay, jailedDay;
+            public FamilyOutcome home;
             public readonly HashSet<ShopItem> bought = new HashSet<ShopItem>();
 
             public override string ToString() =>
                 $"kasa {money}, bağ {bond}, küs {(estrangedDay > 0 ? estrangedDay + ". gün" : "hayır")}, " +
-                $"hapis {(jailedDay > 0 ? jailedDay + ". gün" : "yok")}, alınan: {string.Join(", ", bought)}";
+                $"hapis {(jailedDay > 0 ? jailedDay + ". gün" : "yok")}, ev: {home}, alınan: {string.Join(", ", bought)}";
         }
 
         static Dictionary<int, List<ShopItem>> Plan(params (int day, ShopItem item)[] buys)
@@ -853,6 +858,12 @@ namespace Dropy.EditorTools
                 }
                 if (Economy.IsQuakeDay(day))
                 {
+                    // Sarsıntı ev çatlatır; onarılmadıysa depremde yıkılır, aileyi çanta ve sabitleme kurtarır.
+                    bool damaged = false;
+                    for (int d = 1; d <= day; d++)
+                        damaged |= story.Tremor(d) > 0f;
+                    r.home = FamilyHome.Outcome(damaged, r.bought.Contains(ShopItem.Repair),
+                        r.bought.Contains(ShopItem.Bag), r.bought.Contains(ShopItem.Fixing));
                     if (collapsedThisPart)
                     {
                         r.jailedDay = day;

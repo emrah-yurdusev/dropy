@@ -30,6 +30,10 @@ namespace Dropy.EditorTools
         const string StylePath = "Assets/_Dropy/ScriptableObjects/Desk/NewsStyle.asset";
         const string PlayerPrefab = "Assets/_Dropy/Prefabs/Characters/BusinessMale_4_LowPolyStyle.prefab";
         const string AnchorPrefab = "Assets/_Dropy/Prefabs/Characters/Kadin_LowPoly.prefab";
+        /// <summary>Aile fotoğrafı: baba oyuncunun kendisi (Emrah), eşi ve kızı Elif.</summary>
+        const string FatherPrefab = "Assets/_Dropy/Prefabs/Characters/Emrah_LowPoly.prefab";
+        const string MotherPrefab = "Assets/_Dropy/Prefabs/Characters/Kadin_LowPoly.prefab";
+        const string EnvironmentFolder = "Assets/_Dropy/Prefabs/Environment/Deprem/";
         /// <summary>Spikerin kaşları videoda prefab'dakinden bu kadar önde durur ve en fazla bu kadar kalkar (metre).</summary>
         const float AnchorBrowForward = 0.003f, AnchorBrowLift = 0.006f;
         const string ClipsPath = "Assets/_Dropy/Art/Animations/Characters/Humanoid/BusinessMan_Anims_Humanoid.fbx";
@@ -491,6 +495,207 @@ namespace Dropy.EditorTools
             tex.SetPixels(pixels);
             tex.Apply();
             return tex;
+        }
+
+        // ---------------------------------------------------------------- aile fotoğrafı
+
+        /// <summary>
+        /// Akşam ekranındaki "Biz, geçen bayram" fotoğrafı: bahçede, arkada çit, ağaç ve apartman; Emrah, eşi ve kızı Elif gülümser.
+        /// Çocuk modeli olmadığı için Elif, kadın modelinin küçültülmüş ve başı biraz büyütülmüş hâli.
+        /// </summary>
+        [MenuItem("Dropy/Haber Görselleri/6 Aile Fotoğrafı")]
+        public static void BakeFamilyPhoto()
+        {
+            // Akşam ekranındaki çerçevenin resim alanı 308 × 228; iki katı çözünürlükte çekilir.
+            const int width = 616, height = 456;
+            var clips = Clips();
+            Texture2D photo;
+            using (var stage = new Stage(width, height, new Color(0.6f, 0.78f, 0.93f), orthographic: false))
+            {
+                var father = stage.Spawn(FatherPrefab, new Vector3(-0.38f, 0f, 0f), 172f);
+                var mother = stage.Spawn(MotherPrefab, new Vector3(0.34f, 0f, 0.02f), 188f);
+                mother.transform.localScale = Vector3.one * 0.94f;
+                var child = stage.Spawn(MotherPrefab, new Vector3(0.0f, 0f, -0.32f), 180f);
+                child.transform.localScale = Vector3.one * 0.6f;
+                var poses = new[]
+                {
+                    new Pose(father, clips["Idle"]),
+                    new Pose(mother, clips["Idle"]),
+                    new Pose(child, clips["Idle"]),
+                };
+                for (int i = 0; i < poses.Length; i++)
+                    poses[i].Sample(0.6f * i);
+                var childHead = child.GetComponentInChildren<Animator>().GetBoneTransform(HumanBodyBones.Head);
+                childHead.localScale *= 1.25f;
+                foreach (var person in new[] { father, mother, child })
+                {
+                    Smile(person);
+                    StripHandProps(person);
+                }
+                DressChild(child);
+
+                // Arka plan deprem sahnesinin modellerinden: çimen, bahçe çiti, çalılar, ağaç ve apartman.
+                var grass = new Color(0.42f, 0.62f, 0.33f);
+                stage.Cube(new Vector3(0f, -0.05f, 10f), new Vector3(60f, 0.1f, 60f), grass);
+                for (int i = -4; i < 4; i++)
+                {
+                    stage.Spawn(EnvironmentFolder + "Cit_2m.prefab", new Vector3(i * 2f, 0f, 3.4f), 0f);
+                    stage.Spawn(EnvironmentFolder + "Cit_Direk.prefab", new Vector3(i * 2f, 0f, 3.4f), 0f);
+                }
+                stage.Spawn(EnvironmentFolder + "Cali_2.prefab", new Vector3(-1.9f, 0f, 2.6f), 20f);
+                stage.Spawn(EnvironmentFolder + "Cali_1.prefab", new Vector3(2.1f, 0f, 2.8f), 0f);
+                stage.Spawn(EnvironmentFolder + "Agac_Yuvarlak_1.prefab", new Vector3(-4.6f, 0f, 7f), 30f);
+                stage.Spawn(EnvironmentFolder + "Apartman_E.prefab", new Vector3(9f, 0f, 18f), 180f);
+
+                stage.Light(new Vector3(38f, -28f, 0f), 1.25f);
+                RenderSettings.ambientLight = new Color(0.5f, 0.52f, 0.56f);
+                var sun = GameObject.Find("BakeLight")?.GetComponent<Light>();
+                if (sun != null)
+                {
+                    sun.shadows = LightShadows.Soft;
+                    sun.color = new Color(1f, 0.96f, 0.88f);
+                }
+                stage.LookAt(new Vector3(0.05f, 1.15f, -5.2f), new Vector3(0f, 0.95f, 0f), 30f);
+                photo = PhotoFinish(stage.Capture());
+                foreach (var pose in poses)
+                    pose.Dispose();
+            }
+            var style = Style();
+            style.familyPhoto = SaveSprite("Aile_Foto", photo, Vector4.zero);
+            EditorUtility.SetDirty(style);
+            AssetDatabase.SaveAssets();
+        }
+
+        /// <summary>FaceController'ın "Happy" ifadesi elle: ağız köşeleri yukarı, kaşlar hafif kalkık.</summary>
+        static void Smile(GameObject character)
+        {
+            var face = character.GetComponentInChildren<FaceController>(true);
+            if (face == null)
+                return;
+            var t = face.transform;
+            Tilt(t.Find("Mouth/Mouth_L"), -1f, 20f);
+            Tilt(t.Find("Mouth/Mouth_R"), 1f, 20f);
+            Tilt(t.Find("Brow_L"), -1f, -6f);
+            Tilt(t.Find("Brow_R"), 1f, -6f);
+        }
+
+        static void Tilt(Transform part, float side, float degrees)
+        {
+            if (part != null)
+                part.localRotation *= Quaternion.Euler(0f, 0f, side * degrees);
+        }
+
+        /// <summary>
+        /// Modelin elindeki eşyaları (çanta, tablet, kâğıt) fotoğraf için siler: ele bağlı üçgenlerden dokusu renksiz
+        /// (gri/siyah/beyaz) olanlar eşyadır; ten ve manşet renkli olanlar el olarak kalır. Asıl model değişmez.
+        /// </summary>
+        static void StripHandProps(GameObject character)
+        {
+            foreach (var skinned in character.GetComponentsInChildren<SkinnedMeshRenderer>())
+            {
+                var texture = Readable(BaseMap(skinned.sharedMaterial));
+                if (texture == null)
+                    continue;
+                var mesh = Object.Instantiate(skinned.sharedMesh);
+                var uv = mesh.uv;
+                var weights = mesh.boneWeights;
+                var bones = skinned.bones;
+                var triangles = mesh.triangles;
+                var kept = new List<int>(triangles.Length);
+                for (int t = 0; t < triangles.Length; t += 3)
+                {
+                    bool onHand = true;
+                    for (int j = 0; j < 3 && onHand; j++)
+                    {
+                        string bone = bones[weights[triangles[t + j]].boneIndex0].name;
+                        onHand = bone.Contains("LeftHand") || bone.Contains("RightHand");
+                    }
+                    if (onHand)
+                    {
+                        var center = (uv[triangles[t]] + uv[triangles[t + 1]] + uv[triangles[t + 2]]) / 3f;
+                        var color = texture.GetPixelBilinear(center.x, center.y);
+                        float saturation = Mathf.Max(color.r, color.g, color.b) - Mathf.Min(color.r, color.g, color.b);
+                        if (saturation < 0.12f)
+                            continue;
+                    }
+                    kept.Add(triangles[t]);
+                    kept.Add(triangles[t + 1]);
+                    kept.Add(triangles[t + 2]);
+                }
+                mesh.SetTriangles(kept, 0);
+                skinned.sharedMesh = mesh;
+                Object.DestroyImmediate(texture);
+            }
+        }
+
+        /// <summary>Elif annesinin küçük kopyası gibi durmasın: lacivert takım sarıya, kırmızı gömlek beyaza boyanır.</summary>
+        static void DressChild(GameObject child)
+        {
+            var dress = new Color(0.98f, 0.76f, 0.26f);
+            var blouse = new Color(0.97f, 0.96f, 0.92f);
+            foreach (var skinned in child.GetComponentsInChildren<SkinnedMeshRenderer>())
+            {
+                var texture = Readable(BaseMap(skinned.sharedMaterial));
+                if (texture == null)
+                    continue;
+                var pixels = texture.GetPixels();
+                for (int i = 0; i < pixels.Length; i++)
+                {
+                    var c = pixels[i];
+                    float lum = c.r * 0.3f + c.g * 0.59f + c.b * 0.11f;
+                    if (c.b > c.r + 0.1f && c.b > c.g + 0.05f)
+                        pixels[i] = dress * Mathf.Clamp(lum / 0.24f, 0.55f, 1.15f);
+                    else if (c.r - c.g > 0.35f)
+                        pixels[i] = blouse * Mathf.Clamp(lum / 0.33f, 0.7f, 1.05f);
+                    pixels[i].a = 1f;
+                }
+                texture.SetPixels(pixels);
+                texture.Apply();
+                var material = new Material(skinned.sharedMaterial);
+                material.SetTexture("_BaseMap", texture);
+                material.mainTexture = texture;
+                skinned.sharedMaterial = material;
+            }
+        }
+
+        static Texture BaseMap(Material material) =>
+            material == null ? null : material.HasProperty("_BaseMap") && material.GetTexture("_BaseMap") != null ? material.GetTexture("_BaseMap") : material.mainTexture;
+
+        /// <summary>Okunamayan (sıkıştırılmış) dokunun okunabilir kopyası.</summary>
+        static Texture2D Readable(Texture source)
+        {
+            if (source == null)
+                return null;
+            var rt = RenderTexture.GetTemporary(source.width, source.height, 0, RenderTextureFormat.ARGB32, RenderTextureReadWrite.sRGB);
+            Graphics.Blit(source, rt);
+            var previous = RenderTexture.active;
+            RenderTexture.active = rt;
+            var copy = new Texture2D(source.width, source.height, TextureFormat.RGBA32, false);
+            copy.ReadPixels(new Rect(0, 0, source.width, source.height), 0, 0);
+            copy.Apply();
+            RenderTexture.active = previous;
+            RenderTexture.ReleaseTemporary(rt);
+            return copy;
+        }
+
+        /// <summary>Basılı fotoğraf hissi: hafif sıcak ton ve kenarlarda koyulaşma.</summary>
+        static Texture2D PhotoFinish(Texture2D source)
+        {
+            int w = source.width, h = source.height;
+            var pixels = source.GetPixels();
+            for (int y = 0; y < h; y++)
+            for (int x = 0; x < w; x++)
+            {
+                float dx = (x + 0.5f) / w - 0.5f, dy = (y + 0.5f) / h - 0.5f;
+                float vignette = 1f - 0.35f * Mathf.Pow(Mathf.Clamp01(Mathf.Sqrt(dx * dx + dy * dy) * 1.45f), 2.2f);
+                var c = pixels[y * w + x];
+                c = new Color(c.r * 1.04f + 0.02f, c.g * 1.0f + 0.01f, c.b * 0.92f, 1f) * vignette;
+                c.a = 1f;
+                pixels[y * w + x] = c;
+            }
+            source.SetPixels(pixels);
+            source.Apply();
+            return source;
         }
 
         // ---------------------------------------------------------------- spiker videosu

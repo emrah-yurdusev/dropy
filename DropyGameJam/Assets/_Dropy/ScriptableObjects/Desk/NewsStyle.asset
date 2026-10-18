@@ -53,6 +53,7 @@ MonoBehaviour:
   paperTexture: {fileID: 21300000, guid: 51bd05b73a7e7a0489caf46a31c3fe8b, type: 3}
   playerPhoto: {fileID: 21300000, guid: fb13fe33fc79a174d9c8fd2421761fff, type: 3}
   mugshotPhoto: {fileID: 21300000, guid: 18521b532a08351429d2ecb8d6aff0a3, type: 3}
+  familyPhoto: {fileID: 21300000, guid: 5cf0be1d15776a041a74297a5ce8aa24, type: 3}
   paper: {r: 0.92, g: 0.9, b: 0.84, a: 1}
   ink: {r: 0.1, g: 0.09, b: 0.07, a: 1}
   fillerInk: {r: 0.42, g: 0.4, b: 0.35, a: 1}

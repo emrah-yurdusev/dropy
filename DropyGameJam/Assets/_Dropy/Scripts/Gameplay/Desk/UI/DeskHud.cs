@@ -399,17 +399,19 @@ namespace Dropy.Gameplay
 
         /// <summary>Oyun sonu gazetesi; altındaki düğmeyle karneye geçilir.</summary>
         public void ShowFinal(IList<DeskManager.CaseResult> results, IDictionary<ShopItem, int> boughtOn,
-            IEnumerable<(FamilyNeed need, bool paid)> family, bool estranged, int money, string report)
+            IEnumerable<(FamilyNeed need, bool paid)> family, bool estranged, int money, string report,
+            FamilyOutcome home = FamilyOutcome.HomeStood)
         {
             summaryText.text = report;
-            newspaper.Show(NewspaperWriter.Final(results, boughtOn, family, estranged, money, style));
+            newspaper.Show(NewspaperWriter.Final(results, boughtOn, family, estranged, money, style, home));
         }
 
         /// <summary>Hapis: depremde onayladığın bina çöktü, oyun biter. Tutuklanma haberi; karne yine açılır.</summary>
-        public void ShowJail(IList<DeskManager.CaseResult> results, IList<DeskManager.CaseResult> fallen, int quakeDay)
+        public void ShowJail(IList<DeskManager.CaseResult> results, IList<DeskManager.CaseResult> fallen, int quakeDay,
+            IDictionary<ShopItem, int> boughtOn = null, FamilyOutcome home = FamilyOutcome.HomeStood)
         {
             summaryText.text = ReportCard(results);
-            newspaper.Show(NewspaperWriter.Jail(results, fallen, quakeDay, style));
+            newspaper.Show(NewspaperWriter.Jail(results, fallen, quakeDay, style, boughtOn, home));
         }
 
         void ShowReport()
