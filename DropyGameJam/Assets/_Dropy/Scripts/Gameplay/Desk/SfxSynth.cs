@@ -587,14 +587,10 @@ namespace Dropy.Gameplay
             const float length = 9f;
             var hum = Brown(length);
             var low = Filter.Low(250f);
-            var air = Filter.Band(1200f, 0.4f);
             var buf = Buffer(length);
+            // Yalnız alçak oda uğultusu: 7 saniyede kabarıp sönen "trafik" hışırtısı rüzgâr gibi duyuluyordu, çıkarıldı.
             for (int i = 0; i < buf.Length; i++)
-            {
-                float t = i / (float)Rate;
-                float traffic = 0.5f + 0.5f * Mathf.Sin(Tau * t / 7f);
-                buf[i] = low.Process(hum[i]) * 3f + air.Process(Noise()) * 0.3f * traffic;
-            }
+                buf[i] = low.Process(hum[i]) * 3f;
             return Normalize(Loop(buf, 1f), 0.5f);
         }
 
