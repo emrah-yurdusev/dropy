@@ -1,7 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using TMPro;
 using UnityEngine;
 using UnityEngine.InputSystem;
@@ -25,8 +24,7 @@ namespace Dropy.Gameplay
         CanvasGroup toastGroup;
         TextMeshProUGUI warnText;
         CanvasGroup warnGroup;
-        RectTransform summary;
-        TextMeshProUGUI summaryText;
+        ReportCardView reportCard;
         NewsStyle style;
         TvNewsView tv;
         NewspaperView newspaper;
@@ -49,7 +47,8 @@ namespace Dropy.Gameplay
         public event System.Action ResumeClicked;
         public event System.Action RestartClicked;
 
-        public void Build(RectTransform root, NewsStyle newsStyle)
+        /// <param name="handFont">Karnedeki keçeli kalem yazısının fontu (öğretici kalemle aynı).</param>
+        public void Build(RectTransform root, NewsStyle newsStyle, TMP_FontAsset handFont = null)
         {
             style = newsStyle;
             var money = Ui.Image(root, "Money", Dark, Ui.Rounded).rectTransform;
@@ -101,24 +100,11 @@ namespace Dropy.Gameplay
             newspaper.ReportClicked += ShowReport;
             newspaper.RestartClicked += () => RestartClicked?.Invoke();
 
-            summary = Ui.Image(root, "Summary", new Color(0.08f, 0.08f, 0.1f, 0.94f), Ui.Rounded).rectTransform;
-            summary.Place(new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), Vector2.zero, new Vector2(1100f, 980f));
-            summaryText = Ui.Text(summary, "Text", "", 22f, Color.white);
-            summaryText.enableAutoSizing = true;
-            summaryText.fontSizeMin = 14f;
-            summaryText.fontSizeMax = 30f;
-            summaryText.rectTransform.Stretch(40f, 110f, 40f, 36f);
-            summaryText.richText = true;
-            // Karne sayfası: gazeteden açılır, "Gazete" ile geri döner.
-            summary.GetComponent<Image>().color = new Color(0.95f, 0.93f, 0.86f, 0.98f);
-            summaryText.color = new Color(0.12f, 0.11f, 0.1f);
-            var toggle = Ui.Button(summary, "PageToggle", "GAZETE", new Color(0.24f, 0.32f, 0.45f), Color.white, 22f);
-            ((RectTransform)toggle.transform).Place(new Vector2(0.5f, 0f), new Vector2(1f, 0f), new Vector2(-10f, 28f), new Vector2(300f, 64f));
-            toggle.onClick.AddListener(ShowNewspaper);
-            var again = Ui.Button(summary, "Restart", "YENİDEN OYNA", new Color(0.85f, 0.6f, 0.2f), Color.white, 22f);
-            ((RectTransform)again.transform).Place(new Vector2(0.5f, 0f), new Vector2(0f, 0f), new Vector2(10f, 28f), new Vector2(300f, 64f));
-            again.onClick.AddListener(() => RestartClicked?.Invoke());
-            summary.gameObject.SetActive(false);
+            // Karne: gazeteden açılır, "Gazete" ile geri döner.
+            reportCard = gameObject.AddComponent<ReportCardView>();
+            reportCard.Build(root, handFont);
+            reportCard.NewspaperClicked += ShowNewspaper;
+            reportCard.RestartClicked += () => RestartClicked?.Invoke();
 
             // Gelişi/gidişi geçerken ekranı kısa süre karartan perde ve yürürken görünen ipucu.
             var fadeImage = Ui.Image(root, "Fade", Color.black, raycast: false);
@@ -449,18 +435,16 @@ namespace Dropy.Gameplay
             toastRoutine = StartCoroutine(Fade(toastGroup, 4.5f));
         }
 
-        const string Green = "#1f7a3a", Red = "#a3221b";
-
         /// <summary>Reddedilen çürük bina: depremde çöktü ama iskân verilmediği için boştu.</summary>
         public static bool FellEmpty(DeskManager.CaseResult r) =>
             r.fate == BuildingFate.NotBuilt && BuildingRules.Flaws(r.buildingCase).Count > 0;
 
         /// <summary>Oyun sonu gazetesi; altındaki düğmeyle karneye geçilir.</summary>
         public void ShowFinal(IList<DeskManager.CaseResult> results, IDictionary<ShopItem, int> boughtOn,
-            IEnumerable<(FamilyNeed need, bool paid)> family, bool estranged, int money, string report,
+            IEnumerable<(FamilyNeed need, bool paid)> family, bool estranged, int money,
             FamilyOutcome home = FamilyOutcome.HomeStood, int reward = 0)
         {
-            summaryText.text = report;
+            reportCard.Set(results);
             newspaper.Show(NewspaperWriter.Final(results, boughtOn, family, estranged, money, style, home, reward));
         }
 
@@ -468,59 +452,27 @@ namespace Dropy.Gameplay
         public void ShowJail(IList<DeskManager.CaseResult> results, IList<DeskManager.CaseResult> fallen, int quakeDay,
             IDictionary<ShopItem, int> boughtOn = null, FamilyOutcome home = FamilyOutcome.HomeStood)
         {
-            summaryText.text = ReportCard(results);
+            reportCard.Set(results);
             newspaper.Show(NewspaperWriter.Jail(results, fallen, quakeDay, style, boughtOn, home));
         }
 
+        /// <summary>Dosya karnesi (<see cref="ReportCardView"/>): gazete ne olduğunu söyler, karne nedenini öğretir.</summary>
         void ShowReport()
         {
             newspaper.Hide();
-            summary.gameObject.SetActive(true);
-            summary.SetAsLastSibling();
+            reportCard.Show();
         }
 
         void ShowNewspaper()
         {
-            summary.gameObject.SetActive(false);
+            reportCard.Hide();
             newspaper.Show();
         }
 
         public static int CountCorrect(IList<DeskManager.CaseResult> results) => results.Count(r => r.seal == RightSeal(r, results));
 
-        /// <summary>
-        /// Dosya karnesi: her dosyada basılan ve doğru mühür; yanlışlarda kuralın kısa açıklaması.
-        /// Gazete ne olduğunu söyler, karne nedenini öğretir.
-        /// </summary>
-        public static string ReportCard(IList<DeskManager.CaseResult> results)
-        {
-            int correct = CountCorrect(results);
-            var sb = new StringBuilder();
-            sb.AppendLine("<size=20><b>BÜRO KAYITLARI</b>  ·  DOSYA KARNESİ</size>");
-            sb.AppendLine("<size=14>________________________________________________________________________________</size>");
-            sb.AppendLine($"<size=34><b>{results.Count} dosyadan {correct} doğru</b></size>\n");
-            int day = 0;
-            foreach (var r in results)
-            {
-                if (r.day != day)
-                {
-                    day = r.day;
-                    sb.AppendLine($"<b>{day}. gün</b>");
-                }
-                var right = RightSeal(r, results);
-                string bribe = r.bribed ? $"  ·  <color={Red}>rüşvet aldın</color>" : "";
-                if (r.seal == right)
-                {
-                    sb.AppendLine($"<color={Green}>Doğru</color>  {r.buildingCase.buildingName}  ·  {DeskManager.SealName(r.seal)}{bribe}");
-                    continue;
-                }
-                sb.AppendLine($"<color={Red}>Yanlış</color>  {r.buildingCase.buildingName}  ·  {DeskManager.SealName(r.seal)} bastın, doğrusu {DeskManager.SealName(right)}.{bribe}");
-                sb.AppendLine($"<size=85%><i>      {BuildingRules.Explain(r.buildingCase, r.seal)}</i></size>");
-            }
-            return sb.ToString();
-        }
-
         /// <summary>Perde günde bir kez basılabilir: o gün perde başka binaya basıldıysa ikinci yumuşak kata red de doğrudur.</summary>
-        static Seal RightSeal(DeskManager.CaseResult r, IList<DeskManager.CaseResult> results)
+        public static Seal RightSeal(DeskManager.CaseResult r, IList<DeskManager.CaseResult> results)
         {
             var right = BuildingRules.CorrectSeal(r.buildingCase);
             if (right == Seal.ShearWall && r.seal == Seal.Reject && results.Any(o => o != r && o.day == r.day && o.seal == Seal.ShearWall))

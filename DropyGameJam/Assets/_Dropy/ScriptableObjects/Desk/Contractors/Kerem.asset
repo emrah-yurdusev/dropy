@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: Kerem
   m_EditorClassIdentifier: 
   displayName: Kerem Bey
-  prefab: {fileID: 5560211946677132180, guid: dd56e1adc9c012b4eab77e424ec4811b, type: 3}
+  prefab: {fileID: 8857029950995756909, guid: 14074826b5076484292140bf5682ecbf, type: 3}
   personality: {fileID: 11400000, guid: 3c5fe72124f3f944083f7d377f9d7ce6, type: 2}
   overrides:
     address: 
