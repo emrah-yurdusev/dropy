@@ -21,6 +21,7 @@ namespace Dropy.Gameplay
         {
             var sequence = AdditiveCinematic.Find<CellSequence>(scene);
             var caption = AdditiveCinematic.Find<CinematicCaption>(scene);
+            Sfx.Prison(true);
             yield return new WaitForSeconds(CalmBeforeDoor);
             if (sequence != null)
             {
@@ -30,6 +31,7 @@ namespace Dropy.Gameplay
                 while (sequence.IsRunning)
                     yield return null;
             }
+            Sfx.Prison(false);
         }
     }
 }

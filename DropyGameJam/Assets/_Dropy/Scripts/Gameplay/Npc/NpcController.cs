@@ -77,6 +77,10 @@ namespace Dropy.Gameplay
         public FaceController Face => face;
         public Gender Gender => gender;
 
+        /// <summary>Bir ayak basışında alınan yol (m).</summary>
+        const float StrideLength = 0.75f;
+        float stepDistance;
+
         void Awake()
         {
             agent = GetComponent<NavMeshAgent>();
@@ -100,6 +104,19 @@ namespace Dropy.Gameplay
             float speed = agent.enabled ? agent.velocity.magnitude : 0f;
             animator.SetFloat(SpeedId, speed);
             animator.SetFloat(WalkSpeedId, Mathf.Max(0.5f, speed / walkAnimSpeed));
+
+            // Yürümeye başlayınca ilk adım çabuk gelsin diye sayaç yarıdan başlar.
+            if (speed > 0.2f)
+            {
+                stepDistance += speed * Time.deltaTime;
+                if (stepDistance >= StrideLength)
+                {
+                    stepDistance -= StrideLength;
+                    Sfx.Step(transform.position);
+                }
+            }
+            else
+                stepDistance = StrideLength * 0.5f;
         }
 
         /// <summary>Yürüme hızını Inspector'daki değerin katı yapar; animasyon hıza kendisi uyar.</summary>
@@ -241,6 +258,7 @@ namespace Dropy.Gameplay
             yield return WaitForState(SitTag);
             while (animator.GetCurrentAnimatorStateInfo(0).IsName("SitDown"))
                 yield return null;
+            Sfx.ChairSit(transform.position);
         }
 
         /// <summary>
@@ -268,6 +286,7 @@ namespace Dropy.Gameplay
                 yield break;
 
             animator.SetBool(SittingId, false);
+            Sfx.ChairStand(transform.position);
             yield return WaitForStateExit(SitTag);
 
             currentChair.Release(this);

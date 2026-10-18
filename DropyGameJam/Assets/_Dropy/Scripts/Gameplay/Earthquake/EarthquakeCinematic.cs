@@ -31,6 +31,7 @@ namespace Dropy.Gameplay
                     caption.StartCoroutine(caption.ShowLines(captions, CaptionDelay));
                 while (sequence.IsRunning)
                     yield return null;
+                Sfx.Siren();
             }
             yield return new WaitForSeconds(HoldAfterQuake);
         }

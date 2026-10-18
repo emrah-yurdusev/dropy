@@ -1,3 +1,4 @@
+using System.Collections;
 using UnityEngine;
 
 namespace Dropy.Gameplay
@@ -55,6 +56,15 @@ namespace Dropy.Gameplay
                 return;
             Anim.Stop();
             Anim.Play(ClipName);
+            if (Application.isPlaying && isActiveAndEnabled)
+                StartCoroutine(CollapseSound());
+        }
+
+        /// <summary>Çöküş sesi, binanın sallanmayı bırakıp yıkılmaya başladığı ana (~2. saniye) denk gelir.</summary>
+        IEnumerator CollapseSound()
+        {
+            yield return new WaitForSeconds(2f);
+            Sfx.Collapse();
         }
 
         /// <summary>Binayı animasyonun ilk karesine, yani sağlam haline döndürür.</summary>

@@ -183,7 +183,7 @@ namespace Dropy.Gameplay
             alert.transform.SetAsLastSibling();
             if (pauseMenu.activeSelf)
                 pauseMenu.transform.SetAsLastSibling();
-            Sfx.Buzz();
+            Sfx.Alarm();
             while (!alertClosed)
                 yield return null;
             alert.SetActive(false);

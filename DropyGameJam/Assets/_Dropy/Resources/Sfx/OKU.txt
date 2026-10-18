@@ -1,0 +1,11 @@
+Bu klasöre konan ses dosyası, aynı adlı koddan üretilen sesin yerine çalar (uzantı serbest: .wav, .ogg, .mp3).
+Ör. collapse.wav konursa bina çökmesi o dosyayla çalar. Dosyayı silince koddaki ses geri gelir.
+
+Adlar:
+  arayüz    : click, hover, pause_open, pause_close, whoosh
+  masa      : stamp, stamp_pick, stamp_drop, paper, paper_slide, page, pen, hammer, buzz, talk
+  para      : coin, pay, debt
+  ekranlar  : notify, alarm, tv_on, breaking, press
+  ofis      : step, door_open, door_close, chair_sit, chair_stand, room (döngü), ambience (döngü)
+  deprem    : rumble, collapse, glass, siren
+  hapishane : prison (döngü)

@@ -37,6 +37,9 @@ namespace Dropy.Gameplay
         public Vector3 Center => closedPosition + closedRotation * (Vector3.right * width * 0.5f);
         Vector3 Normal => closedRotation * Vector3.forward;
 
+        /// <summary>Kapanmakta; tam kapandığı an çarpma sesi çıkar.</summary>
+        bool closing;
+
         void Awake()
         {
             closedPosition = transform.position;
@@ -50,6 +53,11 @@ namespace Dropy.Gameplay
                 return;
             currentAngle = Mathf.MoveTowards(currentAngle, targetAngle, swingSpeed * Time.deltaTime);
             Leaf.localRotation = leafClosedRotation * Quaternion.Euler(0f, currentAngle, 0f);
+            if (closing && currentAngle == 0f)
+            {
+                closing = false;
+                Sfx.DoorClose(Center);
+            }
         }
 
         /// <summary>Kapıyı açan kişinin tersine doğru açar.</summary>
@@ -59,14 +67,21 @@ namespace Dropy.Gameplay
                 return;
             // +açı kanadı -Z yüzüne doğru döndürür; açan +Z tarafındaysa kapı -Z'ye açılır.
             targetAngle = IsOnFrontSide(openerPosition) ? openAngle : -openAngle;
+            closing = false;
+            Sfx.DoorOpen(Center);
         }
 
-        public void Close() => targetAngle = 0f;
+        public void Close()
+        {
+            closing = currentAngle != 0f || targetAngle != 0f;
+            targetAngle = 0f;
+        }
 
         /// <summary>Kapıyı animasyonsuz anında kapatır (geçiş atlanınca, ekran kararmışken).</summary>
         public void SnapClosed()
         {
             currentAngle = targetAngle = 0f;
+            closing = false;
             Leaf.localRotation = leafClosedRotation;
         }
 

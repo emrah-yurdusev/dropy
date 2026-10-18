@@ -151,7 +151,11 @@ namespace Dropy.Gameplay
             stampCursors.Apply(Seal.None);
         }
 
-        void Start() => week = StartCoroutine(RunWeek(0, eveningFirst: false));
+        void Start()
+        {
+            StartCoroutine(Sfx.Prewarm());
+            week = StartCoroutine(RunWeek(0, eveningFirst: false));
+        }
 
         void BuildUi()
         {
@@ -222,6 +226,13 @@ namespace Dropy.Gameplay
 
         void SetPaused(bool value)
         {
+            if (value != paused)
+            {
+                if (value)
+                    Sfx.PauseOpen();
+                else
+                    Sfx.PauseClose();
+            }
             paused = value;
             stampCursors.Apply(value ? Seal.None : inspection.Tools.Active);
             Time.timeScale = value ? 0f : 1f;
@@ -234,6 +245,7 @@ namespace Dropy.Gameplay
             Time.timeScale = 1f;
             AudioListener.pause = false;
             Sfx.Ambience(0f);
+            Sfx.Room(0f);
             SceneManager.LoadScene(SceneManager.GetActiveScene().name);
         }
 
@@ -277,6 +289,7 @@ namespace Dropy.Gameplay
                 int firstFile = day == startDay ? startIndex % Economy.FilesPerDay : 0;
                 inspection.SetDay(day);
                 Sfx.Ambience(0.03f + 0.035f * day);
+                Sfx.Room(0.35f);
                 MusicDirector.Play(OfficeMusic(day));
                 if (firstFile == 0)
                 {
@@ -328,6 +341,7 @@ namespace Dropy.Gameplay
                     yield break;
             }
             Sfx.Ambience(0f);
+            Sfx.Room(0f);
             MusicDirector.Play(MusicCue.Final, 2f);
             var family = story != null
                 ? story.needs.Select(n => (n, paidNeeds.Contains(n)))
@@ -516,6 +530,8 @@ namespace Dropy.Gameplay
             results.Add(result);
             money += result.money;
             hud.SetMoney(money);
+            if (result.money > 0)
+                Sfx.Coin();
             string paid = day > Economy.LastPaidDay ? "harç yok" : $"+{Ui.Money(result.money)}";
             hud.Toast($"{SealName(result.seal)}   {paid}", new Color(0.98f, 0.82f, 0.4f));
             if (result.warning != null)
@@ -945,7 +961,12 @@ namespace Dropy.Gameplay
                     messages.Add(new EveningMessage { sender = need.sender, text = need.request, request = need });
             }
             if (messages.Count > 0)
-                Sfx.Buzz();
+                Sfx.Notify();
+            // Borç ya da prim, bildirimin hemen ardından kendi sesiyle duyulsun.
+            if (money < 0)
+                StartCoroutine(After(0.6f, Sfx.Debt));
+            else if (bonus > 0)
+                StartCoroutine(After(0.6f, Sfx.Coin));
 
             inEvening = true;
             eveningRequests.Clear();
@@ -1090,6 +1111,7 @@ namespace Dropy.Gameplay
             money -= need.price;
             paidNeeds.Add(need);
             bond = Mathf.Min(BondMax, bond + 1);
+            Sfx.Pay();
             hud.SetMoney(money);
             evening.Refresh(money, purchased, paidNeeds, bond, BondMax);
         }
@@ -1102,8 +1124,15 @@ namespace Dropy.Gameplay
             money -= price;
             purchased.Add(item);
             boughtOn[item] = day;
+            Sfx.Pay();
             hud.SetMoney(money);
             evening.Refresh(money, purchased, paidNeeds, bond, BondMax);
+        }
+
+        static IEnumerator After(float seconds, System.Action action)
+        {
+            yield return new WaitForSeconds(seconds);
+            action();
         }
 
         /// <summary>Depremden önceki küçük sarsıntı: kamera titrer, uğultu gelir.</summary>
@@ -1126,6 +1155,8 @@ namespace Dropy.Gameplay
             MusicDirector.Stop(0.8f);
             hud.Quake("DEPREM");
             Sfx.Rumble(4.5f, 1f);
+            Sfx.Room(0f);
+            StartCoroutine(After(1.2f, Sfx.Glass));
             yield return Shake(4f, 0.06f);
             yield return new WaitForSeconds(0.8f);
 
@@ -1141,6 +1172,7 @@ namespace Dropy.Gameplay
             {
                 jailed = true;
                 Sfx.Ambience(0f);
+                Sfx.Room(0f);
                 MusicDirector.Play(MusicCue.Final, 2f);
                 hud.ShowJail(results, fallen, quakeDay, boughtOn, HomeOutcome);
                 yield break;

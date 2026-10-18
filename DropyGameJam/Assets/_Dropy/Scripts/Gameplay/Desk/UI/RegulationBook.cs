@@ -135,7 +135,12 @@ namespace Dropy.Gameplay
                 visible.Add(i);
                 var topic = data.pages[i].topic;
                 var tab = Ui.Button(tabRow, "Tab" + i, data.pages[i].title, TabColor, Ink, 16f);
-                tab.onClick.AddListener(() => ShowPage(slot));
+                ButtonClickSound.Skip(tab);
+                tab.onClick.AddListener(() =>
+                {
+                    Sfx.PageTurn();
+                    ShowPage(slot);
+                });
                 if (topic != RuleTopic.None)
                 {
                     // Sekmenin altında konu rengi şerit: belgedeki aynı renkli satırlarla eşleşir.
