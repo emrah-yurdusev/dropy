@@ -23235,8 +23235,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 885a0e309e173b0469dfcfcbdb20e515, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  background: {fileID: 21300000, guid: 8b503f3640f5d55468483c48d582d0fe, type: 3}
-  liveBackground: 1
+  background: {fileID: 21300000, guid: 3a882175e27e67347929955f3b56096a, type: 3}
+  liveBackground: 0
   gameScene: main
   enableOnStart: []
   menuMusic: {fileID: 8300000, guid: 0eccf2fcc081878429c40b2b8dc1f206, type: 3}

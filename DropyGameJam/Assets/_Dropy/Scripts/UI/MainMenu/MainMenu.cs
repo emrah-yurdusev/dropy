@@ -259,7 +259,7 @@ namespace Dropy.Menu
 
         void BuildMenuButtons(RectTransform root)
         {
-            var column = Ui.Rect("Buttons", root).Place(new Vector2(1f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(-400f, -120f), new Vector2(600f, 460f));
+            var column = Ui.Rect("Buttons", root).Place(new Vector2(1f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(-400f, -300f), new Vector2(600f, 460f));
 
             var start = MenuButton(column, "StartButton", "OYUNA BAŞLA", StartFace, StartEdge, new Vector2(580f, 128f), 50f, PlayIcon);
             start.Place(new Vector2(0.5f, 1f), new Vector2(0.5f, 1f), Vector2.zero, new Vector2(580f, 128f));
