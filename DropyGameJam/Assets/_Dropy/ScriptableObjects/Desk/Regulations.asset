@@ -17,9 +17,9 @@ MonoBehaviour:
   - title: "M\xFCh\xFCrler"
     topic: 0
     day: 1
-    body: "<b>ONAY</b>: +1500 TL har\xE7. \u0130sk\xE2n verilir, aileler ta\u015F\u0131n\u0131r.\n\n<b>RED</b>:
+    body: "<b>ONAY</b>: +15000 TL har\xE7. \u0130sk\xE2n verilir, aileler ta\u015F\u0131n\u0131r.\n\n<b>RED</b>:
       0 TL. \u0130sk\xE2n verilmez, bina bo\u015F kal\u0131r.\n\n<b>PERDE EKLE</b>:
-      +1000 TL, g\xFCnde bir kez. Binaya deprem perdesi (ta\u015F\u0131y\u0131c\u0131
+      +10000 TL, g\xFCnde bir kez. Binaya deprem perdesi (ta\u015F\u0131y\u0131c\u0131
       duvar) eklenir, sonra isk\xE2n verilir."
     why: 
   - title: Beton

@@ -43,7 +43,7 @@ namespace Dropy.Gameplay
         public TMP_FontAsset tvFont;
 
         [Header("Gazete · yazılar")]
-        public string masthead = "KENT GAZETESİ";
+        public string masthead = "FAYKÖY GAZETESİ";
         public string issue = "Sayı 1842";
         public string price = "Fiyatı 10 TL";
         public string specialEdition = "DEPREM ÖZEL BASKISI";
@@ -53,10 +53,10 @@ namespace Dropy.Gameplay
         [TextArea(2, 5)]
         public List<string> fillers = new List<string>
         {
-            "Kentte hissedilen deprem kıyı şeridinde ve eski çarşıda hasara yol açtı. Ekipler sabaha kadar çalıştı.",
-            "Uzmanlar zemin etüdü yapılmadan verilen izinlerin ağır sonuçlar doğurabileceğini hatırlattı. Belediye meclisi olağanüstü toplanıyor; muhalefet hesap sorulmasını istedi.",
-            "Liman yolu trafiğe kontrollü olarak açıldı. Okullar hafta boyunca tatil edildi. Kızılay kan bağışı çağrısında bulundu; bağış noktaları sabah dokuzda açılıyor.",
-            "Spor: Yerel takımın hafta sonu maçı ertelendi. Borsa güne düşüşle başladı. Hava: parçalı bulutlu, gece soğuk.",
+            "Fayköy'de hissedilen deprem eski çarşıda hasara yol açtı. Ekipler sabaha kadar çalıştı; toplanma alanlarında çorba dağıtıldı.",
+            "Uzmanlar zemin etüdü yapılmadan verilen izinlerin risk taşıdığını hatırlattı. Belediye, Deprem Haftası boyunca bütün binaları yeniden denetleyecek.",
+            "Liman yolu trafiğe kontrollü olarak açıldı. Okullar hafta boyunca tatil edildi. Gönüllüler toplanma alanlarında çocuklara oyun kurdu.",
+            "Spor: Fayköyspor'un hafta sonu maçı ertelendi. Hava: parçalı bulutlu, gece serin.",
         };
         public string adTitle = "DEPREM ÇANTASI";
         public string adLine = "su · fener · düdük · ilk yardım";
@@ -108,24 +108,24 @@ namespace Dropy.Gameplay
         [Header("Final manşetleri")]
         public string headlineAllStanding = "İskân verilen binaların hepsi ayakta";
         [Tooltip("{0} = boş çöken bina sayısı")]
-        public string headlineEmptyFallen = "{0} bina çöktü, hiçbirinde can kaybı yok";
-        public string subheadAllStanding = "Büronun mühür bastığı her bina depremi ayakta karşıladı.";
+        public string headlineEmptyFallen = "{0} bina çöktü, hiçbirinde kimse yoktu";
+        public string subheadAllStanding = "Büronun mühür bastığı her bina depremi ayakta karşıladı. Onaylanan her bina, bir ailenin yuvası.";
         public string subheadEmptyFallen = "Çöken binaların hiçbirine iskân verilmemişti; içlerinde kimse yoktu.";
         public string photoCaption = "İskân memuru, büroda: \"Kitaba baktım, o kadar.\"";
-        public string photoCaptionBribed = "Soruşturma sonrası görevden uzaklaştırılan iskân memuru.";
+        public string photoCaptionBribed = "Teftiş Kurulu'nun incelemesi sonrası görevden uzaklaştırılan iskân memuru.";
 
-        [Header("Hapis manşetleri")]
-        public string jailHeadline = "İskân memuru tutuklandı";
+        [Header("Soruşturma manşetleri")]
+        public string jailHeadline = "İskân memuru gözaltına alındı";
         [Tooltip("{0} = bina adı")]
-        public string jailSubheadOne = "Çöken {0} binasının iskânında onun imzası vardı.";
+        public string jailSubheadOne = "Çöken {0} binasının iskânında onun imzası vardı; hakkında soruşturma başlatıldı.";
         [Tooltip("{0} = bina sayısı")]
-        public string jailSubheadMany = "Çöken {0} binanın iskânında onun imzası vardı.";
+        public string jailSubheadMany = "Çöken {0} binanın iskânında onun imzası vardı; hakkında soruşturma başlatıldı.";
         [Tooltip("{0} = deprem günü")]
         public string jailEdition = "{0}. gün depreminden sonra";
-        public string jailCaption = "Tutuklanan iskân memuru adliyeye sevk edildi.";
+        public string jailCaption = "Gözaltına alınan iskân memuru ifade vermeye götürüldü.";
         [TextArea(2, 4)]
-        public string courtText = "Yönetmelikte yazan bir kuralı çiğneyen iskân, depremde can aldı. Savcılık, iskân memurunun da müteahhit kadar sorumlu olduğuna karar verdi.";
-        public string courtBribe = "Dosyada bir de rüşvet defteri var: onun adı da yazıyor.";
+        public string courtText = "Yönetmelikteki kuralı çiğneyen bina depremde çöktü. Aileler tatbikat sayesinde son anda dışarı çıktı ama yuvalarını kaybetti. Savcılık, müteahhitle birlikte iskân memuru hakkında da soruşturma başlattı.";
+        public string courtBribe = "Dosyada rüşvet kaydı da var; Teftiş Kurulu ayrıca inceliyor.";
         public string jailFooterLeft = "OYUN BİTTİ";
         public string jailFooterRight = "NEYİ KAÇIRDIĞINI KARNEDE GÖR";
 
@@ -140,10 +140,18 @@ namespace Dropy.Gameplay
         public string boxReward = "ÖDÜL";
         [Tooltip("{0} = prim tutarı")]
         public string rewardLine = "Kusursuz sicil: İmar Müdürlüğü dürüst memura {0} prim verdi. Rüşvetçinin teklif ettiği para, hak edilerek kazanıldı.";
-        public string boxCourt = "MAHKEME KARARI";
+        public string boxCourt = "SORUŞTURMA";
+        [Tooltip("Final gazetesinde uzmanların kutusu (soruşturmasız sonda)")]
+        public string boxExperts = "UZMANLAR DİYOR Kİ";
+        [TextArea(2, 4)]
+        public List<string> expertLines = new List<string>
+        {
+            "Mühendisler: Zemin etüdü, doğru beton, sağlam kolon. Deprem güvenliği kâğıtta başlar.",
+            "Müteahhitler: Fayköy'ün ustalarının çoğu işini kurala göre yapar; denetim dürüst işi korur.",
+        };
         public string emptySoundNote = "İskân verilmedi; aileleri hâlâ kirada.";
         [Tooltip("{0} = müteahhit adları")]
-        public string investigation = "Müteahhitlerin rüşvet defteri ele geçirildi. {0} sayfasında senin adın da yazıyor. Görevden uzaklaştırıldın.";
+        public string investigation = "Teftiş Kurulu, {0} dosyasındaki rüşvet kaydını inceledi: paraya el konuldu. Görevden uzaklaştırıldın, soruşturma sürüyor.";
         [Tooltip("{0} = müteahhit, {1} = onay günü sözü")]
         public string contractorQuote = "Müteahhit {0}, iskân günü: \"{1}\"";
 
@@ -151,27 +159,27 @@ namespace Dropy.Gameplay
         public string bagReady = "Çanta hazırdı: fener, su, düdük.";
         public string bagNone = "Karanlıkta ne su vardı ne fener.";
         public string fixingDone = "Dolaplar sabitti; depremde kimse yaralanmadı.";
-        public string fixingMissing = "Sabitlenmemiş dolap Elif'in üstüne devrildi, kolu kırıldı.";
+        public string fixingMissing = "Sabitlenmemiş dolap devrildi; Elif son anda kenara kaçtı, çok korktu.";
 
         [Header("Ailenin sonu")]
         public string verdictSafe = "AİLEN GÜVENDE";
-        public string verdictNoBag = "Kimse yaralanmadı; ama gece karanlıkta ve susuz geçti.";
-        public string verdictNoFixing = "Elif yaralandı. Çantadaki ilk yardım ve düdük sayesinde yardım çabuk geldi.";
-        public string verdictNone = "Elif yaralandı. Karanlıkta ne su vardı ne fener; yardım ancak sabaha karşı geldi.";
-        public string estrangedHouse = "Ailen seninle konuşmuyor.";
+        public string verdictNoBag = "Herkes iyi; ama gece karanlıkta ve susuz geçti.";
+        public string verdictNoFixing = "Devrilen dolap Elif'i çok korkuttu; çantadaki fener ve düdük sayesinde yardım çabuk geldi.";
+        public string verdictNone = "Dolap devrildi, ev karanlıktı; Elif çok korktu, yardım ancak sabaha karşı geldi.";
+        public string estrangedHouse = "Ailen sana biraz küs.";
 
         [Header("Sarsıntıda çatlayan ev")]
-        public string repairDone = "Sarsıntıda çatlayan ev onarıldı; depremde ayakta kaldı.";
-        public string repairNone = "Sarsıntıda çatlayan ev onarılmadı; depremde yıkıldı.";
-        public string verdictHomeLostSafe = "EVİN YIKILDI, AİLEN HAYATTA";
-        public string verdictHomeLostNoBag = "Ailen enkazdan yaralı kurtarıldı: dolaplar sabitti ama düdük yoktu, ekipler onları ancak sabaha karşı buldu.";
-        public string verdictHomeLostNoFixing = "Ailen enkazdan yaralı kurtarıldı: devrilen dolap Elif'i ezdi, çantadaki düdük ekipleri çabuk getirdi.";
-        public string verdictHomeLostNone = "Ailen enkazdan kurtarılamadı.";
-        public string homeStorySurvived = "Yıkılan evden sağ çıktılar: sabit dolaplar enkazda boşluk bıraktı, çantadaki düdüğü duyan ekipler aileyi kurtardı.";
-        public string homeStoryInjured = "İskân memurunun ailesi yıkılan evlerinden yaralı kurtarıldı.";
-        public string headlineFamilyLost = "İskân memurunun ailesi enkazdan kurtarılamadı";
-        public string subheadFamilyLost = "Sarsıntıda çatlayan ev onarılmamıştı; evde ne sabitlenmiş dolap vardı ne deprem çantası.";
-        public string homeStoryLost ="İskân memurunun ailesi yıkılan evlerinin enkazından kurtarılamadı. Evde ne sabitlenmiş dolap vardı ne deprem çantası.";
+        public string repairDone = "Sarsıntıda çatlayan ev güçlendirildi; depremde ayakta kaldı.";
+        public string repairNone = "Sarsıntıda çatlayan ev güçlendirilmedi; depremde yıkıldı.";
+        public string verdictHomeLostSafe = "EVİN YIKILDI, AİLEN GÜVENDE";
+        public string verdictHomeLostNoBag = "Ev yıkıldı ama aile dışarı çıktı. Dolaplar sabitti; yalnız fener yoktu, gece karanlıkta geçti.";
+        public string verdictHomeLostNoFixing = "Ev yıkıldı ama aile çantayı kapıp çıktı. Devrilen dolap Elif'i çok korkuttu.";
+        public string verdictHomeLostNone = "Ev yıkıldı. Allahtan evde kimse yoktu; ama hiçbir hazırlık olmadığı için bütün eşyalar yıkıntıda kaldı.";
+        public string homeStorySurvived = "Yıkılan evden hemen çıktılar: çanta kapının yanındaydı, aile toplanma alanında buluştu.";
+        public string homeStoryInjured = "İskân memurunun evi yıkıldı; aile dışarı çıktı ama gece zor geçti.";
+        public string headlineFamilyLost = "İskân memurunun evi yıkıldı; Allahtan evde kimse yoktu";
+        public string subheadFamilyLost = "Sarsıntıda çatlayan ev güçlendirilmemişti; evde ne sabitlenmiş dolap vardı ne deprem çantası.";
+        public string homeStoryLost = "İskân memurunun ailesi o gece akrabadaydı. Ev yıkıldı; hazırlık olmadığı için hiçbir eşya kurtarılamadı.";
 
         [Header("Alt şerit")]
         [Tooltip("{0} = doğru, {1} = toplam dosya")]
@@ -179,7 +187,7 @@ namespace Dropy.Gameplay
         [Tooltip("{0} = kasa")]
         public string footerCash = "KASA: {0}";
         [Tooltip("{0} = borç")]
-        public string footerDebt = "BORÇ: {0} · İCRAYA VERİLDİ";
+        public string footerDebt = "BORÇ: {0}";
     }
 
     /// <summary>Bir sabahın televizyon yayını: manşet, kayan yazı, ekrandaki görsel ve televizyonun altındaki notlar.</summary>

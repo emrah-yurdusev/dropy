@@ -40,6 +40,10 @@ namespace Dropy.Gameplay
         CanvasGroup phoneGroup;
         TextMeshProUGUI phoneText;
         Coroutine phoneRoutine;
+        GameObject alert;
+        TextMeshProUGUI alertTitle;
+        TextMeshProUGUI alertBody;
+        bool alertClosed;
 
         public event System.Action InspectClicked;
         public event System.Action ResumeClicked;
@@ -129,7 +133,60 @@ namespace Dropy.Gameplay
             skipHint.gameObject.SetActive(false);
 
             title = BuildTitle(root);
+            alert = BuildAlert(root);
             pauseMenu = BuildPause(root);
+        }
+
+        /// <summary>
+        /// Sistemin kırmızı uyarı kartı (rüşvet kayda geçti gibi): ekranı karartır, oyuncu "Anladım"a basana kadar bekler.
+        /// Oyun bir suçu seçenek gibi göstermesin diye rüşvetin hemen ardından açılır.
+        /// </summary>
+        GameObject BuildAlert(RectTransform root)
+        {
+            var panel = Ui.Image(root, "SystemAlert", new Color(0.03f, 0.02f, 0.02f, 0.82f)).rectTransform.Stretch();
+            var border = Ui.Image(panel, "Border", Danger, Ui.Rounded).rectTransform;
+            border.Place(new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0f, 30f), new Vector2(860f, 440f));
+            Ui.DropShadow(border, 22f, new Vector2(6f, -10f), 0.5f);
+            var card = Ui.Image(border, "Card", Paper, Ui.Rounded).rectTransform.Stretch(8f, 8f, 8f, 8f);
+
+            var badge = Ui.Text(card, "System", "T.C.  FAYKÖY BELEDİYESİ  ·  TEFTİŞ KURULU", 18f, Faded, TextAlignmentOptions.Center, FontStyles.Bold);
+            badge.characterSpacing = 3f;
+            badge.rectTransform.Place(new Vector2(0.5f, 1f), new Vector2(0.5f, 1f), new Vector2(0f, -26f), new Vector2(780f, 30f));
+
+            // Damga gibi: kalın kırmızı çerçeve içinde eğik başlık.
+            var stamp = Ui.Image(card, "Stamp", Danger, Ui.Rounded, raycast: false).rectTransform;
+            stamp.Place(new Vector2(0.5f, 1f), new Vector2(0.5f, 0.5f), new Vector2(0f, -112f), new Vector2(620f, 92f));
+            stamp.localRotation = Quaternion.Euler(0f, 0f, -3f);
+            var stampInner = Ui.Image(stamp, "Inner", Paper, Ui.Rounded, raycast: false).rectTransform.Stretch(5f, 5f, 5f, 5f);
+            alertTitle = Ui.Text(stampInner, "Title", "", 44f, Danger, TextAlignmentOptions.Center, FontStyles.Bold);
+            alertTitle.characterSpacing = 4f;
+            alertTitle.rectTransform.Stretch();
+
+            alertBody = Ui.Text(card, "Body", "", 25f, Ink, TextAlignmentOptions.Top);
+            alertBody.richText = true;
+            alertBody.rectTransform.Place(new Vector2(0.5f, 1f), new Vector2(0.5f, 1f), new Vector2(0f, -178f), new Vector2(740f, 150f));
+
+            var ok = Ui.Button(card, "Ok", "ANLADIM", Danger, Color.white, 26f);
+            ((RectTransform)ok.transform).Place(new Vector2(0.5f, 0f), new Vector2(0.5f, 0f), new Vector2(0f, 26f), new Vector2(300f, 64f));
+            ok.onClick.AddListener(() => alertClosed = true);
+            panel.gameObject.SetActive(false);
+            return panel.gameObject;
+        }
+
+        /// <summary>Sistem uyarısını gösterir, oyuncu kapatana kadar bekler.</summary>
+        public IEnumerator SystemAlert(string heading, string body)
+        {
+            alertTitle.text = heading;
+            alertBody.text = body;
+            alertClosed = false;
+            alert.SetActive(true);
+            alert.transform.SetAsLastSibling();
+            if (pauseMenu.activeSelf)
+                pauseMenu.transform.SetAsLastSibling();
+            Sfx.Buzz();
+            while (!alertClosed)
+                yield return null;
+            alert.SetActive(false);
         }
 
         static readonly Color Paper = new Color(0.98f, 0.96f, 0.9f);
@@ -159,7 +216,7 @@ namespace Dropy.Gameplay
             header.pivot = new Vector2(0.5f, 1f);
             header.offsetMin = new Vector2(12f, -96f);
             header.offsetMax = new Vector2(-12f, -12f);
-            var heading = Ui.Text(header, "Heading", "İSKÂN BÜROSU", 40f, Color.white, TextAlignmentOptions.MidlineLeft, FontStyles.Bold);
+            var heading = Ui.Text(header, "Heading", "FAYKÖY İSKÂN BÜROSU", 40f, Color.white, TextAlignmentOptions.MidlineLeft, FontStyles.Bold);
             heading.rectTransform.Stretch(30f, 0f, 30f, 0f);
             heading.characterSpacing = 2f;
             var tag = Ui.Text(header, "Tag", "GÖREV EMRİ  ·  1. GÜN", 22f, Gold, TextAlignmentOptions.MidlineRight, FontStyles.Bold);
@@ -167,8 +224,9 @@ namespace Dropy.Gameplay
             tag.characterSpacing = 2f;
 
             var intro = Ui.Text(card, "Intro",
-                "Bu ilçenin iskân memurusun. Binalar bitti; aileler taşınmak için senin mührünü bekliyor.",
-                26f, Ink, TextAlignmentOptions.TopLeft);
+                "Fayköy'ün yeni iskân memurusun; ilk haftan Deprem Haftası. Müteahhitlerin çoğu dürüsttür, " +
+                "sen kuralı çiğneyenleri ayıkla. Aileler taşınmak için mührünü bekliyor.",
+                23f, Ink, TextAlignmentOptions.TopLeft);
             intro.rectTransform.Place(new Vector2(0.5f, 1f), new Vector2(0.5f, 1f), new Vector2(0f, -122f), new Vector2(1020f, 70f));
 
             SectionLabel(card, "MESAİ NASIL GEÇER", -196f);
@@ -189,7 +247,7 @@ namespace Dropy.Gameplay
             risk.offsetMax = new Vector2(-12f, 112f);
             var riskText = Ui.Text(risk, "Text",
                 $"<b>İlçe bir fay hattının üstünde; {Economy.QuakeDays[0]}. günün sonunda deprem bekleniyor.</b>\n" +
-                "Onayladığın bina çökerse hapse girersin. Senin ailen de bu ilçede yaşıyor.",
+                "Onayladığın bina çökerse hakkında soruşturma açılır. Senin ailen de bu ilçede yaşıyor.",
                 22f, Color.white, TextAlignmentOptions.MidlineLeft);
             riskText.richText = true;
             riskText.rectTransform.Stretch(30f, 0f, 30f, 0f);
@@ -321,7 +379,7 @@ namespace Dropy.Gameplay
         }
 
         /// <summary>Başlık ya da duraklatma açıkken oyun içi tıklamalar sayılmaz.</summary>
-        public bool BlocksInput => title.activeSelf || pauseMenu.activeSelf;
+        public bool BlocksInput => title.activeSelf || pauseMenu.activeSelf || alert.activeSelf;
 
         /// <summary>Kasa eksideyse (kira borcu) kırmızı yazar.</summary>
         public void SetMoney(int amount)

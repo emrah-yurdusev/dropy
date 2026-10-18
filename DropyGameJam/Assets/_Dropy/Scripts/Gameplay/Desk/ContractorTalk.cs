@@ -147,7 +147,7 @@ namespace Dropy.Gameplay
         public static List<Reply> RepliesTo(string line, bool afterQuake)
         {
             string s = line.ToLower(Tr);
-            if (Has(s, "dört bin", "zahmetinize"))
+            if (Has(s, "kırk bin", "zahmetinize"))
             {
                 var bribe = Two("Rüşvet mi teklif ediyorsunuz?", "Teşekkür diyelim, teşekkür. Kimse bir şey demez.",
                     "Rüşvet mi? Ne çirkin kelime {hitap}. Ben ona \"mesai sonrası teşekkür\" diyorum. " +

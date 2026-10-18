@@ -126,7 +126,7 @@ namespace Dropy.Gameplay
             Row(("Deprem sahnesi", ButtonColor, () => PlayCinematic(prison: false)), ("Hapishane sahnesi", ButtonColor, () => PlayCinematic(prison: true)));
 
             Header("DURUM");
-            fixingLabel = Row(("+5.000 TL", ButtonColor, () => WithDesk(d => d.DebugAddMoney(5000))), ("", ButtonColor, ToggleFixing))[1];
+            fixingLabel = Row(("+50.000 TL", ButtonColor, () => WithDesk(d => d.DebugAddMoney(50000))), ("", ButtonColor, ToggleFixing))[1];
             speedLabel = Row(("Aile bağını doldur", ButtonColor, () => WithDesk(d => d.DebugFillBond())), ("", ButtonColor, ToggleSpeed))[1];
 
             Header("SAHNELER");

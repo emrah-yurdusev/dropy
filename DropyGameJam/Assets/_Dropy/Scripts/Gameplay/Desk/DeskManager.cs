@@ -551,6 +551,10 @@ namespace Dropy.Gameplay
             Destroy(visitor.gameObject);
             visitor = null;
             dialogue.SpeedMultiplier = 1f;
+
+            // Rüşvet bir seçenek değil, suçtur: müteahhit gidince (gün bitmeden) sistem kayda geçirir ve paraya el koyar.
+            if (result.bribed)
+                yield return hud.SystemAlert("KAYIT ALTINA ALINDI", BribeSeizedText(buildingCase, result));
         }
 
         IEnumerator Enter()
@@ -797,7 +801,17 @@ namespace Dropy.Gameplay
             return fee > 0 ? $"+{Ui.Money(fee)}" : "0 TL";
         }
 
-        /// <summary>Onayın kasaya getirdiği: harç, kabul edilen gri rüşvet de varsa üstüne o.</summary>
+        /// <summary>Rüşvetli onaydan sonra Teftiş Kurulu kartının metni: teklif edilen para kasaya girmez.</summary>
+        string BribeSeizedText(BuildingCase buildingCase, CaseResult result)
+        {
+            int offered = ApproveIncome(buildingCase);
+            return "<b>Rüşvet teklif etmek de kabul etmek de suçtur.</b>\n" +
+                   $"{buildingCase.contractorName} Bey'in teklif ettiği {Ui.Money(offered)} kasana girmedi; paraya el konuldu. " +
+                   $"Yalnız olağan harç ({Ui.Money(result.money)}) yazıldı.\n" +
+                   "Bu dosya ve imzan incelemeye alındı.";
+        }
+
+        /// <summary>Onay mührünün altında yazan tutar: harç, rüşvetli dosyada müteahhidin teklifi (kasaya girmez).</summary>
         int ApproveIncome(BuildingCase buildingCase)
         {
             int fee = BuildingRules.Fee(buildingCase, Seal.Approve, day);
@@ -835,12 +849,13 @@ namespace Dropy.Gameplay
                 buildingCase = buildingCase,
                 day = day,
                 seal = seal,
-                money = approved ? ApproveIncome(buildingCase) : BuildingRules.Fee(buildingCase, seal, day),
+                // Rüşvetli onayda yalnız olağan harç kasaya girer; teklif edilen paraya el konulur.
+                money = BuildingRules.Income(buildingCase, seal, day),
                 fate = BuildingRules.Fate(buildingCase, seal),
                 warning = BuildingRules.KnownViolation(buildingCase, seal, day),
                 bribed = approved && (buildingCase.approveFeeOverride > 0 || (bribeAccepted && buildingCase == current))
             };
-            // Para cezası yok: yanlış onayın bedeli depremde ödenir (bina çökerse hapis).
+            // Para cezası yok: yanlış onayın bedeli depremde ödenir (bina çökerse soruşturma, oyun biter).
             return result;
         }
 
@@ -1117,7 +1132,7 @@ namespace Dropy.Gameplay
             var fallen = Fallen(quakeDay);
             cinematicPlaying = true;
             yield return EarthquakeCinematic.Play(QuakeCaptions(quakeDay, fallen));
-            // Onayladığı bir bina çöktüyse mühendis tutuklanır: hapishane sahnesi, ardından mahkeme kararı ve karne.
+            // Onayladığı bir bina çöktüyse memur gözaltına alınır: nezarethane sahnesi, ardından soruşturma haberi ve karne.
             if (fallen.Count > 0)
                 yield return PrisonCinematic.Play(PrisonCaptions(fallen));
             cinematicPlaying = false;
@@ -1153,6 +1168,9 @@ namespace Dropy.Gameplay
             var captions = fallen.Take(MaxQuakeHeadlines).Select(DeskHud.Headline).ToList();
             if (fallen.Count > MaxQuakeHeadlines)
                 captions.Add($"ve {fallen.Count - MaxQuakeHeadlines} bina daha");
+            // Oyun çocuklara da oynatılıyor: çöken binada can kaybı yok, bedel yuvasını kaybeden ailelerin.
+            if (fallen.Count > 0)
+                captions.Add("Tatbikat sayesinde herkes son anda dışarı çıktı; ama aileler yuvasız kaldı");
             var empty = FallenEmpty(quakeDay);
             if (empty.Count == 1)
                 captions.Add($"{empty[0].buildingCase.buildingName} çöktü; iskân verilmediği için içi boştu");
@@ -1164,23 +1182,23 @@ namespace Dropy.Gameplay
             {
                 case FamilyOutcome.Survived:
                     captions.Add("Ailenin sarsıntıda çatlayan evi yıkıldı");
-                    captions.Add("Sabit dolaplar enkazda boşluk bıraktı; çantadaki düdüğü duyan ekipler aileyi sağ çıkardı");
+                    captions.Add("Çanta hazırdı, dolaplar sabitti: aile hemen toplanma alanına çıktı, herkes güvende");
                     return captions;
                 case FamilyOutcome.Injured:
                     captions.Add("Ailenin sarsıntıda çatlayan evi yıkıldı");
-                    captions.Add(bag ? "Devrilen dolap Elif'i yaraladı; düdüğü duyan ekipler aileyi yaralı çıkardı"
-                        : "Dolaplar sabitti ama düdük yoktu; aile enkazdan saatler sonra yaralı çıkarıldı");
+                    captions.Add(bag ? "Aile çantayı kapıp çıktı; devrilen dolap Elif'i çok korkuttu"
+                        : "Dolaplar sabitti, aile dışarı çıktı; ama fener yoktu, gece karanlıkta geçti");
                     return captions;
                 case FamilyOutcome.Lost:
                     captions.Add("Ailenin sarsıntıda çatlayan evi yıkıldı");
-                    captions.Add("Ne sabit dolap vardı ne çanta; ailen enkazdan kurtarılamadı");
+                    captions.Add("Allahtan aile o gece teyzedeydi; ama hiçbir hazırlık yoktu, bütün eşyalar yıkıntıda kaldı");
                     return captions;
             }
             if (purchased.Contains(ShopItem.Repair))
-                captions.Add("Onarılan aile evi depremi ayakta karşıladı");
+                captions.Add("Güçlendirilen aile evi depremi ayakta karşıladı");
             captions.Add(purchased.Contains(ShopItem.Fixing)
-                ? "Ailenin evi sarsıldı; dolaplar sabitti, kimse yaralanmadı"
-                : "Ailenin evi sarsıldı; sabitlenmemiş dolap Elif'in üstüne devrildi");
+                ? "Ailenin evi sarsıldı; dolaplar sabitti, kimsenin burnu bile kanamadı"
+                : "Ailenin evi sarsıldı; sabitlenmemiş dolap devrildi, Elif son anda kenara kaçtı");
             captions.Add(bag ? "Elektrikler kesildi; çantadaki fener ve su işe yaradı" : "Elektrikler kesildi; evde ne fener vardı ne su");
             return captions;
         }
@@ -1193,7 +1211,7 @@ namespace Dropy.Gameplay
             string what = fallen.Count == 1
                 ? $"Çöken {fallen[0].buildingCase.buildingName} binasının onayında senin imzan vardı"
                 : $"Çöken {fallen.Count} binanın onayında senin imzan vardı";
-            return new List<string> { what, "İskân memuru tutuklandı" };
+            return new List<string> { what, "İskân memuru gözaltına alındı; hakkında soruşturma başlatıldı" };
         }
 
         /// <summary>1. depremde eşya sabitlenmemişse dolap Elif'in üstüne devrilir, çanta yoksa karanlıkta kalınır: aile bağı düşer.</summary>
@@ -1206,7 +1224,7 @@ namespace Dropy.Gameplay
             if (!purchased.Contains(ShopItem.Fixing))
             {
                 bond -= FixingQuakeBondLoss;
-                what.Add("dolap Elif'in üstüne devrildi");
+                what.Add("dolap devrilip Elif'i korkuttu");
             }
             if (!purchased.Contains(ShopItem.Bag))
             {

@@ -58,7 +58,7 @@ namespace Dropy.Gameplay
             page.boxes.Add(home);
             // Ev yıkıldıysa ailenin haberi ikinci sütunun başına çıkar; ayakta kalan bina haberi kutuya iner.
             string homeStory = HomeStory(outcome, t);
-            // Aile kurtarılamadıysa "can kaybı yok" manşeti yalan olur: manşet ailenin haberi olur.
+            // Hiç hazırlık yoksa manşet ailenin evinin haberi olur (ev yıkıldı, Allahtan evde kimse yoktu).
             if (outcome == FamilyOutcome.Lost && collapsed.Count == 0)
             {
                 page.headline = t.headlineFamilyLost;
@@ -100,6 +100,9 @@ namespace Dropy.Gameplay
             }
             if (emptySound.Count > 0)
                 page.boxes.Add(Box(t.boxEmptySound, 0, Names(emptySound), t.emptySoundNote));
+            // Soruşturmasız sonda mühendislerin ve dürüst müteahhitlerin sözü.
+            if (bribes.Count == 0 && t.expertLines != null && t.expertLines.Count > 0)
+                page.boxes.Add(Box(t.boxExperts, 0, t.expertLines.ToArray()));
 
             var needs = new NewsBox { title = t.boxFamily, column = 2 };
             foreach (var (need, paid) in family)

@@ -30,7 +30,7 @@ MonoBehaviour:
   damage: 0
   illegalFloors: 1
   hammerConcrete: 0
-  approveFeeOverride: 4000
+  approveFeeOverride: 40000
   bribe: 0
   bribeOffer: 
   bribeAcceptedLine: 
@@ -42,7 +42,7 @@ MonoBehaviour:
     b\xF6yle \u015Feylere al\u0131\u015F\u0131k."
   - "Yurt acil, d\xF6nem ba\u015Fl\u0131yor. \u0130ki y\xFCz \xF6\u011Frenci kap\u0131da
     kalmas\u0131n."
-  - "Siz onay\u0131 bas\u0131n, zahmetinize kar\u015F\u0131l\u0131k d\xF6rt bin.
+  - "Siz onay\u0131 bas\u0131n, zahmetinize kar\u015F\u0131l\u0131k k\u0131rk bin.
     Kimse bir \u015Fey demez."
   questions:
   - question: Kolonlar neden kesik?
@@ -58,7 +58,7 @@ MonoBehaviour:
     text: "Kira d\xFC\u015F\xFCnce kasan\u0131zda {kasa} kalacak. Evde {hazirlik}
       h\xE2l\xE2 yok; a\xE7\u0131\u011F\u0131n\u0131z {eksik}."
   - condition: 1
-    text: "Bu d\xF6rt bin o a\xE7\u0131\u011F\u0131 kapat\u0131r. Bir baba ailesini
+    text: "Bu k\u0131rk bin o a\xE7\u0131\u011F\u0131 kapat\u0131r. Bir baba ailesini
       korumaz m\u0131?"
   - condition: 2
     text: "K\u0131z\u0131n\u0131z geziye gidemedi diye duydum... Bir baba eli bo\u015F

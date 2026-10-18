@@ -122,7 +122,7 @@ namespace Dropy.Gameplay
 
         [Header("Kusursuz kayıt primi")]
         [Tooltip("Son akşam, bütün dosyalar doğru ve rüşvet yoksa kasaya girer; PerfectRecord koşullu mesajlar bunu haber verir ({prim})")]
-        [Min(0)] public int perfectBonus = 4000;
+        [Min(0)] public int perfectBonus = 40000;
         [Min(1)] public int bondMax = 5;
 
         public string Radio(int day) => day >= 1 && day <= radio.Count ? radio[day - 1] : null;

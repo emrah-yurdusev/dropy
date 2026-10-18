@@ -16,7 +16,8 @@ MonoBehaviour:
   - day: 1
     caller: "M\xFCd\xFCr"
     lines:
-    - "Alo? Hay\u0131rl\u0131 olsun!"
+    - "Alo? Fayk\xF6y \u0130mar M\xFCd\xFCrl\xFC\u011F\xFC'ne ho\u015F geldin, hay\u0131rl\u0131
+      olsun! Deprem Haftas\u0131'nda ba\u015Flad\u0131n; g\xF6z\xFCm\xFCz sende."
     - "Lafa de\u011Fil k\xE2\u011F\u0131da bak: solda y\xF6netmelik, sa\u011Fda k\xFCnye
       ve ek rapor. Uyuyorsa onay, uymuyorsa red."
   - day: 4
@@ -29,9 +30,11 @@ MonoBehaviour:
   - day: 1
     headline: "Uzmanlar b\xF6lgedeki fay hatt\u0131na dikkat \xE7ekiyor"
     ticker:
+    - "Fayk\xF6y'de Deprem Haftas\u0131 ba\u015Flad\u0131: okullarda tatbikat yap\u0131l\u0131yor"
     - "AFAD: Her evde su, fener ve d\xFCd\xFCk olan bir deprem \xE7antas\u0131 bulunsun"
     - "Hava: par\xE7al\u0131 bulutlu, 14\xB0"
-    forecast: "Uzmanlar uyar\u0131yor: B\xF6lgede b\xFCy\xFCk bir deprem bekleniyor."
+    forecast: "Uzmanlar uyar\u0131yor: Fayk\xF6y fay hatt\u0131nda b\xFCy\xFCk bir
+      deprem bekleniyor."
     graphicLabel: FAY HATTI
     graphic: {fileID: 21300000, guid: 007806ca1b3aedc42a2d2b203327b5b6, type: 3}
     clip: {fileID: 0}
@@ -111,7 +114,7 @@ MonoBehaviour:
     sender: "E\u015Fin"
     family: 1
     text: "Usta binaya bakt\u0131: kolonlar zay\u0131fm\u0131\u015F, g\xFC\xE7lendirme
-      3.500 TL. O kadar param\u0131z yok, biliyorum... Ama ya b\xFCy\xFC\u011F\xFC
+      35.000 TL. O kadar param\u0131z yok, biliyorum... Ama ya b\xFCy\xFC\u011F\xFC
       gelirse?"
     condition: 0
     item: 0
@@ -120,6 +123,18 @@ MonoBehaviour:
     threshold: 0
     timing: 0
     fileOfDay: 0
+  - day: 3
+    sender: "Tefti\u015F Kurulu"
+    family: 0
+    text: "Hat\u0131rlatma: R\xFC\u015Fvet teklif etmek de kabul etmek de su\xE7tur.
+      \u015E\xFCpheli teklifleri reddedin, kayda ge\xE7irin."
+    condition: 0
+    item: 0
+    other: {fileID: 0}
+    seal: 0
+    threshold: 0
+    timing: 1
+    fileOfDay: 1
   - day: 3
     sender: Banka
     family: 0
@@ -145,9 +160,10 @@ MonoBehaviour:
     timing: 0
     fileOfDay: 0
   - day: 3
-    sender: Bilinmeyen numara
+    sender: "Tefti\u015F Kurulu"
     family: 0
-    text: "Kimse bir \u015Fey demez. -O"
+    text: "\xD6\u011Frenci Yurdu dosyas\u0131ndaki r\xFC\u015Fvet kayd\u0131 incelemeye
+      al\u0131nd\u0131. Teklif edilen paraya el konuldu."
     condition: 3
     item: 0
     other: {fileID: 11400000, guid: 9ac03a467c981484cb0d0e4e6f4b1b83, type: 2}
@@ -181,9 +197,9 @@ MonoBehaviour:
   needs:
   - day: 1
     name: Elif'in okul gezisi
-    price: 300
+    price: 3000
     sender: Elif
-    request: "Baba yar\u0131n m\xFCzeye gezi var! 300 TL laz\u0131m, herkes gidiyor.
+    request: "Baba yar\u0131n m\xFCzeye gezi var! 3.000 TL laz\u0131m, herkes gidiyor.
       Gidebilir miyim? L\xFCtfen l\xFCtfen!"
     paidReply: "Baba gezi \xE7ok g\xFCzeldi! M\xFCzede deprem sim\xFClat\xF6r\xFCne
       bindik."
@@ -192,14 +208,14 @@ MonoBehaviour:
     endingUnpaid: Elif okul gezisine gidemedi.
   - day: 2
     name: "Annenin ilac\u0131"
-    price: 500
+    price: 5000
     sender: Annen
-    request: "Evlad\u0131m ilac\u0131m bitti, eczane 500 TL istiyor. Maa\u015F yetmedi,
-      utanarak yaz\u0131yorum."
+    request: "Evlad\u0131m ilac\u0131m bitti, eczane 5.000 TL istiyor. Emekli maa\u015F\u0131
+      yetmedi, utanarak yaz\u0131yorum."
     paidReply: "\u0130lac\u0131m geldi, Allah raz\u0131 olsun evlad\u0131m."
     unpaidReply: "\u0130lac\u0131 bu ay alamad\u0131m, idare ederim, sen dert etme."
     endingPaid: "Annenin ilac\u0131 aksamad\u0131."
     endingUnpaid: "Annenin ilac\u0131 aksad\u0131."
   bondStart: 3
-  perfectBonus: 4000
+  perfectBonus: 40000
   bondMax: 5

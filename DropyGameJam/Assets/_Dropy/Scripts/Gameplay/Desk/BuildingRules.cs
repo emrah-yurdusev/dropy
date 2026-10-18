@@ -37,19 +37,20 @@ namespace Dropy.Gameplay
     /// <summary>
     /// Döngü: 4 gün, günde 2 dosya (8 dosya). 4. günün son dosyasından sonra deprem olur; 3. günün 2. dosyasında hafif sarsıntı.
     /// Mühür iskândır: onaylanan binaya aileler taşınır, reddedilen bina boş kalır.
-    /// Rakamlar dürüst tam yola göre ayarlıdır: 1–2. günün harcı, kira düşünce çanta + sabitlemeye (500 + 1.000)
-    /// tam yeter; 3. günün harcı son akşama 500 TL bırakır. Aileye ödenen her istek bir güvenlik önleminden ya da rüşvetten çıkar.
-    /// Değiştirmeden önce o hesabı yeniden yap (üretici script denetler).
-    /// Yanlış onaya para cezası yok: depremde onayladığın bina çökerse hapse girersin. Kasa eksiye düşebilir (borç).
+    /// Rakamlar günümüz fiyatlarına göre (net asgari ücret ~28.000 TL) ve dürüst tam yola göre ayarlıdır: 1–2. günün harcı,
+    /// kira düşünce çanta + sabitlemeye (5.000 + 10.000) tam yeter; 3. günün harcı son akşama 5.000 TL bırakır.
+    /// Aileye ödenen her istek bir güvenlik önleminden çıkar. Değiştirmeden önce o hesabı yeniden yap (üretici script denetler).
+    /// Yanlış onaya para cezası yok: depremde onayladığın bina çökerse soruşturma açılır, oyun biter. Rüşvetin parasına
+    /// el konulur (<see cref="BuildingRules.Income"/>): rüşvet kasaya hiç girmez. Kasa eksiye düşebilir (borç).
     /// </summary>
     public static class Economy
     {
         public const int Days = 4;
         public const int FilesPerDay = 2;
         public const int StartMoney = 0;
-        public const int ApproveFee = 1500;
-        public const int ShearWallFee = 1000;
-        public const int Rent = 500;
+        public const int ApproveFee = 15000;
+        public const int ShearWallFee = 10000;
+        public const int Rent = 5000;
         /// <summary>Harç her gün alınır. Kira ve dükkân yalnız akşamı olan günlerde (son günden önce).</summary>
         public const int LastPaidDay = 4;
         /// <summary>Bu günlerin son dosyasından sonra deprem olur.</summary>
@@ -71,7 +72,7 @@ namespace Dropy.Gameplay
     {
         Bag,
         Fixing,
-        /// <summary>Aile evini güçlendirme/onarım: pahalı; dürüst kasa ancak kusursuz kayıt primiyle, yoksa rüşvetle yeter.</summary>
+        /// <summary>Aile evini güçlendirme: pahalı; dürüst kasa ona ancak kusursuz kayıt primiyle yeter (rüşvete el konulur).</summary>
         Repair
     }
 
@@ -86,9 +87,9 @@ namespace Dropy.Gameplay
         {
             switch (item)
             {
-                case ShopItem.Bag: return 500;
-                case ShopItem.Fixing: return 1000;
-                default: return 3500;
+                case ShopItem.Bag: return 5000;
+                case ShopItem.Fixing: return 10000;
+                default: return 35000;
             }
         }
 
@@ -271,6 +272,14 @@ namespace Dropy.Gameplay
             }
         }
 
+        /// <summary>
+        /// Mühürün kasaya gerçekten getirdiği. Rüşvetli onayda (teklif edilen tutar) Teftiş Kurulu paraya el koyar:
+        /// kasaya yalnız olağan harç girer. Mühürün altında yine teklif edilen tutar yazar (<see cref="Fee"/>).
+        /// </summary>
+        public static int Income(BuildingCase c, Seal seal, int day) =>
+            seal == Seal.Approve && c.approveFeeOverride > 0 && day <= Economy.LastPaidDay ? Economy.ApproveFee : Fee(c, seal, day);
+
+        /// <summary>Mühürün altında yazan tutar: rüşvetli dosyada müteahhidin teklifi.</summary>
         public static int Fee(BuildingCase c, Seal seal, int day)
         {
             if (day > Economy.LastPaidDay)

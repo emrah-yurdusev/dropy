@@ -52,6 +52,7 @@ namespace Dropy.EditorTools
                 cases.Add(Write(Paths[i], specs[i], contractors));
 
             WriteRegulations();
+            WriteNewsTexts();
             var story = WriteStory(cases);
             var tutorial = WriteTutorial();
             AssetDatabase.SaveAssets();
@@ -59,6 +60,27 @@ namespace Dropy.EditorTools
             Verify(cases);
             VerifyFamilyPaths(cases, story);
             AssignToScene(cases, story, tutorial);
+        }
+
+        // ---------------------------------------------------------------- gazete yazıları
+
+        const string NewsStylePath = "Assets/_Dropy/ScriptableObjects/Desk/NewsStyle.asset";
+
+        /// <summary>
+        /// Gazetenin cümlelerini, adını ve dolgu haberlerini koddaki (Fayköy, çocuklara uygun) hâline getirir.
+        /// Görseller, fontlar ve renkler (Inspector ayarları) korunur.
+        /// </summary>
+        static void WriteNewsTexts()
+        {
+            var style = AssetDatabase.LoadAssetAtPath<NewsStyle>(NewsStylePath);
+            if (style == null)
+                return;
+            var defaults = ScriptableObject.CreateInstance<NewsStyle>();
+            style.texts = new NewspaperTexts();
+            style.masthead = defaults.masthead;
+            style.fillers = new List<string>(defaults.fillers);
+            Object.DestroyImmediate(defaults);
+            EditorUtility.SetDirty(style);
         }
 
         // ---------------------------------------------------------------- kalem öğretici
@@ -421,18 +443,18 @@ namespace Dropy.EditorTools
             s = File("Öğrenci Yurdu", "Ozan", 5, 30, 30, SoilType.Kaya, Seal.Reject,
                     "Yer biraz oynadı. Siz keyfinizi bozmayın, bu şehrin binaları böyle şeylere alışık.",
                     "Yurt acil, dönem başlıyor. İki yüz öğrenci kapıda kalmasın.",
-                    "Siz onayı basın, zahmetinize karşılık dört bin. Kimse bir şey demez.")
+                    "Siz onayı basın, zahmetinize karşılık kırk bin. Kimse bir şey demez.")
                 .Ask("Kolonlar neden kesik?", "Odalar geniş olsun diye biraz açtık. Taşır {hitap}, taşır.")
                 .News("Öğrenci yurdu çöktü", "Öğrenci Yurdu ayakta.");
             s.foundation = Foundation.Kazik;
             s.columns = ColumnState.Kesik;
             // Künyede 5 kat; çatıya bir kat daha çıkılmış. Yalnız bina incelemesinde büyüteçle görünür.
             s.illegalFloors = 1;
-            s.approveOverride = 4000;
+            s.approveOverride = 40000;
             // Yalan yok: yalnızca oyuncunun gerçek durumunu kullanır ({kasa}, {eksik}, {hazirlik} kira sonrası hesaplanır).
             s.Press(PressureCondition.Always, "Bir dakika. Acele etmeyin, bir daha düşünün.")
                 .Press(PressureCondition.PrepShort, "Kira düşünce kasanızda {kasa} kalacak. Evde {hazirlik} hâlâ yok; açığınız {eksik}.")
-                .Press(PressureCondition.PrepShort, "Bu dört bin o açığı kapatır. Bir baba ailesini korumaz mı?")
+                .Press(PressureCondition.PrepShort, "Bu kırk bin o açığı kapatır. Bir baba ailesini korumaz mı?")
                 .Press(PressureCondition.BondLow, "Kızınız geziye gidemedi diye duydum... Bir baba eli boş durur mu?")
                 .Press(PressureCondition.Otherwise, "Bu şehirde herkes beni tanır. Bugün reddedersiniz, yarın kapınızı kimse çalmaz.");
             list.Add(s);
@@ -523,7 +545,7 @@ namespace Dropy.EditorTools
                     day = 1,
                     lines = new List<string>
                     {
-                        "Alo? Hayırlı olsun!",
+                        "Alo? Fayköy İmar Müdürlüğü'ne hoş geldin, hayırlı olsun! Deprem Haftası'nda başladın; gözümüz sende.",
                         "Lafa değil kâğıda bak: solda yönetmelik, sağda künye ve ek rapor. Uyuyorsa onay, uymuyorsa red.",
                     }
                 },
@@ -543,7 +565,8 @@ namespace Dropy.EditorTools
             story.news = new List<DailyNews>
             {
                 News(oldNews, 1, "FAY HATTI", "Uzmanlar bölgedeki fay hattına dikkat çekiyor",
-                    "Uzmanlar uyarıyor: Bölgede büyük bir deprem bekleniyor.",
+                    "Uzmanlar uyarıyor: Fayköy fay hattında büyük bir deprem bekleniyor.",
+                    "Fayköy'de Deprem Haftası başladı: okullarda tatbikat yapılıyor",
                     "AFAD: Her evde su, fener ve düdük olan bir deprem çantası bulunsun", "Hava: parçalı bulutlu, 14°"),
                 News(oldNews, 2, "DOLABI SABİTLE", "Depremde yaralanmaların çoğu devrilen eşyadan",
                     "Hafif sarsıntılar kaydediliyor. Uzmanlar tedirgin.",
@@ -568,25 +591,27 @@ namespace Dropy.EditorTools
                 During(2, 1, NotBought(2, Wife, "Elif yine çantayı sordu. Bir de odasındaki dolap çok uzun; öğretmen duvara vidalayın demiş.", ShopItem.Bag)),
                 During(2, 1, Bought(2, Wife, "Çanta kapının yanında, Elif fenerini içine koydu. Ama odasındaki dolap çok uzun; öğretmen duvara vidalayın demiş.", ShopItem.Bag)),
                 // Güçlendirme 2. akşam vitrine çıkar: fiyatı rüşvet teklifinden önce görülsün.
-                Msg(2, Wife, "Usta binaya baktı: kolonlar zayıfmış, güçlendirme 3.500 TL. O kadar paramız yok, biliyorum... Ama ya büyüğü gelirse?"),
+                Msg(2, Wife, "Usta binaya baktı: kolonlar zayıfmış, güçlendirme 35.000 TL. O kadar paramız yok, biliyorum... Ama ya büyüğü gelirse?"),
+                // Ozan'ın dosyası açılınca (teklifinden hemen sonra) sistem hatırlatır: rüşvet bir seçenek değil, suçtur.
+                During(3, 1, Msg(3, Inspection, "Hatırlatma: Rüşvet teklif etmek de kabul etmek de suçtur. Şüpheli teklifleri reddedin, kayda geçirin.")),
 
                 // Kusursuz kayıt: 3. akşam bütün dosyalar doğru ve rüşvet yoksa müdürlük prim yatırır (evi onarmaya yeter).
                 Perfect(3, Bank, "Hesabınıza {prim} yatırıldı. Açıklama: Performans primi · İmar Müdürlüğü."),
                 Perfect(3, Boss, "Bütün dosyalarda doğru karar. Bu şehirde senin gibi memur az. Primini yatırdım; evini onart, ailene sahip çık."),
-                Sealed(3, Unknown, "Kimse bir şey demez. -O", cases[Yurt], Seal.Approve),
+                Sealed(3, Inspection, "Öğrenci Yurdu dosyasındaki rüşvet kaydı incelemeye alındı. Teklif edilen paraya el konuldu.", cases[Yurt], Seal.Approve),
                 Sealed(3, Unknown, "Pişman olacaksın. -O", cases[Yurt], Seal.Reject),
                 Msg(3, Wife, "Öğleden sonraki sarsıntıda evin duvarları çatladı. Elif korkudan masanın altına girmiş. Akşam erken gel."),
             };
 
             story.bondStart = 3;
-            story.perfectBonus = 4000;
+            story.perfectBonus = 40000;
             story.bondMax = 5;
             story.needs = new List<FamilyNeed>
             {
                 new FamilyNeed
                 {
-                    day = 1, name = "Elif'in okul gezisi", price = 300, sender = Child,
-                    request = "Baba yarın müzeye gezi var! 300 TL lazım, herkes gidiyor. Gidebilir miyim? Lütfen lütfen!",
+                    day = 1, name = "Elif'in okul gezisi", price = 3000, sender = Child,
+                    request = "Baba yarın müzeye gezi var! 3.000 TL lazım, herkes gidiyor. Gidebilir miyim? Lütfen lütfen!",
                     paidReply = "Baba gezi çok güzeldi! Müzede deprem simülatörüne bindik.",
                     unpaidReply = "Herkes geziye gitti, ben sınıfta kaldım.",
                     endingPaid = "Elif okul gezisini hâlâ anlatıyor.",
@@ -594,8 +619,8 @@ namespace Dropy.EditorTools
                 },
                 new FamilyNeed
                 {
-                    day = 2, name = "Annenin ilacı", price = 500, sender = Mother,
-                    request = "Evladım ilacım bitti, eczane 500 TL istiyor. Maaş yetmedi, utanarak yazıyorum.",
+                    day = 2, name = "Annenin ilacı", price = 5000, sender = Mother,
+                    request = "Evladım ilacım bitti, eczane 5.000 TL istiyor. Emekli maaşı yetmedi, utanarak yazıyorum.",
                     paidReply = "İlacım geldi, Allah razı olsun evladım.",
                     unpaidReply = "İlacı bu ay alamadım, idare ederim, sen dert etme.",
                     endingPaid = "Annenin ilacı aksamadı.",
@@ -640,7 +665,7 @@ namespace Dropy.EditorTools
             return m;
         }
 
-        const string Bank = "Banka", Boss = "Müdür";
+        const string Bank = "Banka", Boss = "Müdür", Inspection = "Teftiş Kurulu";
 
         /// <summary>Yalnız kusursuz kayıt primi yattıysa gelen mesaj.</summary>
         static PhoneMessage Perfect(int day, string sender, string text)
@@ -735,7 +760,7 @@ namespace Dropy.EditorTools
         // ---------------------------------------------------------------- denetim
 
         /// <summary>Dürüst yol son akşam (çanta + sabitleme alındıktan sonra) kasada bunu bırakır: istekleri de ödeyen sabitlemeye yetişemez.</summary>
-        const int HonestSpare = 500;
+        const int HonestSpare = 5000;
 
         /// <summary>Kurallardan çıkan mühürün tasarımdaki mühürle ve ekonominin dürüst yolla tuttuğunu denetler.</summary>
         static void Verify(List<BuildingCase> cases)
@@ -757,7 +782,7 @@ namespace Dropy.EditorTools
                         ok = false;
                     }
                     seal = OnePerDay(seal, ref shearUsed);
-                    income += BuildingRules.Fee(cases[i], seal, day);
+                    income += BuildingRules.Income(cases[i], seal, day);
                 }
                 money += income;
                 if (day < Economy.Days)
@@ -813,10 +838,10 @@ namespace Dropy.EditorTools
             ok &= Expect("Dürüst, hiçbir şey almaz, hiçbir istek ödemez", Simulate(cases, story, honest, new int[0], Plan()),
                 r => r.jailedDay == 0 && r.estrangedDay == Economy.QuakeDays[0] && r.home == FamilyOutcome.Lost);
             ok &= Expect("Rüşvet alır, her şeyi öder", Simulate(cases, story, bribe, new[] { 1, 2 }, fullLate),
-                r => r.bought.Count == 2 && r.jailedDay == Economy.QuakeDays[0]);
-            // Ev onarımı rüşvetle alınabilir: ev ayakta kalır ama memur yine hapse girer.
-            ok &= Expect("Rüşvet alır, evi onarır", Simulate(cases, story, bribe, new[] { 1, 2 }, repaired),
-                r => r.bought.Contains(ShopItem.Repair) && r.home == FamilyOutcome.HomeStood && r.jailedDay == Economy.QuakeDays[0]);
+                r => r.jailedDay == Economy.QuakeDays[0]);
+            // Rüşvetin parasına el konulur: rüşvetçi evi güçlendiremez, soruşturma yine açılır.
+            ok &= Expect("Rüşvet alır, evi güçlendirmeye çalışır", Simulate(cases, story, bribe, new int[0], repaired),
+                r => !r.bought.Contains(ShopItem.Repair) && r.jailedDay == Economy.QuakeDays[0]);
             ok &= Expect("Her şeyi onaylar", Simulate(cases, story, approveAll, new int[0], full),
                 r => r.jailedDay == Economy.QuakeDays[0]);
             ok &= Expect("Her şeyi reddeder", Simulate(cases, story, rejectAll, new int[0], full),
@@ -873,7 +898,8 @@ namespace Dropy.EditorTools
                     var c = cases[(day - 1) * Economy.FilesPerDay + k];
                     allCorrect &= policy(c) == BuildingRules.CorrectSeal(c);
                     var seal = OnePerDay(policy(c), ref shearUsed);
-                    r.money += BuildingRules.Fee(c, seal, day);
+                    // Rüşvetli onayda yalnız olağan harç kasaya girer (DeskManager.Decide ile aynı kural).
+                    r.money += BuildingRules.Income(c, seal, day);
                     if (BuildingRules.Fate(c, seal) == BuildingFate.Collapsed)
                         collapsedThisPart = true;
                 }
