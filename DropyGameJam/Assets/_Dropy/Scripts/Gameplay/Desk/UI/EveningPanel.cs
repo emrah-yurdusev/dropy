@@ -6,7 +6,7 @@ using UnityEngine.UI;
 
 namespace Dropy.Gameplay
 {
-    /// <summary>Akşam telefonunda tek bir mesaj. İstek ise balonun içinde "Öde" düğmesi çıkar.</summary>
+    /// <summary>Akşam telefonunda tek bir mesaj. İstek ise bildirimin içinde "Öde" düğmesi çıkar.</summary>
     public struct EveningMessage
     {
         public string sender;
@@ -15,35 +15,51 @@ namespace Dropy.Gameplay
     }
 
     /// <summary>
-    /// Akşam: masada günün hesabı, aile fotoğrafı ve aile bağı, bir de telefon. Telefonda o akşamın
-    /// mesajları (aileden gelen istekler Öde düğmesiyle) ve deprem dükkânı var; ikisi aynı kasadan ödenir.
-    /// Eve gidilmez; "Sabah oldu"ya basınca sıradaki gün başlar.
+    /// Akşam: solda günün hesabı (yeşil banka kartı; borçta kırmızı), aile fotoğrafı ve aile bağı; sağda
+    /// telefonun kilit ekranı. Mesajlar bildirim kartı olarak düşer (aileden gelen istekler Öde düğmesiyle),
+    /// altta deprem dükkânı widget'ı; ikisi aynı kasadan ödenir. "Sabah oldu"ya basınca sıradaki gün başlar.
     /// </summary>
     public class EveningPanel : MonoBehaviour
     {
         static readonly Color Dim = new Color(0.03f, 0.03f, 0.06f, 0.88f);
-        static readonly Color Paper = new Color(0.97f, 0.95f, 0.89f);
-        static readonly Color Ink = new Color(0.15f, 0.14f, 0.13f);
-        static readonly Color PhoneBody = new Color(0.08f, 0.08f, 0.1f);
-        static readonly Color Screen = new Color(0.16f, 0.2f, 0.27f);
-        static readonly Color Bubble = new Color(0.26f, 0.32f, 0.42f);
-        static readonly Color RequestBubble = new Color(0.4f, 0.3f, 0.4f);
+        static readonly Color LedgerGreen = new Color(0.13f, 0.5f, 0.32f);
+        static readonly Color LedgerDebt = new Color(0.6f, 0.15f, 0.12f);
+        static readonly Color PhoneFrame = new Color(0.17f, 0.17f, 0.19f);
+        static readonly Color PhoneBody = new Color(0.02f, 0.02f, 0.03f);
+        static readonly Color Wallpaper = new Color(0.13f, 0.15f, 0.29f);
+        static readonly Color Glass = new Color(0.97f, 0.97f, 0.98f, 0.9f);
+        static readonly Color GlassInk = new Color(0.1f, 0.1f, 0.12f);
+        static readonly Color GlassFaded = new Color(0.45f, 0.45f, 0.5f);
+        static readonly Color MessagesGreen = new Color(0.2f, 0.78f, 0.35f);
+        static readonly Color ShopOrange = new Color(0.98f, 0.58f, 0.18f);
+        static readonly Color IosBlue = new Color(0f, 0.48f, 1f);
+        static readonly Color PillGrey = new Color(0.9f, 0.9f, 0.93f);
+        static readonly Color OwnedGreen = new Color(0.18f, 0.62f, 0.3f);
         static readonly Color PayColor = new Color(0.85f, 0.6f, 0.2f);
         static readonly Color Owned = new Color(0.36f, 0.7f, 0.45f);
         static readonly Color BondOn = new Color(0.95f, 0.58f, 0.45f);
         static readonly Color BondOff = new Color(0.25f, 0.24f, 0.26f);
-        const float RowHeight = 56f;
+        const float ShopRowHeight = 50f;
+        const string Clock = "19:42";
 
         class ItemRow
         {
+            public GameObject row;
             public Button button;
             public TextMeshProUGUI label;
             public GameObject chip;
         }
 
         RectTransform root;
-        TextMeshProUGUI ledgerText;
-        TextMeshProUGUI phoneHeader;
+        Image ledger;
+        TextMeshProUGUI ledgerTitle;
+        TextMeshProUGUI ledgerBalanceLabel;
+        TextMeshProUGUI ledgerBalance;
+        TextMeshProUGUI ledgerLabels;
+        TextMeshProUGUI ledgerAmounts;
+        TextMeshProUGUI ledgerNote;
+        TextMeshProUGUI lockDate;
+        TextMeshProUGUI walletText;
         TextMeshProUGUI phoneFooter;
         RectTransform messageList;
         RectTransform bondRow;
@@ -66,13 +82,7 @@ namespace Dropy.Gameplay
         {
             root = Ui.Image(canvas, "Evening", Dim).rectTransform.Stretch();
 
-            var ledger = Ui.Image(root, "Ledger", Paper, Ui.Rounded).rectTransform;
-            ledger.Place(new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(-440f, 200f), new Vector2(540f, 340f));
-            Ui.DropShadow(ledger, 16f, new Vector2(4f, -6f), 0.4f);
-            ledgerText = Ui.Text(ledger, "Text", "", 24f, Ink);
-            ledgerText.rectTransform.Stretch(36f, 22f, 36f, 24f);
-            ledgerText.richText = true;
-
+            BuildLedger(root);
             BuildPhoto(root);
             BuildBond(root);
 
@@ -85,62 +95,176 @@ namespace Dropy.Gameplay
             chipLayout.childControlHeight = true;
             chipLayout.childForceExpandWidth = false;
 
-            var phone = Ui.Image(root, "Phone", PhoneBody, Ui.Rounded).rectTransform;
-            phone.Place(new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(330f, 0f), new Vector2(500f, 980f));
-            Ui.DropShadow(phone, 18f, new Vector2(4f, -8f), 0.5f);
-            var screen = Ui.Image(phone, "Screen", Screen, Ui.Rounded).rectTransform.Stretch(18f, 40f, 18f, 40f);
+            var screen = BuildPhone(root);
+            BuildLockScreen(screen);
+            BuildShop(screen, chips);
 
-            phoneHeader = Ui.Text(screen, "Header", "", 24f, Color.white, TextAlignmentOptions.Top, FontStyles.Bold);
-            phoneHeader.rectTransform.Stretch(16f, 0f, 16f, 16f);
-            phoneHeader.richText = true;
+            phoneFooter = Ui.Text(screen, "Footer", "", 17f, new Color(1f, 1f, 1f, 0.75f), TextAlignmentOptions.Center, FontStyles.Italic);
+            phoneFooter.rectTransform.anchorMin = Vector2.zero;
+            phoneFooter.rectTransform.anchorMax = new Vector2(1f, 0f);
+            phoneFooter.rectTransform.offsetMin = new Vector2(20f, 96f);
+            phoneFooter.rectTransform.offsetMax = new Vector2(-20f, 124f);
+
+            var morning = Ui.Button(screen, "Morning", "SABAH OLDU", PayColor, Color.white, 24f);
+            ((RectTransform)morning.transform).Place(new Vector2(0.5f, 0f), new Vector2(0.5f, 0f), new Vector2(0f, 30f), new Vector2(300f, 62f));
+            morning.onClick.AddListener(() => done = true);
+            var home = Ui.Image(screen, "HomeIndicator", new Color(1f, 1f, 1f, 0.85f), Ui.Rounded, raycast: false).rectTransform;
+            home.Place(new Vector2(0.5f, 0f), new Vector2(0.5f, 0f), new Vector2(0f, 10f), new Vector2(150f, 6f));
+
+            root.gameObject.SetActive(false);
+        }
+
+        // ---------------- Günün hesabı ----------------
+
+        /// <summary>Banka kartı gibi: ortada kasa, altında bugünkü gelir ve giderler. Borçta kırmızıya döner.</summary>
+        void BuildLedger(RectTransform parent)
+        {
+            ledger = Ui.Image(parent, "Ledger", LedgerGreen, Ui.Rounded);
+            var rect = ledger.rectTransform;
+            rect.Place(new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(-440f, 200f), new Vector2(540f, 340f));
+            Ui.DropShadow(rect, 16f, new Vector2(4f, -6f), 0.4f);
+
+            var faint = new Color(1f, 1f, 1f, 0.72f);
+            ledgerTitle = Ui.Text(rect, "Title", "", 18f, faint, TextAlignmentOptions.TopLeft, FontStyles.Bold);
+            ledgerTitle.characterSpacing = 3f;
+            ledgerTitle.rectTransform.Place(new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(34f, -26f), new Vector2(470f, 26f));
+
+            ledgerBalanceLabel = Ui.Text(rect, "BalanceLabel", "", 16f, faint, TextAlignmentOptions.TopLeft, FontStyles.Bold);
+            ledgerBalanceLabel.characterSpacing = 2f;
+            ledgerBalanceLabel.rectTransform.Place(new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(34f, -66f), new Vector2(470f, 22f));
+            ledgerBalance = Ui.Text(rect, "Balance", "", 58f, Color.white, TextAlignmentOptions.TopLeft, FontStyles.Bold);
+            ledgerBalance.rectTransform.Place(new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(32f, -86f), new Vector2(470f, 70f));
+
+            var line = Ui.Image(rect, "Divider", new Color(1f, 1f, 1f, 0.22f), raycast: false).rectTransform;
+            line.Place(new Vector2(0.5f, 1f), new Vector2(0.5f, 1f), new Vector2(0f, -170f), new Vector2(472f, 2f));
+
+            ledgerLabels = Ui.Text(rect, "Labels", "", 22f, Color.white, TextAlignmentOptions.TopLeft);
+            ledgerLabels.rectTransform.Place(new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(34f, -184f), new Vector2(300f, 80f));
+            ledgerAmounts = Ui.Text(rect, "Amounts", "", 22f, Color.white, TextAlignmentOptions.TopRight, FontStyles.Bold);
+            ledgerAmounts.rectTransform.Place(new Vector2(1f, 1f), new Vector2(1f, 1f), new Vector2(-34f, -184f), new Vector2(220f, 80f));
+
+            ledgerNote = Ui.Text(rect, "Note", "", 16f, faint, TextAlignmentOptions.BottomLeft, FontStyles.Italic);
+            ledgerNote.richText = true;
+            ledgerNote.rectTransform.Stretch(34f, 20f, 34f, 260f);
+        }
+
+        // ---------------- Telefon ----------------
+
+        /// <summary>Gövde, ince metal çerçeve, ekran ve ön kameranın adası. Ekranı döner.</summary>
+        static RectTransform BuildPhone(RectTransform parent)
+        {
+            var frame = Ui.Image(parent, "Phone", PhoneFrame, Ui.Device).rectTransform;
+            frame.Place(new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(330f, 0f), new Vector2(480f, 980f));
+            Ui.DropShadow(frame, 18f, new Vector2(4f, -8f), 0.5f);
+            var body = Ui.Image(frame, "Body", PhoneBody, Ui.Device, raycast: false).rectTransform.Stretch(4f, 4f, 4f, 4f);
+            var screen = Ui.Image(body, "Screen", Wallpaper, Ui.Device).rectTransform.Stretch(12f, 12f, 12f, 12f);
+            var island = Ui.Image(screen, "Island", Color.black, Ui.Rounded, raycast: false).rectTransform;
+            island.Place(new Vector2(0.5f, 1f), new Vector2(0.5f, 1f), new Vector2(0f, -14f), new Vector2(124f, 34f));
+
+            var time = Ui.Text(screen, "StatusTime", Clock, 17f, Color.white, TextAlignmentOptions.Center, FontStyles.Bold);
+            time.rectTransform.Place(new Vector2(0f, 1f), new Vector2(0.5f, 1f), new Vector2(76f, -18f), new Vector2(90f, 28f));
+            BuildBattery(screen);
+            return screen;
+        }
+
+        static void BuildBattery(RectTransform screen)
+        {
+            var battery = Ui.Image(screen, "Battery", new Color(1f, 1f, 1f, 0.35f), Ui.Rounded, raycast: false).rectTransform;
+            battery.Place(new Vector2(1f, 1f), new Vector2(1f, 1f), new Vector2(-30f, -24f), new Vector2(34f, 17f));
+            var level = Ui.Image(battery, "Level", Color.white, Ui.Rounded, raycast: false).rectTransform;
+            level.anchorMin = Vector2.zero;
+            level.anchorMax = new Vector2(0.62f, 1f);
+            level.offsetMin = new Vector2(2f, 2f);
+            level.offsetMax = new Vector2(0f, -2f);
+            for (int i = 0; i < 4; i++)
+            {
+                var bar = Ui.Image(screen, "Signal", Color.white, raycast: false).rectTransform;
+                bar.Place(new Vector2(1f, 1f), new Vector2(0f, 0f), new Vector2(-104f + i * 7f, -41f), new Vector2(4f, 5f + i * 3f));
+            }
+        }
+
+        void BuildLockScreen(RectTransform screen)
+        {
+            lockDate = Ui.Text(screen, "Date", "", 20f, new Color(1f, 1f, 1f, 0.85f), TextAlignmentOptions.Center, FontStyles.Bold);
+            lockDate.rectTransform.Place(new Vector2(0.5f, 1f), new Vector2(0.5f, 1f), new Vector2(0f, -58f), new Vector2(400f, 28f));
+            var clock = Ui.Text(screen, "Clock", Clock, 80f, Color.white, TextAlignmentOptions.Center, FontStyles.Bold);
+            clock.rectTransform.Place(new Vector2(0.5f, 1f), new Vector2(0.5f, 1f), new Vector2(0f, -80f), new Vector2(400f, 88f));
+
+            // Banka uygulamasının kilit ekranı widget'ı: kasadaki para.
+            var wallet = Ui.Image(screen, "Wallet", new Color(1f, 1f, 1f, 0.16f), Ui.Rounded, raycast: false).rectTransform;
+            wallet.Place(new Vector2(0.5f, 1f), new Vector2(0.5f, 1f), new Vector2(0f, -174f), new Vector2(230f, 36f));
+            walletText = Ui.Text(wallet, "Text", "", 19f, Color.white, TextAlignmentOptions.Center, FontStyles.Bold);
+            walletText.richText = true;
+            walletText.rectTransform.Stretch();
 
             messageList = Ui.Rect("Messages", screen);
             messageList.anchorMin = new Vector2(0f, 1f);
             messageList.anchorMax = new Vector2(1f, 1f);
             messageList.pivot = new Vector2(0.5f, 1f);
-            messageList.offsetMin = new Vector2(16f, -470f);
-            messageList.offsetMax = new Vector2(-16f, -76f);
+            messageList.offsetMin = new Vector2(14f, -600f);
+            messageList.offsetMax = new Vector2(-14f, -224f);
             var messageLayout = messageList.gameObject.AddComponent<VerticalLayoutGroup>();
-            messageLayout.spacing = 8f;
+            messageLayout.spacing = 10f;
             messageLayout.childControlHeight = true;
             messageLayout.childControlWidth = true;
             messageLayout.childForceExpandHeight = false;
+        }
 
-            var list = Ui.Rect("Shop", screen).Stretch(16f, 186f, 16f, 480f);
-            var layout = list.gameObject.AddComponent<VerticalLayoutGroup>();
-            layout.spacing = 8f;
-            layout.childControlHeight = true;
-            layout.childControlWidth = true;
-            layout.childForceExpandHeight = false;
-            var shopTitle = Ui.Text(list, "Title", "DEPREM DÜKKÂNI", 18f, new Color(1f, 1f, 1f, 0.7f), TextAlignmentOptions.Left, FontStyles.Bold);
-            shopTitle.gameObject.AddComponent<LayoutElement>().preferredHeight = 24f;
-            foreach (var item in Shop.Items)
+        /// <summary>Kilit ekranındaki deprem dükkânı widget'ı: her satırda ad ve fiyat hapı (dokununca alınır).</summary>
+        void BuildShop(RectTransform screen, RectTransform chips)
+        {
+            int count = Shop.Items.Length;
+            float height = 52f + count * ShopRowHeight + 12f;
+            var widget = Ui.Image(screen, "Shop", Glass, Ui.Rounded).rectTransform;
+            widget.Place(new Vector2(0.5f, 0f), new Vector2(0.5f, 0f), new Vector2(0f, 132f), new Vector2(428f, height));
+            AppHeader(widget, "DEPREM DÜKKÂNI", "", ShopOrange);
+
+            for (int i = 0; i < count; i++)
             {
-                var button = Ui.Button(list, item.ToString(), "", new Color(0.24f, 0.32f, 0.45f), Color.white, 20f);
-                button.gameObject.AddComponent<LayoutElement>().preferredHeight = RowHeight;
+                var item = Shop.Items[i];
+                var row = Ui.Rect(item.ToString(), widget);
+                row.Place(new Vector2(0.5f, 1f), new Vector2(0.5f, 1f), new Vector2(0f, -52f - i * ShopRowHeight), new Vector2(400f, ShopRowHeight));
+                var name = Ui.Text(row, "Name", Shop.Name(item), 19f, GlassInk, TextAlignmentOptions.MidlineLeft, FontStyles.Bold);
+                name.rectTransform.Stretch(4f, 0f, 150f, 0f);
+                if (i > 0)
+                {
+                    var line = Ui.Image(row, "Line", new Color(0f, 0f, 0f, 0.08f), raycast: false).rectTransform;
+                    line.Place(new Vector2(0.5f, 1f), new Vector2(0.5f, 0.5f), Vector2.zero, new Vector2(400f, 1.5f));
+                }
+
+                var button = Ui.Button(row, "Price", "", PillGrey, IosBlue, 17f);
+                ((RectTransform)button.transform).Place(new Vector2(1f, 0.5f), new Vector2(1f, 0.5f), new Vector2(-2f, 0f), new Vector2(124f, 36f));
                 var label = button.GetComponentInChildren<TextMeshProUGUI>();
                 label.richText = true;
                 var captured = item;
                 button.onClick.AddListener(() => BuyClicked?.Invoke(captured));
+
                 var chip = Ui.Image(chips, item + "Chip", Owned, Ui.Rounded).gameObject;
                 var chipText = Ui.Text(chip.transform, "Text", Shop.Name(item), 18f, Color.white, TextAlignmentOptions.Center, FontStyles.Bold);
                 chipText.rectTransform.Stretch(14f, 0f, 14f, 0f);
                 chip.AddComponent<LayoutElement>().preferredWidth = chipText.GetPreferredValues().x + 28f;
-                rows[item] = new ItemRow { button = button, label = label, chip = chip };
+                rows[item] = new ItemRow { row = row.gameObject, button = button, label = label, chip = chip };
             }
-
-            phoneFooter = Ui.Text(screen, "Footer", "", 18f, new Color(1f, 1f, 1f, 0.7f), TextAlignmentOptions.Center, FontStyles.Italic);
-            phoneFooter.rectTransform.anchorMin = Vector2.zero;
-            phoneFooter.rectTransform.anchorMax = new Vector2(1f, 0f);
-            phoneFooter.rectTransform.offsetMin = new Vector2(16f, 112f);
-            phoneFooter.rectTransform.offsetMax = new Vector2(-16f, 176f);
-
-            var morning = Ui.Button(screen, "Morning", "SABAH OLDU", PayColor, Color.white, 24f);
-            ((RectTransform)morning.transform).Place(new Vector2(0.5f, 0f), new Vector2(0.5f, 0f), new Vector2(0f, 24f), new Vector2(300f, 72f));
-            morning.onClick.AddListener(() => done = true);
-
-            root.gameObject.SetActive(false);
         }
+
+        /// <summary>Bildirim ve widget'ların üst satırı: renkli uygulama ikonu, uygulama adı, sağda zaman.</summary>
+        static void AppHeader(RectTransform card, string app, string when, Color iconColor)
+        {
+            var icon = Ui.Image(card, "Icon", iconColor, Ui.Rounded, raycast: false).rectTransform;
+            icon.Place(new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(14f, -12f), new Vector2(28f, 28f));
+            // İkonun içinde küçük beyaz konuşma balonu.
+            var glyph = Ui.Image(icon, "Glyph", Color.white, Ui.Rounded, raycast: false).rectTransform;
+            glyph.Place(new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0f, 1f), new Vector2(16f, 12f));
+            var name = Ui.Text(card, "App", app, 14f, GlassFaded, TextAlignmentOptions.MidlineLeft, FontStyles.Bold);
+            name.characterSpacing = 2f;
+            name.rectTransform.Place(new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(52f, -12f), new Vector2(260f, 28f));
+            if (string.IsNullOrEmpty(when))
+                return;
+            var time = Ui.Text(card, "When", when, 14f, GlassFaded, TextAlignmentOptions.MidlineRight);
+            time.rectTransform.Place(new Vector2(1f, 1f), new Vector2(1f, 1f), new Vector2(-14f, -12f), new Vector2(100f, 28f));
+        }
+
+        // ---------------- Fotoğraf ve aile bağı ----------------
 
         /// <summary>Masadaki aile fotoğrafı: iki yetişkin, bir çocuk, arkada ev. Aile bağı düştükçe solar, sıfırda ters kapanır.</summary>
         void BuildPhoto(RectTransform parent)
@@ -209,6 +333,8 @@ namespace Dropy.Gameplay
             head.Place(new Vector2(x, 0.18f), new Vector2(0.5f, 0f), new Vector2(0f, 88f * scale), new Vector2(36f, 36f) * scale);
         }
 
+        // ---------------- Akış ----------------
+
         /// <param name="bondNote">Aile bağının neden düştüğü (dün ödenmeyen istek, depremde devrilen dolap...); yoksa null.</param>
         public IEnumerator Run(int day, int income, int rent, int money, ICollection<ShopItem> purchased,
             IList<EveningMessage> messages, ICollection<FamilyNeed> paidNeeds,
@@ -216,18 +342,18 @@ namespace Dropy.Gameplay
         {
             this.shopOpen = shopOpen;
             shopDay = day;
-            // Önce aç: TextMeshPro kapalı nesnede yazı boyutunu ölçemiyor (mesaj balonları ölçülüyor).
+            // Önce aç: TextMeshPro kapalı nesnede yazı boyutunu ölçemiyor (bildirimler ölçülüyor).
             root.gameObject.SetActive(true);
             root.SetAsLastSibling();
-            string bondLine = bond <= 0 ? "\n<color=#a3221b>Ailen seninle konuşmuyor.</color>"
-                : !string.IsNullOrEmpty(bondNote) ? $"\n<size=80%><color=#a3221b>{bondNote}</color></size>" : "";
-            ledgerText.text =
-                $"<size=34><b>{day}. gün akşamı</b></size>\n\n" +
-                $"Bugünkü mühürler   <b>+{Ui.Money(income)}</b>\n" +
-                $"Kira   <b>-{Ui.Money(rent)}</b>" +
-                (money < 0 ? $"\n<color=#a3221b><b>Borç   {Ui.Money(-money)}</b></color>" : "") +
-                bondLine +
-                "\n\n<size=80%>Eve yürünmez. Alışveriş telefondan.</size>";
+
+            ledgerTitle.text = $"{day}. GÜN AKŞAMI  ·  HESAP";
+            ledgerLabels.text = "Bugünkü mühürler\nKira";
+            ledgerAmounts.text = $"+{Ui.Money(income)}\n-{Ui.Money(rent)}";
+            string bondLine = bond <= 0 ? "<color=#ffc4b8><b>Ailen seninle konuşmuyor.</b></color>\n"
+                : !string.IsNullOrEmpty(bondNote) ? $"<color=#ffc4b8>{bondNote}</color>\n" : "";
+            ledgerNote.text = bondLine + "Eve yürünmez. Alışveriş telefondan.";
+
+            lockDate.text = $"Akşam  ·  {day}. gün";
             phoneFooter.text = !shopOpen ? "Dükkân kapandı."
                 : day == Economy.LastEvening ? "Dükkân bu akşam son kez açık. Deprem kapıda." : "";
             ShowMessages(messages);
@@ -246,6 +372,7 @@ namespace Dropy.Gameplay
             root.gameObject.SetActive(false);
         }
 
+        /// <summary>Her mesaj kilit ekranına bir bildirim kartı olarak düşer; istekte kartın altında Öde düğmesi var.</summary>
         void ShowMessages(IList<EveningMessage> messages)
         {
             foreach (Transform child in messageList)
@@ -253,25 +380,29 @@ namespace Dropy.Gameplay
             requestRows.Clear();
             if (messages.Count == 0)
             {
-                var empty = Ui.Text(messageList, "Empty", "Yeni mesaj yok.", 18f, new Color(1f, 1f, 1f, 0.5f), TextAlignmentOptions.Center, FontStyles.Italic);
+                var empty = Ui.Text(messageList, "Empty", "Bildirim yok", 18f, new Color(1f, 1f, 1f, 0.55f), TextAlignmentOptions.Center, FontStyles.Bold);
                 empty.gameObject.AddComponent<LayoutElement>().preferredHeight = 40f;
                 return;
             }
-            foreach (var message in messages)
+            for (int i = 0; i < messages.Count; i++)
             {
+                var message = messages[i];
                 bool request = message.request != null;
-                var bubble = Ui.Image(messageList, request ? "Request" : "Message", request ? RequestBubble : Bubble, Ui.Rounded);
+                var card = Ui.Image(messageList, request ? "Request" : "Message", Glass, Ui.Rounded).rectTransform;
+                AppHeader(card, "MESAJLAR", i == messages.Count - 1 ? "şimdi" : $"{messages.Count - 1 - i} dk önce", MessagesGreen);
+
                 string body = $"<b>{message.sender}</b>\n{message.text}";
-                var text = Ui.Text(bubble.transform, "Text", body, 18f, Color.white);
+                var text = Ui.Text(card, "Text", body, 17f, GlassInk);
                 text.richText = true;
                 float buttonRow = request ? 50f : 0f;
-                text.rectTransform.Stretch(14f, 8f + buttonRow, 14f, 8f);
-                bubble.gameObject.AddComponent<LayoutElement>().preferredHeight = text.GetPreferredValues(body, 400f, 0f).y + 18f + buttonRow;
+                text.rectTransform.Stretch(16f, 12f + buttonRow, 16f, 46f);
+                float height = text.GetPreferredValues(body, 396f, 0f).y + 60f + buttonRow;
+                card.gameObject.AddComponent<LayoutElement>().preferredHeight = height;
                 if (!request)
                     continue;
 
-                var pay = Ui.Button(bubble.transform, "Pay", "", PayColor, Color.white, 18f);
-                ((RectTransform)pay.transform).Place(new Vector2(1f, 0f), new Vector2(1f, 0f), new Vector2(-12f, 10f), new Vector2(190f, 42f));
+                var pay = Ui.Button(card, "Pay", "", IosBlue, Color.white, 17f);
+                ((RectTransform)pay.transform).Place(new Vector2(0.5f, 0f), new Vector2(0.5f, 0f), new Vector2(0f, 12f), new Vector2(396f, 40f));
                 var label = pay.GetComponentInChildren<TextMeshProUGUI>();
                 label.richText = true;
                 var need = message.request;
@@ -282,7 +413,12 @@ namespace Dropy.Gameplay
 
         public void Refresh(int money, ICollection<ShopItem> purchased, ICollection<FamilyNeed> paidNeeds, int bond, int bondMax)
         {
-            phoneHeader.text = $"Mesajlar  ·  <color=#fad166>Kasa: {Ui.Money(money)}</color>";
+            bool debt = money < 0;
+            ledger.color = debt ? LedgerDebt : LedgerGreen;
+            ledgerBalanceLabel.text = debt ? "BORÇ" : "KASA";
+            ledgerBalance.text = Ui.Money(Mathf.Abs(money));
+            walletText.text = debt ? $"Borç  <color=#ff9d8f>{Ui.Money(-money)}</color>" : $"Kasa  <color=#7ee39a>{Ui.Money(money)}</color>";
+
             foreach (var pair in requestRows)
             {
                 bool paid = paidNeeds.Contains(pair.Key);
@@ -291,14 +427,13 @@ namespace Dropy.Gameplay
             }
             foreach (var pair in rows)
             {
-                // Ev onarımı ancak ilk depremde ev hasar aldıktan sonra satılır; sabitleme ilk depremden sonra kalkar.
+                // Sabitleme yalnız ilk depremden önce satılır; alınan ürün listede "Alındı" olarak kalır.
                 bool owned = purchased.Contains(pair.Key);
                 bool offered = owned || Shop.Offered(pair.Key, shopDay);
-                pair.Value.button.gameObject.SetActive(offered);
-                int price = Shop.Price(pair.Key);
-                string state = owned ? "<color=#6fdc8c>Alındı</color>" : $"{Ui.Money(price)}";
-                pair.Value.label.text = $"{Shop.Name(pair.Key)}\n<size=85%>{state}</size>";
-                pair.Value.button.interactable = shopOpen && !owned && money >= price;
+                pair.Value.row.SetActive(offered);
+                pair.Value.label.text = owned ? "Alındı" : Ui.Money(Shop.Price(pair.Key));
+                pair.Value.label.color = owned ? OwnedGreen : IosBlue;
+                pair.Value.button.interactable = shopOpen && !owned && money >= Shop.Price(pair.Key);
                 pair.Value.chip.SetActive(owned);
             }
             ShowBond(bond, bondMax);

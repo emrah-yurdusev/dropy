@@ -14788,6 +14788,7 @@ MonoBehaviour:
   spawnPoint: {fileID: 144160909}
   exitPoint: {fileID: 526396445}
   door: {fileID: 760790044}
+  deskPhone: {fileID: 0}
   regulations: {fileID: 11400000, guid: db25f86c1b07c0642aba2a4d5d50526b, type: 2}
   story: {fileID: 11400000, guid: 61cd861f2923b8b4e9bcb072f912fbdd, type: 2}
   newsStyle: {fileID: 11400000, guid: 8aeb809251672e548a00606b7aa65121, type: 2}
