@@ -88,6 +88,8 @@ namespace Dropy.Gameplay
         ICollection<ShopItem> offeredTonight;
         RectTransform shopWidget;
         RectTransform messageViewport;
+        /// <summary>Okunan bildirimler (gönderen + metin): aynı mesaj sonraki akşam tekrar düşerse okunmuş görünür.</summary>
+        readonly HashSet<string> readMessages = new HashSet<string>();
         bool done;
 
         public event System.Action<ShopItem> BuyClicked;
@@ -478,11 +480,20 @@ namespace Dropy.Gameplay
                     outline.effectDistance = new Vector2(3f, -3f);
                 }
 
-                var dot = Ui.Image(card, "Unread", IosBlue, Ui.Rounded, raycast: false).rectTransform;
-                dot.Place(new Vector2(0f, 1f), new Vector2(0.5f, 0.5f), new Vector2(22f, -60f), new Vector2(12f, 12f));
                 var sender = Ui.Text(card, "Sender", message.sender, 21f, MessageInk, TextAlignmentOptions.MidlineLeft, FontStyles.Bold);
                 sender.rectTransform.Place(new Vector2(0f, 1f), new Vector2(0f, 0.5f), new Vector2(36f, -60f), new Vector2(MessageWidth - 20f, 28f));
                 sender.textWrappingMode = TextWrappingModes.NoWrap;
+
+                // Okunmamış işaretleri tek kapta: soldaki mavi nokta ve gönderenin yanında "YENİ" etiketi.
+                var unread = Ui.Rect("Unread", card).Stretch();
+                var dot = Ui.Image(unread, "Dot", IosBlue, Ui.Rounded, raycast: false).rectTransform;
+                dot.Place(new Vector2(0f, 1f), new Vector2(0.5f, 0.5f), new Vector2(22f, -60f), new Vector2(12f, 12f));
+                float senderWidth = sender.GetPreferredValues(message.sender).x;
+                var badge = Ui.Image(unread, "New", IosBlue, Ui.Rounded, raycast: false).rectTransform;
+                badge.Place(new Vector2(0f, 1f), new Vector2(0f, 0.5f), new Vector2(36f + senderWidth + 10f, -60f), new Vector2(52f, 22f));
+                var badgeText = Ui.Text(badge, "Text", "YENİ", 13f, Color.white, TextAlignmentOptions.Center, FontStyles.Bold);
+                badgeText.rectTransform.Stretch();
+                badgeText.characterSpacing = 2f;
 
                 float buttonRow = request ? 50f : 0f;
                 var text = Ui.Text(card, "Text", message.text, 19f, MessageInk);
@@ -495,7 +506,9 @@ namespace Dropy.Gameplay
                 var size = card.gameObject.AddComponent<LayoutElement>();
 
                 var view = card.gameObject.AddComponent<MessageCardView>();
-                view.Init(cardImage, text, size, dot.gameObject, collapsed, expanded, messageList);
+                string key = message.sender + "|" + message.text;
+                view.Init(cardImage, text, size, unread.gameObject, dot, collapsed, expanded, messageList,
+                    readMessages.Contains(key), () => readMessages.Add(key));
                 var open = card.gameObject.AddComponent<Button>();
                 open.transition = Selectable.Transition.None;
                 open.onClick.AddListener(view.Toggle);
@@ -576,7 +589,8 @@ namespace Dropy.Gameplay
 
     /// <summary>
     /// Akşam telefonundaki bir bildirim kartı: kısa hâlde tek satır önizleme ve "…", dokununca tam metin.
-    /// Okunana kadar kart nabız gibi açık maviye döner ve mavi nokta yanıp söner.
+    /// Oyuncu karta dokunup açana kadar okunmamıştır: kart nabız gibi açık maviye döner, mavi nokta yanıp söner
+    /// ve "YENİ" etiketi durur. Okundu bilgisi panelde saklanır, aynı mesaj sonraki akşam gelirse okunmuş görünür.
     /// </summary>
     public class MessageCardView : MonoBehaviour
     {
@@ -586,21 +600,28 @@ namespace Dropy.Gameplay
         Color baseColor;
         TextMeshProUGUI text;
         LayoutElement size;
-        GameObject dot;
+        GameObject marks;
+        Transform dot;
         RectTransform list;
+
         float collapsedHeight;
         float expandedHeight;
         bool expanded;
         bool read;
+        System.Action onRead;
 
-        public void Init(Image cardImage, TextMeshProUGUI body, LayoutElement layout, GameObject unreadDot,
-            float collapsed, float full, RectTransform parentList)
+        public void Init(Image cardImage, TextMeshProUGUI body, LayoutElement layout, GameObject unreadMarks, Transform pulseDot,
+            float collapsed, float full, RectTransform parentList, bool alreadyRead, System.Action markRead)
         {
+            read = alreadyRead;
+            onRead = markRead;
+            marks = unreadMarks;
+            dot = pulseDot;
+            marks.SetActive(!read);
             card = cardImage;
             baseColor = cardImage.color;
             text = body;
             size = layout;
-            dot = unreadDot;
             list = parentList;
             collapsedHeight = collapsed;
             expandedHeight = Mathf.Max(collapsed, full);
@@ -611,13 +632,18 @@ namespace Dropy.Gameplay
         public void Toggle()
         {
             expanded = !expanded;
-            if (!read)
-            {
-                read = true;
-                dot.SetActive(false);
-                card.color = baseColor;
-            }
+            MarkRead();
             Apply();
+        }
+
+        void MarkRead()
+        {
+            if (read)
+                return;
+            read = true;
+            marks.SetActive(false);
+            card.color = baseColor;
+            onRead?.Invoke();
         }
 
         void Apply()
