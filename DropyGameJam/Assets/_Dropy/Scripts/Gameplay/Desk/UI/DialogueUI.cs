@@ -41,6 +41,10 @@ namespace Dropy.Gameplay
         RectTransform tail;
         RectTransform choiceRoot;
         Transform anchor;
+        /// <summary>Balon başın yanına geçtiyse hangi tarafta durduğu (-1 sol, 1 sağ, 0 henüz yanda değil). Cümle bitene kadar sabit.</summary>
+        int lockedSide;
+        /// <summary>Yeni cümlede balon yerine atlasın; sonra kafayı yumuşakça takip etsin.</summary>
+        bool snapNext = true;
 
         public bool IsTalking => bubble != null && bubble.gameObject.activeSelf;
 
@@ -99,17 +103,27 @@ namespace Dropy.Gameplay
             // Balon başın üstüne sığmıyorsa (uzun metin ya da ayaktaki müteahhit) başa binmez, başın yanına geçer;
             // yandayken üst şeride (gün göstergesi, harç bildirimi) de girmez.
             float topMargin = KeepClearOfTop ? TopReserved : 16f;
-            bool beside = local.y > half.y - h - topMargin;
+            // Bir kez yana geçen balon o cümle boyunca aynı yanda kalır: müteahhit kapıya yürürken kafası ekranın
+            // ortasından geçince balon sağa sola zıplamasın.
+            bool beside = lockedSide != 0 || local.y > half.y - h - topMargin;
             if (beside)
             {
-                float towardCenter = local.x > 0f ? -1f : 1f;
-                local.x += towardCenter * (w + SideGap);
+                if (lockedSide == 0)
+                    lockedSide = local.x > 0f ? -1 : 1;
+                local.x += lockedSide * (w + SideGap);
                 local.y = Mathf.Clamp(local.y - h * 0.6f, -half.y + 16f, half.y - h - TopReserved);
             }
             local.x = Mathf.Clamp(local.x, -half.x + w + 16f, half.x - w - 16f);
             local.y = Mathf.Clamp(local.y, -half.y + 16f, half.y - h - topMargin);
             tail.gameObject.SetActive(!beside);
-            bubble.anchoredPosition = local;
+            // Kafayı yumuşak takip: yürüme sallantısı balona geçmesin.
+            if (snapNext)
+            {
+                bubble.anchoredPosition = local;
+                snapNext = false;
+            }
+            else
+                bubble.anchoredPosition = Vector2.Lerp(bubble.anchoredPosition, local, 1f - Mathf.Exp(-8f * Time.unscaledDeltaTime));
             continueHint.localScale = Vector3.one * (0.8f + 0.2f * Mathf.Sin(Time.unscaledTime * 6f));
         }
 
@@ -117,6 +131,8 @@ namespace Dropy.Gameplay
         public IEnumerator Say(string speaker, string text, Transform head, bool waitForClick)
         {
             anchor = head;
+            lockedSide = 0;
+            snapNext = true;
             if (head == null)
                 bubble.anchoredPosition = new Vector2(0f, 60f); // kafası olmayan konuşmacı (telefon): ekranın ortası
             tail.gameObject.SetActive(head != null);
@@ -156,6 +172,8 @@ namespace Dropy.Gameplay
         {
             bubble.gameObject.SetActive(false);
             anchor = null;
+            lockedSide = 0;
+            snapNext = true;
         }
 
         /// <summary>Balonu gizler ve yarıda kalmış cevap seçeneklerini siler.</summary>

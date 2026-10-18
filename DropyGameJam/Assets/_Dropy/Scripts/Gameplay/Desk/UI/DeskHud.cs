@@ -261,7 +261,7 @@ namespace Dropy.Gameplay
             head.gameObject.AddComponent<LayoutElement>().preferredHeight = 70f;
             AddMenuButton(box, "DEVAM  [Esc]", new Color(0.24f, 0.32f, 0.45f), () => ResumeClicked?.Invoke());
             AddMenuButton(box, "BAŞTAN BAŞLA", new Color(0.45f, 0.33f, 0.25f), () => RestartClicked?.Invoke());
-            AddMenuButton(box, "OYUNDAN ÇIK", new Color(0.4f, 0.15f, 0.15f), Application.Quit);
+            AddMenuButton(box, "OYUNDAN ÇIK", new Color(0.4f, 0.15f, 0.15f), Dropy.Core.GameExit.Quit);
             panel.gameObject.SetActive(false);
             return panel.gameObject;
         }
@@ -400,10 +400,10 @@ namespace Dropy.Gameplay
         /// <summary>Oyun sonu gazetesi; altındaki düğmeyle karneye geçilir.</summary>
         public void ShowFinal(IList<DeskManager.CaseResult> results, IDictionary<ShopItem, int> boughtOn,
             IEnumerable<(FamilyNeed need, bool paid)> family, bool estranged, int money, string report,
-            FamilyOutcome home = FamilyOutcome.HomeStood)
+            FamilyOutcome home = FamilyOutcome.HomeStood, int reward = 0)
         {
             summaryText.text = report;
-            newspaper.Show(NewspaperWriter.Final(results, boughtOn, family, estranged, money, style, home));
+            newspaper.Show(NewspaperWriter.Final(results, boughtOn, family, estranged, money, style, home, reward));
         }
 
         /// <summary>Hapis: depremde onayladığın bina çöktü, oyun biter. Tutuklanma haberi; karne yine açılır.</summary>

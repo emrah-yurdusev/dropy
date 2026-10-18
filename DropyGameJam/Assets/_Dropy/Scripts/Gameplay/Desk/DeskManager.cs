@@ -113,6 +113,8 @@ namespace Dropy.Gameplay
         string bondNote;
         /// <summary>Son depremden sonra hapse girildiyse oyun biter.</summary>
         bool jailed;
+        /// <summary>Kusursuz kayıt primi son akşam kasaya girdi (banka ve müdür mesajları bunu bekler).</summary>
+        bool bonusPaid;
         int hammersUsedToday;
         bool paused;
         /// <summary>Deprem sahnesi oynarken büronun arayüzü gizli; Esc/Tab çalışmasın.</summary>
@@ -197,7 +199,7 @@ namespace Dropy.Gameplay
             evening.BuyClicked += Buy;
 
             pen = canvasGo.AddComponent<PenTutorial>();
-            pen.Build(root, tutorial, ResolveTarget);
+            pen.Build(root, tutorial, ResolveTarget, TutorialObstacles);
             evening.PayClicked += Pay;
         }
 
@@ -330,7 +332,8 @@ namespace Dropy.Gameplay
             var family = story != null
                 ? story.needs.Select(n => (n, paidNeeds.Contains(n)))
                 : Enumerable.Empty<(FamilyNeed, bool)>();
-            hud.ShowFinal(results, boughtOn, family, Estranged, money, DeskHud.ReportCard(results), HomeOutcome);
+            hud.ShowFinal(results, boughtOn, family, Estranged, money, DeskHud.ReportCard(results), HomeOutcome,
+                bonusPaid ? PerfectBonus : 0);
         }
 
         /// <summary>
@@ -732,6 +735,7 @@ namespace Dropy.Gameplay
                 case MessageCondition.SealWas: return message.other != null && SealOf(message.other) == message.seal;
                 case MessageCondition.MoneyBelow: return money < message.threshold;
                 case MessageCondition.BondBelow: return bond < message.threshold;
+                case MessageCondition.PerfectRecord: return bonusPaid;
                 default: return true;
             }
         }
@@ -900,6 +904,7 @@ namespace Dropy.Gameplay
             // Kira her akşam tam düşer; kasa yetmezse eksiye iner, ev sahibi borcu hatırlatır.
             int rent = Economy.Rent;
             money -= rent;
+            int bonus = PayBonusIfPerfect();
             hud.SetMoney(money);
 
             // Sıra: borç, dünkü isteğe cevap, o akşamın mesajları, sonda bugünkü istek (Öde düğmeli).
@@ -931,7 +936,7 @@ namespace Dropy.Gameplay
             eveningRequests.Clear();
             eveningRequests.AddRange(requests);
             yield return evening.Run(day, income, rent, money, purchased, messages, paidNeeds,
-                bond, BondMax, bondNote, shopOpen: day <= Economy.LastEvening, offered: OfferedTonight());
+                bond, BondMax, bondNote, shopOpen: day <= Economy.LastEvening, offered: OfferedTonight(), bonus: bonus);
             bondNote = null;
             inEvening = false;
             ApplyMorning(eveningRequests);
@@ -950,6 +955,26 @@ namespace Dropy.Gameplay
 
         int BondMax => story != null ? story.bondMax : 5;
 
+        int PerfectBonus => story != null ? story.perfectBonus : 0;
+
+        /// <summary>
+        /// Son akşam, o güne kadarki bütün dosyalar doğru ve hiç rüşvet alınmadıysa müdürlük prim yatırır
+        /// (banka ve müdür mesajı gelir). Dürüst ve kusursuz oyuncu böylece evi de onartabilir. Yatan tutarı döner.
+        /// </summary>
+        int PayBonusIfPerfect()
+        {
+            if (bonusPaid || day != Economy.LastEvening || PerfectBonus <= 0)
+                return 0;
+            bool perfect = results.Count >= day * Economy.FilesPerDay
+                && DeskHud.CountCorrect(results) == results.Count
+                && !results.Any(r => r.bribed);
+            if (!perfect)
+                return 0;
+            money += PerfectBonus;
+            bonusPaid = true;
+            return PerfectBonus;
+        }
+
         /// <summary>Aile evi sarsıntıda hasar aldı: sarsıntının olduğu günün ikinci dosyasına gelindi.</summary>
         bool HomeDamaged => story != null && results.GroupBy(r => r.day).Any(g => story.Tremor(g.Key) > 0f && g.Count() >= Economy.FilesPerDay);
 
@@ -958,16 +983,10 @@ namespace Dropy.Gameplay
             purchased.Contains(ShopItem.Bag), purchased.Contains(ShopItem.Fixing));
 
         /// <summary>
-        /// Bu akşam dükkânda ne satılır. Ev onarımı pahalıdır ve yalnız ev sarsıntıda hasar aldıysa ve
-        /// oyuncu rüşvet aldıysa çıkar: dürüst kasa ona hiçbir zaman yetmez.
+        /// Bu akşam dükkânda ne satılır. Ev güçlendirme 2. akşamdan vitrinde: dürüst kasa ona ancak kusursuz kayıt
+        /// primiyle yeter, yoksa yolu rüşvetten geçer (BuildCaseFiles.Simulate aynı kuralı kullanır).
         /// </summary>
-        HashSet<ShopItem> OfferedTonight()
-        {
-            var offered = new HashSet<ShopItem>(Shop.All.Where(i => Shop.Offered(i, day)));
-            if (!HomeDamaged || !results.Any(r => r.bribed))
-                offered.Remove(ShopItem.Repair);
-            return offered;
-        }
+        HashSet<ShopItem> OfferedTonight() => new HashSet<ShopItem>(Shop.All.Where(i => Shop.Offered(i, day)));
 
         string DebtMessage()
         {
@@ -1031,6 +1050,10 @@ namespace Dropy.Gameplay
             }
         }
 
+        /// <summary>Öğretici notunun mümkünse üstüne yazılmayacağı paneller: açık belgeler (bina inceleme kartı dahil).</summary>
+        IEnumerable<RectTransform> TutorialObstacles() =>
+            inspection.GetComponentsInChildren<DocumentCard>().Select(card => card.RectTransform);
+
         /// <summary>Henüz alınmamış ve hâlâ satılan hazırlıkların (çanta, sabitleme) toplam fiyatı.</summary>
         int MissingPrepCost() =>
             Shop.Items.Where(i => !purchased.Contains(i) && Shop.Offered(i, day)).Sum(Shop.Price);
@@ -1041,6 +1064,7 @@ namespace Dropy.Gameplay
             ["kasa"] = Ui.Money(cash),
             ["eksik"] = Ui.Money(Mathf.Max(0, prepCost - cash)),
             ["hazirlik"] = string.Join(" ve ", Shop.Items.Where(i => !purchased.Contains(i)).Select(i => Shop.Name(i).ToLower(new System.Globalization.CultureInfo("tr-TR")))),
+            ["prim"] = Ui.Money(PerfectBonus),
         };
 
         /// <summary>İsteğe bağlı aile masrafı. Para güvenlik alışverişiyle aynı kasadan çıkar.</summary>
@@ -1330,6 +1354,7 @@ namespace Dropy.Gameplay
         void SimulateEvening()
         {
             money -= Economy.Rent;
+            PayBonusIfPerfect();
             var requests = story != null && !Estranged ? story.needs.Where(n => n.day == day).ToList() : new List<FamilyNeed>();
             ApplyMorning(requests);
         }

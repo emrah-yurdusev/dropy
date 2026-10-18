@@ -158,7 +158,7 @@ namespace Dropy.Gameplay
             photo.preserveAspect = custom != null;
             photo.rectTransform.Stretch(2f, 2f, 2f, 2f);
             if (!string.IsNullOrEmpty(page.photoCaption))
-                Text(column, page.photoCaption, 19f, style.bodyFont, TextAlignmentOptions.Left, FontStyles.Italic);
+                Text(column, page.photoCaption, 20f, style.bodyFont, TextAlignmentOptions.Left, FontStyles.Italic | FontStyles.Bold);
         }
 
         void Box(RectTransform column, NewsBox box)
@@ -186,9 +186,10 @@ namespace Dropy.Gameplay
             rule.gameObject.AddComponent<LayoutElement>().preferredHeight = 1.5f;
             if (box.lines.Count > 0)
             {
-                var lines = Text((RectTransform)inner.transform, string.Join("\n", box.lines), 19f, style.bodyFont, TextAlignmentOptions.Left, FontStyles.Normal);
+                // Kutu satırları oyuncunun sonucu: ince normal kesim sararmış kâğıtta kayboluyordu, kalın kesimle basılır.
+                var lines = Text((RectTransform)inner.transform, string.Join("\n", box.lines), 21f, style.bodyFont, TextAlignmentOptions.Left, FontStyles.Bold);
                 lines.color = fg;
-                lines.lineSpacing = 6f;
+                lines.lineSpacing = 3f;
             }
             if (!string.IsNullOrEmpty(box.verdict))
             {
@@ -210,15 +211,21 @@ namespace Dropy.Gameplay
             label.color = style.paper;
         }
 
-        /// <summary>Sıradaki dolgu haberi okunmaz, dalgalı yazar; dolgu bittiyse bir şey eklemez.</summary>
+        /// <summary>Okunmayan dolgu haberler, çizgi filmlerdeki gibi harfsiz dalgalı satırlar.</summary>
+        const int FillerCharsPerLine = 45;
+
+        /// <summary>
+        /// Sıradaki dolgu haber: harf yok, metnin uzunluğu kadar satır dalgalı çizgi (çizgi film gazetesi gibi).
+        /// Dolgu bittiyse bir şey eklemez.
+        /// </summary>
         int Filler(RectTransform column, int index)
         {
             if (index >= style.fillers.Count)
                 return index;
-            var text = Text(column, style.fillers[index], 17f, style.bodyFont, TextAlignmentOptions.Justified, FontStyles.Normal);
-            text.color = style.fillerInk;
-            text.lineSpacing = -4f;
-            Rough(text, style.fillerWave, 0.9f);
+            int lines = Mathf.Max(2, Mathf.CeilToInt(style.fillers[index].Length / (float)FillerCharsPerLine));
+            var image = Ui.Image(column, "Filler", style.fillerInk, raycast: false);
+            image.sprite = PrintArt.Scribble(lines, index);
+            image.gameObject.AddComponent<LayoutElement>().preferredHeight = lines * PrintArt.ScribbleLine;
             return index + 1;
         }
 
@@ -259,9 +266,9 @@ namespace Dropy.Gameplay
         {
             var row = Ui.Rect("Row", parent);
             row.gameObject.AddComponent<LayoutElement>().preferredHeight = height;
-            Place(Ui.Text(row, "Left", left ?? "", size, style.ink, TextAlignmentOptions.Left), row);
-            Place(Ui.Text(row, "Center", center ?? "", size, style.ink, TextAlignmentOptions.Center), row);
-            Place(Ui.Text(row, "Right", right ?? "", size, style.ink, TextAlignmentOptions.Right), row);
+            Place(Ui.Text(row, "Left", left ?? "", size, style.ink, TextAlignmentOptions.Left, FontStyles.Bold), row);
+            Place(Ui.Text(row, "Center", center ?? "", size, style.ink, TextAlignmentOptions.Center, FontStyles.Bold), row);
+            Place(Ui.Text(row, "Right", right ?? "", size, style.ink, TextAlignmentOptions.Right, FontStyles.Bold), row);
         }
 
         void Place(TextMeshProUGUI text, RectTransform row)

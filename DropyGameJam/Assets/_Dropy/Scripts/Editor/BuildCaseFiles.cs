@@ -567,13 +567,19 @@ namespace Dropy.EditorTools
 
                 During(2, 1, NotBought(2, Wife, "Elif yine çantayı sordu. Bir de odasındaki dolap çok uzun; öğretmen duvara vidalayın demiş.", ShopItem.Bag)),
                 During(2, 1, Bought(2, Wife, "Çanta kapının yanında, Elif fenerini içine koydu. Ama odasındaki dolap çok uzun; öğretmen duvara vidalayın demiş.", ShopItem.Bag)),
+                // Güçlendirme 2. akşam vitrine çıkar: fiyatı rüşvet teklifinden önce görülsün.
+                Msg(2, Wife, "Usta binaya baktı: kolonlar zayıfmış, güçlendirme 3.500 TL. O kadar paramız yok, biliyorum... Ama ya büyüğü gelirse?"),
 
+                // Kusursuz kayıt: 3. akşam bütün dosyalar doğru ve rüşvet yoksa müdürlük prim yatırır (evi onarmaya yeter).
+                Perfect(3, Bank, "Hesabınıza {prim} yatırıldı. Açıklama: Performans primi · İmar Müdürlüğü."),
+                Perfect(3, Boss, "Bütün dosyalarda doğru karar. Bu şehirde senin gibi memur az. Primini yatırdım; evini onart, ailene sahip çık."),
                 Sealed(3, Unknown, "Kimse bir şey demez. -O", cases[Yurt], Seal.Approve),
                 Sealed(3, Unknown, "Pişman olacaksın. -O", cases[Yurt], Seal.Reject),
                 Msg(3, Wife, "Öğleden sonraki sarsıntıda evin duvarları çatladı. Elif korkudan masanın altına girmiş. Akşam erken gel."),
             };
 
             story.bondStart = 3;
+            story.perfectBonus = 4000;
             story.bondMax = 5;
             story.needs = new List<FamilyNeed>
             {
@@ -631,6 +637,16 @@ namespace Dropy.EditorTools
             var m = Msg(day, sender, text);
             m.condition = MessageCondition.Bought;
             m.item = item;
+            return m;
+        }
+
+        const string Bank = "Banka", Boss = "Müdür";
+
+        /// <summary>Yalnız kusursuz kayıt primi yattıysa gelen mesaj.</summary>
+        static PhoneMessage Perfect(int day, string sender, string text)
+        {
+            var m = Msg(day, sender, text);
+            m.condition = MessageCondition.PerfectRecord;
             return m;
         }
 
@@ -780,6 +796,14 @@ namespace Dropy.EditorTools
             var fullLate = Plan((1, ShopItem.Bag), (2, ShopItem.Fixing), (3, ShopItem.Fixing));
             var repaired = Plan((1, ShopItem.Bag), (2, ShopItem.Fixing), (3, ShopItem.Fixing), (3, ShopItem.Repair));
 
+            // Kusursuz oyuncu son akşam primle evi de onartır: ev ayakta, aile güvende, hapis yok.
+            ok &= Expect("Mükemmel: dürüst, tam hazırlık, prim, ev onarımı",
+                Simulate(cases, story, honest, new int[0], Plan((1, ShopItem.Bag), (2, ShopItem.Fixing), (3, ShopItem.Repair))),
+                r => r.jailedDay == 0 && r.estrangedDay == 0 && r.bought.Contains(ShopItem.Repair) && r.home == FamilyOutcome.HomeStood);
+            // Güçlendirme 2. akşam vitrinde ama dürüst kasa primden önce ona yetmez.
+            ok &= Expect("Dürüst, 2. akşam güçlendirmeye parası yetmez",
+                Simulate(cases, story, honest, new int[0], Plan((1, ShopItem.Bag), (2, ShopItem.Repair))),
+                r => !r.bought.Contains(ShopItem.Repair));
             ok &= Expect("Dürüst, tam hazırlık, istek ödemez", Simulate(cases, story, honest, new int[0], full),
                 r => r.jailedDay == 0 && r.bought.Count == 2 && r.estrangedDay == 0 && r.home == FamilyOutcome.Survived);
             ok &= Expect("Dürüst, geziyi öder, çantayı almaz", Simulate(cases, story, honest, new[] { 1 }, Plan((2, ShopItem.Fixing))),
@@ -840,12 +864,14 @@ namespace Dropy.EditorTools
         {
             var r = new PathResult { money = Economy.StartMoney, bond = story.bondStart };
             bool collapsedThisPart = false;
+            bool allCorrect = true;
             for (int day = 1; day <= Economy.Days; day++)
             {
                 bool shearUsed = false;
                 for (int k = 0; k < Economy.FilesPerDay; k++)
                 {
                     var c = cases[(day - 1) * Economy.FilesPerDay + k];
+                    allCorrect &= policy(c) == BuildingRules.CorrectSeal(c);
                     var seal = OnePerDay(policy(c), ref shearUsed);
                     r.money += BuildingRules.Fee(c, seal, day);
                     if (BuildingRules.Fate(c, seal) == BuildingFate.Collapsed)
@@ -871,6 +897,9 @@ namespace Dropy.EditorTools
                 if (day >= Economy.Days)
                     break;
                 r.money -= Economy.Rent;
+                // Son akşam kusursuz kayıt primi (DeskManager.PayBonusIfPerfect ile aynı kural).
+                if (day == Economy.LastEvening && allCorrect)
+                    r.money += story.perfectBonus;
 
                 bool estranged = r.bond <= 0;
                 foreach (var need in story.needs)

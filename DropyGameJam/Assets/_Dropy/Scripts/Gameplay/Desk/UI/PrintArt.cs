@@ -103,6 +103,66 @@ namespace Dropy.Gameplay
             return Mathf.Repeat(v, 0.13f) < 0.018f ? 0.7f : 0.1f;
         }
 
+        /// <summary>Karalama paragrafının bir satırının yüksekliği (piksel).</summary>
+        public const float ScribbleLine = 17f;
+
+        static readonly System.Collections.Generic.Dictionary<int, Sprite> scribbles = new System.Collections.Generic.Dictionary<int, Sprite>();
+
+        /// <summary>
+        /// Çizgi filmlerdeki gazete yazısı: harf yok, yazı satırı gibi dizilmiş ince dalgalı çizgiler. Kelime arası gibi
+        /// küçük kesikler, içeriden başlayan ilk satır ve kısa son satır. Beyaz çizilir; rengi Image verir.
+        /// </summary>
+        public static Sprite Scribble(int lines, int seed)
+        {
+            int key = lines * 1000 + seed;
+            if (scribbles.TryGetValue(key, out var cached) && cached != null)
+                return cached;
+            const int width = 420;
+            int height = Mathf.CeilToInt(lines * ScribbleLine);
+            var tex = NewTexture(width, height);
+            var pixels = new Color32[width * height];
+            var rng = new System.Random(seed * 7919 + lines);
+            for (int line = 0; line < lines; line++)
+            {
+                float baseY = height - (line + 0.55f) * ScribbleLine;
+                float start = line == 0 ? 22f : 2f;
+                float end = line == lines - 1 ? width * (0.35f + 0.4f * (float)rng.NextDouble()) : width - 2f;
+                float phase = (float)rng.NextDouble() * 10f;
+                float x = start;
+                while (x < end)
+                {
+                    // Bir "kelime": 20–60 piksel dalga, ardından 5–8 piksel boşluk.
+                    float word = Mathf.Min(end, x + 20f + (float)rng.NextDouble() * 40f);
+                    for (float px = x; px < word; px += 0.35f)
+                    {
+                        float py = baseY + Mathf.Sin(px * 0.45f + phase) * 2.6f + Mathf.Sin(px * 0.11f + phase) * 0.8f;
+                        Plot(pixels, width, height, px, py, 1.1f);
+                    }
+                    x = word + 5f + (float)rng.NextDouble() * 3f;
+                }
+            }
+            tex.SetPixels32(pixels);
+            tex.Apply();
+            var sprite = Sprite.Create(tex, new Rect(0, 0, width, height), new Vector2(0.5f, 0.5f));
+            scribbles[key] = sprite;
+            return sprite;
+        }
+
+        /// <summary>Yumuşak kenarlı nokta: karalama çizgisinin kalemi.</summary>
+        static void Plot(Color32[] pixels, int width, int height, float cx, float cy, float radius)
+        {
+            int x0 = Mathf.FloorToInt(cx - radius - 1), x1 = Mathf.CeilToInt(cx + radius + 1);
+            int y0 = Mathf.FloorToInt(cy - radius - 1), y1 = Mathf.CeilToInt(cy + radius + 1);
+            for (int y = Mathf.Max(0, y0); y <= Mathf.Min(height - 1, y1); y++)
+            for (int x = Mathf.Max(0, x0); x <= Mathf.Min(width - 1, x1); x++)
+            {
+                float d = Vector2.Distance(new Vector2(x + 0.5f, y + 0.5f), new Vector2(cx, cy));
+                byte a = (byte)(Mathf.Clamp01(radius - d + 0.5f) * 255);
+                if (a > pixels[y * width + x].a)
+                    pixels[y * width + x] = new Color32(255, 255, 255, a);
+            }
+        }
+
         static bool InEllipse(float u, float v, float cu, float cv, float ru, float rv)
         {
             float du = (u - cu) / ru, dv = (v - cv) / rv;

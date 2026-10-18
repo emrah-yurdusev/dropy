@@ -15,7 +15,7 @@ namespace Dropy.Gameplay
         /// <summary>6. gün depreminden sonra, hapse girilmediyse.</summary>
         public static NewspaperPage Final(IList<DeskManager.CaseResult> results, IDictionary<ShopItem, int> boughtOn,
             IEnumerable<(FamilyNeed need, bool paid)> family, bool estranged, int money, NewsStyle style,
-            FamilyOutcome outcome = FamilyOutcome.HomeStood)
+            FamilyOutcome outcome = FamilyOutcome.HomeStood, int reward = 0)
         {
             var t = style.texts;
             var collapsed = results.Where(r => r.fate == BuildingFate.Collapsed).ToList();
@@ -25,6 +25,13 @@ namespace Dropy.Gameplay
             var bribes = results.Where(r => r.bribed).ToList();
 
             var page = new NewspaperPage { edition = string.Format(style.editionFormat, Economy.Days) };
+            if (reward > 0)
+            {
+                // Kusursuz sicil: dürüst memurun ödülü, sağ sütunun başında siyah kutu.
+                var award = Box(t.boxReward, 2, string.Format(t.rewardLine, Ui.Money(reward)));
+                award.inverted = true;
+                page.boxes.Add(award);
+            }
             if (collapsed.Count > 0)
             {
                 page.headline = DeskHud.Headline(collapsed[0]);

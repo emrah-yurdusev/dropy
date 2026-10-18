@@ -543,15 +543,7 @@ namespace Dropy.Menu
                     go.SetActive(true);
         }
 
-        void Quit()
-        {
-            GameAudio.Save();
-#if UNITY_EDITOR
-            UnityEditor.EditorApplication.isPlaying = false;
-#else
-            Application.Quit();
-#endif
-        }
+        void Quit() => GameExit.Quit();
 
         void OpenSettings()
         {

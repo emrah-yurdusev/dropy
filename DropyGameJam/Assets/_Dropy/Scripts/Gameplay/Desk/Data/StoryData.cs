@@ -11,7 +11,8 @@ namespace Dropy.Gameplay
         NotBought,
         SealWas,
         [Tooltip("Kasa eşik değerin altındaysa")] MoneyBelow,
-        [Tooltip("Aile bağı eşik değerin altındaysa")] BondBelow
+        [Tooltip("Aile bağı eşik değerin altındaysa")] BondBelow,
+        [Tooltip("Kusursuz kayıt primi yattıysa (son akşam, bütün dosyalar doğru, rüşvet yok)")] PerfectRecord
     }
 
     public enum MessageTiming
@@ -118,6 +119,10 @@ namespace Dropy.Gameplay
         [Header("Aile bağı")]
         [Tooltip("Başlangıç. Hiçbir isteği ödemeyen oyuncu 5. akşamın sonunda sıfıra düşer; birini ödemek yeter")]
         [Min(1)] public int bondStart = 4;
+
+        [Header("Kusursuz kayıt primi")]
+        [Tooltip("Son akşam, bütün dosyalar doğru ve rüşvet yoksa kasaya girer; PerfectRecord koşullu mesajlar bunu haber verir ({prim})")]
+        [Min(0)] public int perfectBonus = 4000;
         [Min(1)] public int bondMax = 5;
 
         public string Radio(int day) => day >= 1 && day <= radio.Count ? radio[day - 1] : null;

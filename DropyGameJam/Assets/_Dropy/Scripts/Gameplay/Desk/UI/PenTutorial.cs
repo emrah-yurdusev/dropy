@@ -18,8 +18,22 @@ namespace Dropy.Gameplay
         const float ReferenceWidth = 1920f;
         const float Thickness = 5f;
         /// <summary>Yeni hamle çizilirken öncekiler bu saydamlığa iner: göz hep son hamlede kalır.</summary>
-        const float PastAlpha = 0.35f;
+        const float PastAlpha = 0.85f;
+        /// <summary>Kalem izinin ve yazının arkasındaki yumuşak krem hale: karışık zeminde de okunsun, kutu gibi sırıtmasın.</summary>
+        static readonly Color Halo = new Color(1f, 0.97f, 0.9f, 0.25f);
+        const float HaloWidth = 2f;
         const float NoteMargin = 24f;
+        /// <summary>
+        /// Notun arkasına çekilen fosforlu kalem şeridi: takım elbise, beyaz gömlek, bej kâğıt ve kahve duvar;
+        /// hangi zeminden geçerse geçsin yazı sarının üstünde okunur.
+        /// </summary>
+        static readonly Color Highlighter = new Color(1f, 0.9f, 0.18f, 0.85f);
+        /// <summary>Not yazısı koyu bordo: sarı şeridin üstünde en net okunan mürekkep.</summary>
+        static readonly Color NoteInk = new Color(0.45f, 0.03f, 0.08f);
+        const float HighlighterSweep = 0.22f;
+        /// <summary>Şeridin yazının iki ucundan taştığı pay (piksel).</summary>
+        const float HighlighterOverhang = 30f;
+        static Sprite highlighterSprite;
         /// <summary>El yazısı eğik ve not hafif döndürülmüş: ölçülen genişliğin biraz fazlası ayrılır.</summary>
         const float SlantAllowance = 30f;
 
@@ -27,17 +41,22 @@ namespace Dropy.Gameplay
         RectTransform overlay;
         /// <summary>Çizilmekte olan hamlenin katmanı; çizgiler ve not buna eklenir.</summary>
         RectTransform layer;
+        RectTransform haloLayer;
         System.Func<TutorialTarget, RectTransform> resolve;
+        /// <summary>Notun mümkünse üstüne yazılmayacağı paneller (belgeler, bina kartı).</summary>
+        System.Func<IEnumerable<RectTransform>> obstacles;
         readonly HashSet<TutorialStep> shown = new HashSet<TutorialStep>();
         readonly List<CanvasGroup> layers = new List<CanvasGroup>();
         /// <summary>Ekrandaki notların kapladığı alanlar: yeni not bunlarla çakışmayan bir yere yazılır.</summary>
         readonly List<Rect> placedNotes = new List<Rect>();
         Coroutine running;
 
-        public void Build(RectTransform root, TutorialData tutorial, System.Func<TutorialTarget, RectTransform> resolver)
+        public void Build(RectTransform root, TutorialData tutorial, System.Func<TutorialTarget, RectTransform> resolver,
+            System.Func<IEnumerable<RectTransform>> avoid = null)
         {
             data = tutorial;
             resolve = resolver;
+            obstacles = avoid;
             overlay = Ui.Rect("PenTutorial", root).Stretch();
             var group = overlay.gameObject.AddComponent<CanvasGroup>();
             group.blocksRaycasts = false;
@@ -86,6 +105,8 @@ namespace Dropy.Gameplay
                     past.alpha = PastAlpha;
                 layer = Ui.Rect("Step", overlay).Stretch();
                 layers.Add(layer.gameObject.AddComponent<CanvasGroup>());
+                // Haleler hep mürekkebin altında kalsın diye adımın ilk çocuğu ayrı bir katman.
+                haloLayer = Ui.Rect("Halo", layer).Stretch();
                 yield return Draw(step, a.Value, b);
                 for (float t = 0f; t < data.pause; t += Time.unscaledDeltaTime)
                     yield return null;
@@ -98,7 +119,11 @@ namespace Dropy.Gameplay
         {
             if (target == null || target.kind == TutorialTargetKind.None)
                 return null;
-            var rt = resolve(target);
+            return Bounds(resolve(target));
+        }
+
+        Rect? Bounds(RectTransform rt)
+        {
             if (rt == null || !rt.gameObject.activeInHierarchy)
                 return null;
             var corners = new Vector3[4];
@@ -185,24 +210,73 @@ namespace Dropy.Gameplay
 
         void Segment(Vector2 a, Vector2 b)
         {
-            var line = Ui.Image(layer, "Ink", data.ink, raycast: false).rectTransform;
+            if (haloLayer != null)
+                Line(haloLayer, a, b, Thickness * HaloWidth, Halo, Ui.Rounded);
+            Line(layer, a, b, Thickness, data.ink, null);
+        }
+
+        void Line(RectTransform parent, Vector2 a, Vector2 b, float thickness, Color color, Sprite sprite)
+        {
+            var image = Ui.Image(parent, "Ink", color, sprite, raycast: false);
+            var line = image.rectTransform;
             var delta = b - a;
             line.anchorMin = line.anchorMax = new Vector2(0.5f, 0.5f);
             line.pivot = new Vector2(0.5f, 0.5f);
             line.anchoredPosition = (a + b) / 2f - overlay.rect.center;
-            line.sizeDelta = new Vector2(delta.magnitude + Thickness * 0.6f, Thickness);
+            line.sizeDelta = new Vector2(delta.magnitude + thickness * 0.6f, thickness);
             line.localRotation = Quaternion.Euler(0f, 0f, Mathf.Atan2(delta.y, delta.x) * Mathf.Rad2Deg);
         }
 
+        /// <summary>İnce Caveat harfleri aynı mürekkeple biraz kalınlaşır: şeridin üstünde dolgun okunur.</summary>
+        static void Thicken(TextMeshProUGUI text, Color ink)
+        {
+            var material = text.fontMaterial;
+            material.EnableKeyword(ShaderUtilities.Keyword_Outline);
+            material.SetColor(ShaderUtilities.ID_OutlineColor, ink);
+            material.SetFloat(ShaderUtilities.ID_OutlineWidth, 0.1f);
+            text.fontMaterial = material;
+        }
+
+        /// <summary>Fosforlu kalem izi: uçları tırtıklı, boyuna hafif çizgili yarı saydam şerit (bir kez üretilir).</summary>
+        static Sprite HighlighterSprite()
+        {
+            if (highlighterSprite != null)
+                return highlighterSprite;
+            const int w = 256, h = 64;
+            var texture = new Texture2D(w, h, TextureFormat.RGBA32, false) { wrapMode = TextureWrapMode.Clamp, name = "Highlighter" };
+            var pixels = new Color32[w * h];
+            var random = new System.Random(7);
+            for (int y = 0; y < h; y++)
+            {
+                float v = Mathf.Abs(y / (float)(h - 1) - 0.5f) * 2f;
+                // Boyuna çizgiler, uçları kalemin yatık ucu gibi tırtıklı; üst ve alt kenar yumuşak.
+                float streak = 0.82f + 0.18f * (float)random.NextDouble();
+                float left = 4f + 10f * v * v + 4f * (float)random.NextDouble();
+                float right = w - 4f - 14f * v * v - 6f * (float)random.NextDouble();
+                float edge = Mathf.Clamp01((1f - v) * 6f);
+                for (int x = 0; x < w; x++)
+                {
+                    float ends = Mathf.Clamp01(Mathf.Min(x - left, right - x) / 3f);
+                    pixels[y * w + x] = new Color32(255, 255, 255, (byte)(255f * streak * edge * ends));
+                }
+            }
+            texture.SetPixels32(pixels);
+            texture.Apply();
+            highlighterSprite = Sprite.Create(texture, new Rect(0, 0, w, h), new Vector2(0.5f, 0.5f), 100f);
+            return highlighterSprite;
+        }
+
         /// <summary>
-        /// Notu aday yerlerden ekrana tam sığan ve önceki notlarla çakışmayan ilkine yazar; hiçbiri olmazsa ekrana sığan ilkine,
-        /// o da yoksa ilk adayı kenarlara kıstırır.
+        /// Notu aday yerlerden ekrana sığan, önceki notlarla çakışmayan ve mümkünse belgelerin üstüne binmeyen ilkine yazar;
+        /// belgesiz yer yoksa çakışmayan ilkine, o da yoksa ekrana sığan ilkine, hiçbiri olmazsa ilk adayı kenarlara kıstırır.
+        /// Önce fosforlu şerit çekilir, sonra kalem üstüne yazar.
         /// </summary>
         IEnumerator Note(string text, System.Func<Vector2, List<Vector2>> spots)
         {
-            var note = Ui.Text(layer, "Note", text, 34f, data.ink, TextAlignmentOptions.MidlineLeft, FontStyles.Bold);
+            var note = Ui.Text(layer, "Note", text, 40f, NoteInk, TextAlignmentOptions.MidlineLeft, FontStyles.Bold);
             if (data.font != null)
                 note.font = data.font;
+            Thicken(note, NoteInk);
             note.textWrappingMode = TextWrappingModes.NoWrap;
             var size = note.GetPreferredValues(text);
             var rt = note.rectTransform;
@@ -216,8 +290,13 @@ namespace Dropy.Gameplay
             System.Func<Vector2, Rect> area = p => new Rect(p.x, p.y - size.y / 2f, size.x + SlantAllowance, size.y);
             System.Func<Rect, bool> fits = n => screen.Contains(n.min) && screen.Contains(n.max);
             System.Func<Rect, bool> free = n => !placedNotes.Any(o => o.Overlaps(new Rect(n.x - 6f, n.y - 6f, n.width + 12f, n.height + 12f)));
+            var panels = obstacles == null ? new List<Rect>()
+                : obstacles().Select(Bounds).Where(b => b.HasValue).Select(b => b.Value).ToList();
+            System.Func<Rect, bool> clear = n => !panels.Any(o => o.Overlaps(n));
             Vector2 position;
-            if (candidates.Any(p => fits(area(p)) && free(area(p))))
+            if (candidates.Any(p => fits(area(p)) && free(area(p)) && clear(area(p))))
+                position = candidates.First(p => fits(area(p)) && free(area(p)) && clear(area(p)));
+            else if (candidates.Any(p => fits(area(p)) && free(area(p))))
                 position = candidates.First(p => fits(area(p)) && free(area(p)));
             else if (candidates.Any(p => fits(area(p))))
                 position = candidates.First(p => fits(area(p)));
@@ -232,6 +311,27 @@ namespace Dropy.Gameplay
             rt.anchoredPosition = position - r.center;
             rt.localRotation = Quaternion.Euler(0f, 0f, -3f);
             note.maxVisibleCharacters = 0;
+
+            // Fosforlu şerit yazının altında, aynı eğimde; soldan sağa çekilir.
+            var strip = Ui.Image(layer, "Highlighter", Highlighter, HighlighterSprite(), raycast: false);
+            strip.transform.SetSiblingIndex(note.transform.GetSiblingIndex());
+            strip.type = Image.Type.Filled;
+            strip.fillMethod = Image.FillMethod.Horizontal;
+            strip.fillOrigin = (int)Image.OriginHorizontal.Left;
+            strip.fillAmount = 0f;
+            var band = strip.rectTransform;
+            band.anchorMin = band.anchorMax = new Vector2(0.5f, 0.5f);
+            band.pivot = new Vector2(0f, 0.5f);
+            band.sizeDelta = new Vector2(size.x + SlantAllowance + 2f * HighlighterOverhang, size.y * 0.82f);
+            band.anchoredPosition = rt.anchoredPosition + new Vector2(-HighlighterOverhang, -2f);
+            band.localRotation = rt.localRotation;
+            for (float t = 0f; t < HighlighterSweep; t += Time.unscaledDeltaTime)
+            {
+                strip.fillAmount = t / HighlighterSweep;
+                yield return null;
+            }
+            strip.fillAmount = 1f;
+
             for (float shownChars = 0f; shownChars < text.Length; shownChars += 40f * Time.unscaledDeltaTime)
             {
                 note.maxVisibleCharacters = Mathf.FloorToInt(shownChars);

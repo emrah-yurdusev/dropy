@@ -137,6 +137,9 @@ namespace Dropy.Gameplay
         public string boxEmptySound = "SAĞLAM AMA BOŞ KALANLAR";
         public string boxCollapsed = "ÇÖKENLER";
         public string boxInvestigation = "SORUŞTURMA";
+        public string boxReward = "ÖDÜL";
+        [Tooltip("{0} = prim tutarı")]
+        public string rewardLine = "Kusursuz sicil: İmar Müdürlüğü dürüst memura {0} prim verdi. Rüşvetçinin teklif ettiği para, hak edilerek kazanıldı.";
         public string boxCourt = "MAHKEME KARARI";
         public string emptySoundNote = "İskân verilmedi; aileleri hâlâ kirada.";
         [Tooltip("{0} = müteahhit adları")]

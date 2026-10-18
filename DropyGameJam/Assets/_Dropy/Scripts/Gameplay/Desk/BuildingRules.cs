@@ -71,7 +71,7 @@ namespace Dropy.Gameplay
     {
         Bag,
         Fixing,
-        /// <summary>Sarsıntıda çatlayan aile evinin onarımı: pahalı, yalnız rüşvet alındıysa satılır.</summary>
+        /// <summary>Aile evini güçlendirme/onarım: pahalı; dürüst kasa ancak kusursuz kayıt primiyle, yoksa rüşvetle yeter.</summary>
         Repair
     }
 
@@ -79,7 +79,7 @@ namespace Dropy.Gameplay
     {
         /// <summary>Hazırlık eşyaları (çanta, sabitleme): baskı cümleleri ve denetim bunlara bakar.</summary>
         public static readonly ShopItem[] Items = { ShopItem.Bag, ShopItem.Fixing };
-        /// <summary>Dükkânda listelenen her şey; onarım yalnız şartı tutunca görünür.</summary>
+        /// <summary>Dükkânda listelenen her şey.</summary>
         public static readonly ShopItem[] All = { ShopItem.Bag, ShopItem.Fixing, ShopItem.Repair };
 
         public static int Price(ShopItem item)
@@ -98,12 +98,15 @@ namespace Dropy.Gameplay
             {
                 case ShopItem.Bag: return "Deprem çantası";
                 case ShopItem.Fixing: return "Eşya sabitleme";
-                default: return "Hasarlı evi onar";
+                default: return "Evi güçlendir";
             }
         }
 
-        /// <summary>Onarım, depremden önceki son akşam (sarsıntının olduğu gün) gelir.</summary>
-        public static int AvailableFrom(ShopItem item) => item == ShopItem.Repair ? Economy.QuakeDays[0] - 1 : 1;
+        /// <summary>
+        /// Güçlendirme depremden iki akşam önce vitrine çıkar: oyuncu fiyatı rüşvetten önce görür, ertesi gün
+        /// gelen teklif bir ikilem olur. Prim son akşam yattığı için kusursuz oyuncu da o akşam alabilir.
+        /// </summary>
+        public static int AvailableFrom(ShopItem item) => item == ShopItem.Repair ? Economy.QuakeDays[0] - 2 : 1;
 
         /// <summary>Dükkân son akşama kadar açık; deprem o geceden sonra.</summary>
         public static int AvailableUntil(ShopItem item) => Economy.LastEvening;

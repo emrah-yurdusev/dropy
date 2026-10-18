@@ -27,9 +27,12 @@ namespace Dropy.Gameplay
         static readonly Color PhoneFrame = new Color(0.17f, 0.17f, 0.19f);
         static readonly Color PhoneBody = new Color(0.02f, 0.02f, 0.03f);
         static readonly Color Wallpaper = new Color(0.13f, 0.15f, 0.29f);
-        static readonly Color Glass = new Color(0.97f, 0.97f, 0.98f, 0.9f);
+        static readonly Color Glass = new Color(0.97f, 0.97f, 0.98f, 0.96f);
         static readonly Color GlassInk = new Color(0.1f, 0.1f, 0.12f);
-        static readonly Color GlassFaded = new Color(0.45f, 0.45f, 0.5f);
+        static readonly Color GlassFaded = new Color(0.33f, 0.33f, 0.38f);
+        /// <summary>Mesaj kartı tam opak, yazısı neredeyse siyah: koyu duvar kâğıdı yazıyı griye çekmesin.</summary>
+        static readonly Color MessageCard = Color.white;
+        static readonly Color MessageInk = new Color(0.04f, 0.04f, 0.06f);
         static readonly Color MessagesGreen = new Color(0.2f, 0.78f, 0.35f);
         static readonly Color ShopOrange = new Color(0.98f, 0.58f, 0.18f);
         static readonly Color IosBlue = new Color(0f, 0.48f, 1f);
@@ -62,6 +65,8 @@ namespace Dropy.Gameplay
         TextMeshProUGUI walletText;
         TextMeshProUGUI phoneFooter;
         RectTransform messageList;
+        ScrollRect messageScroll;
+        TextMeshProUGUI moreHint;
         RectTransform bondRow;
         TextMeshProUGUI bondLabel;
         readonly List<Image> bondSegments = new List<Image>();
@@ -201,17 +206,56 @@ namespace Dropy.Gameplay
             walletText.richText = true;
             walletText.rectTransform.Stretch();
 
-            messageList = Ui.Rect("Messages", screen);
+            // Bildirimler kaydırılan bir listede: kartlar sıkışıp metni kesmez, sığmayanlar tekerlekle görülür.
+            var viewport = Ui.Rect("Messages", screen);
+            viewport.anchorMin = new Vector2(0f, 1f);
+            viewport.anchorMax = new Vector2(1f, 1f);
+            viewport.pivot = new Vector2(0.5f, 1f);
+            viewport.offsetMin = new Vector2(14f, -600f);
+            viewport.offsetMax = new Vector2(-14f, -224f);
+            viewport.gameObject.AddComponent<RectMask2D>();
+            // Boş alanda da tekerlek ve sürükleme çalışsın diye görünmez bir zemin.
+            viewport.gameObject.AddComponent<Image>().color = new Color(0f, 0f, 0f, 0f);
+
+            messageList = Ui.Rect("Content", viewport);
             messageList.anchorMin = new Vector2(0f, 1f);
             messageList.anchorMax = new Vector2(1f, 1f);
             messageList.pivot = new Vector2(0.5f, 1f);
-            messageList.offsetMin = new Vector2(14f, -600f);
-            messageList.offsetMax = new Vector2(-14f, -224f);
+            messageList.offsetMin = messageList.offsetMax = Vector2.zero;
             var messageLayout = messageList.gameObject.AddComponent<VerticalLayoutGroup>();
             messageLayout.spacing = 10f;
             messageLayout.childControlHeight = true;
             messageLayout.childControlWidth = true;
             messageLayout.childForceExpandHeight = false;
+            messageList.gameObject.AddComponent<ContentSizeFitter>().verticalFit = ContentSizeFitter.FitMode.PreferredSize;
+
+            messageScroll = viewport.gameObject.AddComponent<ScrollRect>();
+            messageScroll.viewport = viewport;
+            messageScroll.content = messageList;
+            messageScroll.horizontal = false;
+            messageScroll.movementType = ScrollRect.MovementType.Clamped;
+            messageScroll.scrollSensitivity = 28f;
+
+            // Altta daha mesaj varsa küçük ipucu.
+            moreHint = Ui.Text(screen, "MoreMessages", "aşağı kaydır · daha fazla mesaj", 15f, new Color(1f, 1f, 1f, 0.85f), TextAlignmentOptions.Center, FontStyles.Bold);
+            moreHint.rectTransform.anchorMin = new Vector2(0f, 1f);
+            moreHint.rectTransform.anchorMax = new Vector2(1f, 1f);
+            moreHint.rectTransform.pivot = new Vector2(0.5f, 0.5f);
+            moreHint.rectTransform.anchoredPosition = new Vector2(0f, -612f);
+            moreHint.rectTransform.sizeDelta = new Vector2(0f, 22f);
+            moreHint.gameObject.SetActive(false);
+        }
+
+        void Update()
+        {
+            if (messageScroll == null || moreHint == null || !root.gameObject.activeInHierarchy)
+                return;
+            float overflow = messageList.rect.height - messageScroll.viewport.rect.height;
+            bool more = overflow > 4f && messageScroll.verticalNormalizedPosition > 0.02f;
+            if (moreHint.gameObject.activeSelf != more)
+                moreHint.gameObject.SetActive(more);
+            if (more)
+                moreHint.alpha = 0.6f + 0.3f * Mathf.Sin(Time.unscaledTime * 4f);
         }
 
         /// <summary>Kilit ekranındaki deprem dükkânı widget'ı: her satırda ad ve fiyat hapı (dokununca alınır).</summary>
@@ -357,7 +401,7 @@ namespace Dropy.Gameplay
         /// <param name="offered">Bu akşam dükkânda satılanlar (onarım gibi şartlı ürünler dahil); boşsa günün takvimi.</param>
         public IEnumerator Run(int day, int income, int rent, int money, ICollection<ShopItem> purchased,
             IList<EveningMessage> messages, ICollection<FamilyNeed> paidNeeds,
-            int bond, int bondMax, string bondNote, bool shopOpen, ICollection<ShopItem> offered = null)
+            int bond, int bondMax, string bondNote, bool shopOpen, ICollection<ShopItem> offered = null, int bonus = 0)
         {
             this.shopOpen = shopOpen;
             shopDay = day;
@@ -367,8 +411,9 @@ namespace Dropy.Gameplay
             root.SetAsLastSibling();
 
             ledgerTitle.text = $"{day}. GÜN AKŞAMI  ·  HESAP";
-            ledgerLabels.text = "Bugünkü mühürler\nKira";
-            ledgerAmounts.text = $"+{Ui.Money(income)}\n-{Ui.Money(rent)}";
+            ledgerLabels.text = "Bugünkü mühürler\nKira" + (bonus > 0 ? "\n<color=#fff3a8>Performans primi</color>" : "");
+            ledgerAmounts.text = $"+{Ui.Money(income)}\n-{Ui.Money(rent)}" + (bonus > 0 ? $"\n<color=#fff3a8>+{Ui.Money(bonus)}</color>" : "");
+            ledgerLabels.fontSize = ledgerAmounts.fontSize = bonus > 0 ? 19f : 22f;
             string bondLine = bond <= 0 ? "<color=#ffc4b8><b>Ailen seninle konuşmuyor.</b></color>\n"
                 : !string.IsNullOrEmpty(bondNote) ? $"<color=#ffc4b8>{bondNote}</color>\n" : "";
             ledgerNote.text = bondLine + "Eve yürünmez. Alışveriş telefondan.";
@@ -404,15 +449,16 @@ namespace Dropy.Gameplay
                 empty.gameObject.AddComponent<LayoutElement>().preferredHeight = 40f;
                 return;
             }
-            for (int i = 0; i < messages.Count; i++)
+            // En yeni bildirim en üstte (gerçek telefondaki gibi): önemli haber (prim, borç, istek) hep görünür.
+            for (int i = messages.Count - 1; i >= 0; i--)
             {
                 var message = messages[i];
                 bool request = message.request != null;
-                var card = Ui.Image(messageList, request ? "Request" : "Message", Glass, Ui.Rounded).rectTransform;
+                var card = Ui.Image(messageList, request ? "Request" : "Message", MessageCard, Ui.Rounded).rectTransform;
                 AppHeader(card, "MESAJLAR", i == messages.Count - 1 ? "şimdi" : $"{messages.Count - 1 - i} dk önce", MessagesGreen);
 
-                string body = $"<b>{message.sender}</b>\n{message.text}";
-                var text = Ui.Text(card, "Text", body, 17f, GlassInk);
+                string body = $"<size=21><b>{message.sender}</b></size>\n{message.text}";
+                var text = Ui.Text(card, "Text", body, 19f, MessageInk);
                 text.richText = true;
                 float buttonRow = request ? 50f : 0f;
                 text.rectTransform.Stretch(16f, 12f + buttonRow, 16f, 46f);
@@ -421,7 +467,7 @@ namespace Dropy.Gameplay
                 if (!request)
                     continue;
 
-                var pay = Ui.Button(card, "Pay", "", IosBlue, Color.white, 17f);
+                var pay = Ui.Button(card, "Pay", "", IosBlue, Color.white, 18f);
                 ((RectTransform)pay.transform).Place(new Vector2(0.5f, 0f), new Vector2(0.5f, 0f), new Vector2(0f, 12f), new Vector2(396f, 40f));
                 var label = pay.GetComponentInChildren<TextMeshProUGUI>();
                 label.richText = true;
@@ -429,6 +475,9 @@ namespace Dropy.Gameplay
                 pay.onClick.AddListener(() => PayClicked?.Invoke(need));
                 requestRows[need] = new ItemRow { button = pay, label = label };
             }
+            // Liste en üstten (en yeniden) başlasın.
+            Canvas.ForceUpdateCanvases();
+            messageScroll.verticalNormalizedPosition = 1f;
         }
 
         public void Refresh(int money, ICollection<ShopItem> purchased, ICollection<FamilyNeed> paidNeeds, int bond, int bondMax)
@@ -445,7 +494,7 @@ namespace Dropy.Gameplay
                 pair.Value.label.text = paid ? "Ödendi" : $"Öde  {Ui.Money(pair.Key.price)}";
                 pair.Value.button.interactable = !paid && money >= pair.Key.price;
             }
-            // Görünen satırlar üstten sıralanır, widget onlara göre kısalır (onarım satırı yalnız şartı tutunca çıkar).
+            // Görünen satırlar üstten sıralanır, widget onlara göre kısalır (güçlendirme satırı 2. akşamdan çıkar).
             int visible = 0;
             foreach (var item in Shop.All)
             {

@@ -107,6 +107,43 @@ MonoBehaviour:
     threshold: 0
     timing: 1
     fileOfDay: 1
+  - day: 2
+    sender: "E\u015Fin"
+    family: 1
+    text: "Usta binaya bakt\u0131: kolonlar zay\u0131fm\u0131\u015F, g\xFC\xE7lendirme
+      3.500 TL. O kadar param\u0131z yok, biliyorum... Ama ya b\xFCy\xFC\u011F\xFC
+      gelirse?"
+    condition: 0
+    item: 0
+    other: {fileID: 0}
+    seal: 0
+    threshold: 0
+    timing: 0
+    fileOfDay: 0
+  - day: 3
+    sender: Banka
+    family: 0
+    text: "Hesab\u0131n\u0131za {prim} yat\u0131r\u0131ld\u0131. A\xE7\u0131klama:
+      Performans primi \xB7 \u0130mar M\xFCd\xFCrl\xFC\u011F\xFC."
+    condition: 6
+    item: 0
+    other: {fileID: 0}
+    seal: 0
+    threshold: 0
+    timing: 0
+    fileOfDay: 0
+  - day: 3
+    sender: "M\xFCd\xFCr"
+    family: 0
+    text: "B\xFCt\xFCn dosyalarda do\u011Fru karar. Bu \u015Fehirde senin gibi memur
+      az. Primini yat\u0131rd\u0131m; evini onart, ailene sahip \xE7\u0131k."
+    condition: 6
+    item: 0
+    other: {fileID: 0}
+    seal: 0
+    threshold: 0
+    timing: 0
+    fileOfDay: 0
   - day: 3
     sender: Bilinmeyen numara
     family: 0
@@ -164,4 +201,5 @@ MonoBehaviour:
     endingPaid: "Annenin ilac\u0131 aksamad\u0131."
     endingUnpaid: "Annenin ilac\u0131 aksad\u0131."
   bondStart: 3
+  perfectBonus: 4000
   bondMax: 5
