@@ -58,15 +58,25 @@ namespace Dropy.Gameplay
             resolve = resolver;
             obstacles = avoid;
             overlay = Ui.Rect("PenTutorial", root).Stretch();
+            Dropy.Core.GameSettings.Changed += OnSettingsChanged;
             var group = overlay.gameObject.AddComponent<CanvasGroup>();
             group.blocksRaycasts = false;
             group.interactable = false;
         }
 
-        /// <summary>Bu gün ve dosya için henüz gösterilmemiş hamleleri çizer.</summary>
+        void OnDestroy() => Dropy.Core.GameSettings.Changed -= OnSettingsChanged;
+
+        /// <summary>Ayarlardan öğretici kapatılınca ekrandaki çizimler de silinir.</summary>
+        void OnSettingsChanged()
+        {
+            if (!Dropy.Core.GameSettings.PenTutorial)
+                Clear();
+        }
+
+        /// <summary>Bu gün ve dosya için henüz gösterilmemiş hamleleri çizer (ayarlardan kapatılmadıysa).</summary>
         public void Play(int day, int fileOfDay)
         {
-            if (data == null)
+            if (data == null || !Dropy.Core.GameSettings.PenTutorial)
                 return;
             Clear();
             var steps = data.steps.Where(s => s.day == day && s.fileOfDay == fileOfDay && !shown.Contains(s)).ToList();

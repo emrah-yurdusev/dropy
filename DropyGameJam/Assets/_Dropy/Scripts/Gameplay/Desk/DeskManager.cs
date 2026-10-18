@@ -211,7 +211,9 @@ namespace Dropy.Gameplay
             // Esc: önce eldeki mührü bırakır, elde mühür yoksa duraklatma menüsünü açar/kapar.
             if (keyboard.escapeKey.wasPressedThisFrame)
             {
-                if (!paused && inspection.Tools.Active != Seal.None)
+                if (hud.SettingsOpen)
+                    hud.CloseSettings();
+                else if (!paused && inspection.Tools.Active != Seal.None)
                     inspection.Tools.Select(Seal.None);
                 else if (paused || !hud.BlocksInput)
                     SetPaused(!paused);
@@ -1239,8 +1241,12 @@ namespace Dropy.Gameplay
         IEnumerator Shake(float seconds, float strength)
         {
             var cam = deskCamera != null ? deskCamera.transform : null;
-            if (cam == null)
+            // Ayarlardan sarsıntı kapalıysa süre aynı kalır, yalnız kamera titremez.
+            if (cam == null || !GameSettings.ScreenShake)
+            {
+                yield return new WaitForSeconds(seconds);
                 yield break;
+            }
             var origin = cam.localPosition;
             for (float t = 0f; t < seconds; t += Time.deltaTime)
             {

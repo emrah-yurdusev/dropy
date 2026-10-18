@@ -40,6 +40,7 @@ namespace Dropy.Gameplay
         CanvasGroup phoneGroup;
         TextMeshProUGUI phoneText;
         Coroutine phoneRoutine;
+        Dropy.Menu.SettingsPanel settings;
         GameObject alert;
         TextMeshProUGUI alertTitle;
         TextMeshProUGUI alertBody;
@@ -135,7 +136,13 @@ namespace Dropy.Gameplay
             title = BuildTitle(root);
             alert = BuildAlert(root);
             pauseMenu = BuildPause(root);
+            settings = Dropy.Menu.SettingsPanel.Create(root, Sfx.Paper);
         }
+
+        /// <summary>Duraklatma menüsünden açılan ayarlar kartı açık mı (Esc önce onu kapatır).</summary>
+        public bool SettingsOpen => settings != null && settings.IsOpen;
+
+        public void CloseSettings() => settings.Close();
 
         /// <summary>
         /// Sistemin kırmızı uyarı kartı (rüşvet kayda geçti gibi): ekranı karartır, oyuncu "Anladım"a basana kadar bekler.
@@ -309,7 +316,7 @@ namespace Dropy.Gameplay
         {
             var panel = Ui.Image(root, "Pause", new Color(0.03f, 0.03f, 0.05f, 0.96f)).rectTransform.Stretch();
             var box = Ui.Rect("Box", panel);
-            box.Place(new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), Vector2.zero, new Vector2(420f, 360f));
+            box.Place(new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), Vector2.zero, new Vector2(420f, 520f));
             var layout = box.gameObject.AddComponent<VerticalLayoutGroup>();
             layout.spacing = 18f;
             layout.childControlHeight = true;
@@ -318,17 +325,23 @@ namespace Dropy.Gameplay
             var head = Ui.Text(box, "Head", "DURAKLATILDI", 40f, Color.white, TextAlignmentOptions.Center, FontStyles.Bold);
             head.gameObject.AddComponent<LayoutElement>().preferredHeight = 70f;
             AddMenuButton(box, "DEVAM  [Esc]", new Color(0.24f, 0.32f, 0.45f), () => ResumeClicked?.Invoke());
+            var gear = Ui.Image(AddMenuButton(box, "AYARLAR", new Color(0.42f, 0.48f, 0.57f), () => settings.Open()).transform,
+                "Gear", Color.white, Dropy.Menu.MenuArt.Gear, raycast: false);
+            gear.type = Image.Type.Simple;
+            gear.rectTransform.Place(new Vector2(0f, 0.5f), new Vector2(0f, 0.5f), new Vector2(26f, 0f), new Vector2(38f, 38f));
             AddMenuButton(box, "BAŞTAN BAŞLA", new Color(0.45f, 0.33f, 0.25f), () => RestartClicked?.Invoke());
+            AddMenuButton(box, "ANA MENÜ", new Color(0.3f, 0.36f, 0.3f), Dropy.Menu.MainMenu.ReturnToMenu);
             AddMenuButton(box, "OYUNDAN ÇIK", new Color(0.4f, 0.15f, 0.15f), Dropy.Core.GameExit.Quit);
             panel.gameObject.SetActive(false);
             return panel.gameObject;
         }
 
-        static void AddMenuButton(RectTransform parent, string label, Color color, UnityEngine.Events.UnityAction onClick)
+        static Button AddMenuButton(RectTransform parent, string label, Color color, UnityEngine.Events.UnityAction onClick)
         {
             var button = Ui.Button(parent, label, label, color, Color.white, 24f);
             button.gameObject.AddComponent<LayoutElement>().preferredHeight = 64f;
             button.onClick.AddListener(onClick);
+            return button;
         }
 
         /// <summary>1. gün brifingini gösterir, "Mesaiye başla"ya basılana kadar bekler.</summary>
@@ -376,6 +389,8 @@ namespace Dropy.Gameplay
             pauseMenu.SetActive(paused);
             if (paused)
                 pauseMenu.transform.SetAsLastSibling();
+            else if (SettingsOpen)
+                settings.Close();
         }
 
         /// <summary>Başlık ya da duraklatma açıkken oyun içi tıklamalar sayılmaz.</summary>

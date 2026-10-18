@@ -153,7 +153,7 @@ namespace Dropy.Gameplay
                 bubble.localScale = Vector3.Lerp(bubble.localScale, Vector3.one, 0.3f);
                 if (AdvancePressed())
                     shown = total;
-                shown += charsPerSecond * SpeedMultiplier * Time.deltaTime;
+                shown += charsPerSecond * SpeedMultiplier * Dropy.Core.GameSettings.TextSpeedMultiplier * Time.deltaTime;
                 bodyText.maxVisibleCharacters = Mathf.Min(total, Mathf.FloorToInt(shown));
                 yield return null;
             }

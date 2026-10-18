@@ -33,7 +33,9 @@ namespace Dropy.Gameplay
             transform.localPosition -= appliedOffset;
             transform.localRotation *= Quaternion.Inverse(appliedRotation);
 
-            if (Amplitude <= 0f)
+            // Ayarlardan ekran sarsıntısı kapatıldıysa kamera titremez.
+            float amplitude = Dropy.Core.GameSettings.ScreenShake ? Amplitude : 0f;
+            if (amplitude <= 0f)
             {
                 appliedOffset = Vector3.zero;
                 appliedRotation = Quaternion.identity;
@@ -42,8 +44,8 @@ namespace Dropy.Gameplay
 
             float t = Time.time * frequency;
             var n = new Vector3(Noise(0f, t), Noise(1f, t), Noise(2f, t));
-            appliedOffset = n * (maxOffset * Amplitude);
-            appliedRotation = Quaternion.Euler(n.y * maxRotation * Amplitude, n.x * maxRotation * Amplitude, n.z * maxRotation * 0.5f * Amplitude);
+            appliedOffset = n * (maxOffset * amplitude);
+            appliedRotation = Quaternion.Euler(n.y * maxRotation * amplitude, n.x * maxRotation * amplitude, n.z * maxRotation * 0.5f * amplitude);
             transform.localPosition += appliedOffset;
             transform.localRotation *= appliedRotation;
         }
