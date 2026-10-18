@@ -132,28 +132,119 @@ namespace Dropy.Gameplay
             pauseMenu = BuildPause(root);
         }
 
+        static readonly Color Paper = new Color(0.98f, 0.96f, 0.9f);
+        static readonly Color Ink = new Color(0.16f, 0.15f, 0.14f);
+        static readonly Color Faded = new Color(0.42f, 0.39f, 0.35f);
+        static readonly Color OrderHeader = new Color(0.24f, 0.32f, 0.45f);
+        static readonly Color Danger = new Color(0.55f, 0.1f, 0.08f);
+        static readonly Color StepText = new Color(0.3f, 0.28f, 0.26f);
+        const float ColumnWidth = 320f;
+        const float ColumnGap = 30f;
+
+        /// <summary>
+        /// Mesainin ilk sabahı, masaya bırakılmış bir görev emri: kim olduğun, mesainin üç adımı,
+        /// mühürlerin ne demek olduğu ve neyin tehlikede olduğu. Oyunun adı ana menüde.
+        /// </summary>
         GameObject BuildTitle(RectTransform root)
         {
-            // Oyunun adı ana menüde; burası mesainin ilk sabahı: kim olduğun ve mührün ne demek olduğu.
             var panel = Ui.Image(root, "Title", new Color(0.05f, 0.05f, 0.07f, 0.97f)).rectTransform.Stretch();
-            var text = Ui.Text(panel, "Text",
-                "<size=34><color=#fad166>1. GÜN  ·  BRİFİNG</color></size>\n\n" +
-                "<size=64><b>İSKÂN BÜROSU</b></size>\n\n" +
-                "<size=30>Bu ilçenin iskân memurusun. Binalar bitti; aileler taşınmak için senin mührünü bekliyor.\n" +
-                "Onay basarsan aileler taşınır. Red basarsan bina boş kalır.\n\n" +
-                "İlçe bir fay hattının üstünde. Senin ailen de burada yaşıyor.\n" +
-                "Üç günlük mesai. Her mühür bir binaya, her bina birilerine.</size>",
-                30f, Color.white, TextAlignmentOptions.Center);
-            text.richText = true;
-            text.rectTransform.Stretch(200f, 260f, 200f, 120f);
+
+            var card = Ui.Image(panel, "Order", Paper, Ui.Rounded).rectTransform;
+            card.Place(new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0f, 50f), new Vector2(1120f, 740f));
+            Ui.DropShadow(card, 22f, new Vector2(6f, -10f), 0.5f);
+
+            var header = Ui.Image(card, "Header", OrderHeader, Ui.Rounded, raycast: false).rectTransform;
+            header.anchorMin = new Vector2(0f, 1f);
+            header.anchorMax = new Vector2(1f, 1f);
+            header.pivot = new Vector2(0.5f, 1f);
+            header.offsetMin = new Vector2(12f, -96f);
+            header.offsetMax = new Vector2(-12f, -12f);
+            var heading = Ui.Text(header, "Heading", "İSKÂN BÜROSU", 40f, Color.white, TextAlignmentOptions.MidlineLeft, FontStyles.Bold);
+            heading.rectTransform.Stretch(30f, 0f, 30f, 0f);
+            heading.characterSpacing = 2f;
+            var tag = Ui.Text(header, "Tag", "GÖREV EMRİ  ·  1. GÜN", 22f, Gold, TextAlignmentOptions.MidlineRight, FontStyles.Bold);
+            tag.rectTransform.Stretch(30f, 0f, 30f, 0f);
+            tag.characterSpacing = 2f;
+
+            var intro = Ui.Text(card, "Intro",
+                "Bu ilçenin iskân memurusun. Binalar bitti; aileler taşınmak için senin mührünü bekliyor.",
+                26f, Ink, TextAlignmentOptions.TopLeft);
+            intro.rectTransform.Place(new Vector2(0.5f, 1f), new Vector2(0.5f, 1f), new Vector2(0f, -122f), new Vector2(1020f, 70f));
+
+            SectionLabel(card, "MESAİ NASIL GEÇER", -196f);
+            Step(card, 0, "1", "İNCELE", "Künyeyi ve raporu yönetmelikle karşılaştır, binaya büyüteçle bak.");
+            Step(card, 1, "2", "SOR", "Şüpheli bir satıra ya da kusura tıkla; müteahhit cevap versin.");
+            Step(card, 2, "3", "MÜHÜRLE", "Künyeye mührünü bas, müteahhide uzat ya da teslim et.");
+
+            SectionLabel(card, "MÜHÜRLER", -400f);
+            SealColumn(card, 0, Seal.Approve, $"Aileler taşınır.\nHarç: {Ui.Money(Economy.ApproveFee)}");
+            SealColumn(card, 1, Seal.Reject, "Bina boş kalır.\nHarç yok.");
+            SealColumn(card, 2, Seal.ShearWall, $"Perde eklenir, aileler taşınır.\nHarç: {Ui.Money(Economy.ShearWallFee)}");
+
+            var risk = Ui.Image(card, "Risk", Danger, Ui.Rounded, raycast: false).rectTransform;
+            risk.anchorMin = new Vector2(0f, 0f);
+            risk.anchorMax = new Vector2(1f, 0f);
+            risk.pivot = new Vector2(0.5f, 0f);
+            risk.offsetMin = new Vector2(12f, 12f);
+            risk.offsetMax = new Vector2(-12f, 112f);
+            var riskText = Ui.Text(risk, "Text",
+                $"<b>İlçe bir fay hattının üstünde; {Economy.QuakeDays[0]}. günün sonunda deprem bekleniyor.</b>\n" +
+                "Onayladığın bina çökerse hapse girersin. Senin ailen de bu ilçede yaşıyor.",
+                22f, Color.white, TextAlignmentOptions.MidlineLeft);
+            riskText.richText = true;
+            riskText.rectTransform.Stretch(30f, 0f, 30f, 0f);
+
             var start = Ui.Button(panel, "Start", "MESAİYE BAŞLA", new Color(0.85f, 0.6f, 0.2f), Color.white, 28f);
-            ((RectTransform)start.transform).Place(new Vector2(0.5f, 0f), new Vector2(0.5f, 0f), new Vector2(0f, 170f), new Vector2(380f, 80f));
+            ((RectTransform)start.transform).Place(new Vector2(0.5f, 0.5f), new Vector2(0.5f, 1f), new Vector2(0f, -350f), new Vector2(380f, 80f));
+            Ui.DropShadow((RectTransform)start.transform, 10f, new Vector2(0f, -4f), 0.35f);
             start.onClick.AddListener(() => started = true);
             var credit = Ui.Text(panel, "Credit", "Dropy  ·  CIVIL GAME JAM  ·  Afete hazırlık ve farkındalık", 18f,
                 new Color(1f, 1f, 1f, 0.45f), TextAlignmentOptions.Bottom, FontStyles.Italic);
-            credit.rectTransform.Stretch(0f, 40f, 0f, 0f);
+            credit.rectTransform.Stretch(0f, 24f, 0f, 0f);
             panel.gameObject.SetActive(false);
             return panel.gameObject;
+        }
+
+        static float ColumnX(int index) => (index - 1) * (ColumnWidth + ColumnGap);
+
+        static void SectionLabel(RectTransform card, string label, float y)
+        {
+            var text = Ui.Text(card, label, label, 17f, Faded, TextAlignmentOptions.MidlineLeft, FontStyles.Bold);
+            text.characterSpacing = 3f;
+            text.rectTransform.Place(new Vector2(0.5f, 1f), new Vector2(0.5f, 1f), new Vector2(0f, y), new Vector2(1020f, 28f));
+            var line = Ui.Image(card, label + " Line", new Color(0f, 0f, 0f, 0.1f), raycast: false).rectTransform;
+            line.Place(new Vector2(0.5f, 1f), new Vector2(0.5f, 1f), new Vector2(0f, y - 30f), new Vector2(1020f, 2f));
+        }
+
+        /// <summary>Mesainin bir adımı: numara rozeti, fiil ve tek cümle.</summary>
+        static void Step(RectTransform card, int index, string number, string verb, string line)
+        {
+            var box = Ui.Image(card, verb, new Color(0f, 0f, 0f, 0.045f), Ui.Rounded, raycast: false).rectTransform;
+            box.Place(new Vector2(0.5f, 1f), new Vector2(0.5f, 1f), new Vector2(ColumnX(index), -244f), new Vector2(ColumnWidth, 136f));
+            var badge = Ui.Image(box, "Badge", OrderHeader, Ui.Rounded, raycast: false).rectTransform;
+            badge.Place(new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(16f, -16f), new Vector2(40f, 40f));
+            var digit = Ui.Text(badge, "Digit", number, 22f, Color.white, TextAlignmentOptions.Center, FontStyles.Bold);
+            digit.rectTransform.Stretch();
+            var title = Ui.Text(box, "Verb", verb, 22f, Ink, TextAlignmentOptions.MidlineLeft, FontStyles.Bold);
+            title.characterSpacing = 2f;
+            title.rectTransform.Place(new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(68f, -16f), new Vector2(ColumnWidth - 84f, 40f));
+            var body = Ui.Text(box, "Line", line, 19f, StepText, TextAlignmentOptions.TopLeft);
+            body.rectTransform.Stretch(16f, 10f, 16f, 66f);
+        }
+
+        /// <summary>Masadaki damganın aynısı ve altında ne sonuç doğurduğu.</summary>
+        static void SealColumn(RectTransform card, int index, Seal seal, string outcome)
+        {
+            var column = Ui.Rect(seal.ToString(), card);
+            column.Place(new Vector2(0.5f, 1f), new Vector2(0.5f, 1f), new Vector2(ColumnX(index), -446f), new Vector2(ColumnWidth, 170f));
+            var stamp = DocumentCard.CreateStampGraphic(column, seal);
+            stamp.anchorMin = stamp.anchorMax = new Vector2(0.5f, 1f);
+            stamp.pivot = new Vector2(0.5f, 1f);
+            stamp.anchoredPosition = new Vector2(0f, -8f);
+            stamp.localScale = Vector3.one * 0.85f;
+            stamp.localRotation = Quaternion.Euler(0f, 0f, index == 1 ? 3f : -3f);
+            var text = Ui.Text(column, "Outcome", outcome, 19f, Ink, TextAlignmentOptions.Top);
+            text.rectTransform.Stretch(0f, 0f, 0f, 84f);
         }
 
         GameObject BuildPause(RectTransform root)
