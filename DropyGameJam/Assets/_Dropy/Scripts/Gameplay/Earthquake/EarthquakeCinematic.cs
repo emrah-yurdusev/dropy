@@ -33,7 +33,11 @@ namespace Dropy.Gameplay
                     yield return null;
                 Sfx.Siren();
             }
-            yield return new WaitForSeconds(HoldAfterQuake);
+            // Manşetler okunmadan geçilmesin: kısa beklemeden sonra oyuncu tıklayınca kapanır.
+            if (caption != null)
+                yield return caption.WaitForContinue(HoldAfterQuake);
+            else
+                yield return new WaitForSeconds(HoldAfterQuake);
         }
     }
 }

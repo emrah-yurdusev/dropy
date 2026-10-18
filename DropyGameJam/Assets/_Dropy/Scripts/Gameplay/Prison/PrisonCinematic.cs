@@ -5,13 +5,15 @@ using UnityEngine.SceneManagement;
 
 namespace Dropy.Gameplay
 {
-    /// <summary>Hapishane ara sahnesi: mühendis hücrede oturur, parmaklık kapısı kapanır, altta yazılar belirir.</summary>
+    /// <summary>Gözaltı ara sahnesi: memur hücrede oturur, parmaklık kapısı kapanır, altta yazılar belirir; tıklayınca geçilir.</summary>
     public static class PrisonCinematic
     {
         public const string SceneName = "Hapishane";
         const float CalmBeforeDoor = 1.0f;
         /// <summary>Kapı ~1.2 saniyede çarpar; yazılar ondan hemen sonra gelir.</summary>
         const float CaptionDelay = 1.5f;
+        /// <summary>Son yazı çıktıktan sonra "devam" ipucu gelmeden önceki okuma süresi.</summary>
+        const float ReadTime = 2.5f;
 
         /// <summary>Hapishane müziğindeki vuruş kapının çarptığı ana (~3 sn) denk gelir.</summary>
         public static IEnumerator Play(IList<string> captions) =>
@@ -31,6 +33,9 @@ namespace Dropy.Gameplay
                 while (sequence.IsRunning)
                     yield return null;
             }
+            // Sahne kendi kendine kapanmaz: yazılar okunur, oyuncu tıklayınca geçilir.
+            if (caption != null)
+                yield return caption.WaitForContinue(ReadTime);
             Sfx.Prison(false);
         }
     }

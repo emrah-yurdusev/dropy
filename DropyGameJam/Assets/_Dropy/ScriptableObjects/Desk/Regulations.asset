@@ -17,17 +17,19 @@ MonoBehaviour:
   - title: "M\xFCh\xFCrler"
     topic: 0
     day: 1
-    body: "<b>ONAY</b>: +15000 TL har\xE7. \u0130sk\xE2n verilir, aileler ta\u015F\u0131n\u0131r.\n\n<b>RED</b>:
+    body: "<b>ONAY</b>: +15.000 TL har\xE7. \u0130sk\xE2n verilir, aileler ta\u015F\u0131n\u0131r.\n\n<b>RED</b>:
       0 TL. \u0130sk\xE2n verilmez, bina bo\u015F kal\u0131r.\n\n<b>PERDE EKLE</b>:
-      +10000 TL, g\xFCnde bir kez. Binaya deprem perdesi (ta\u015F\u0131y\u0131c\u0131
+      +10.000 TL, g\xFCnde bir kez. Binaya deprem perdesi (ta\u015F\u0131y\u0131c\u0131
       duvar) eklenir, sonra isk\xE2n verilir."
     why: 
   - title: Beton
     topic: 1
     day: 1
     body: "Ger\xE7ek beton yaln\u0131z <b>C25, C30 ya da C35</b> olabilir. Ba\u015Fka
-      her beton: RED.\n\nK\xFCnye ile ek rapor farkl\u0131ysa <b>ek rapor</b> ge\xE7erlidir.\n\nKitapta
-      yazmayan kusur (balkon, boya, kap\u0131 rengi) reddettirmez: ONAY."
+      her beton: RED.\n\nK\xFCnye ile ek rapor farkl\u0131ysa <b>ek rapor</b> ge\xE7erlidir.
+      Rapor <b>3 k\xFCp, 28 g\xFCnl\xFCk</b> numuneyle yap\u0131lmad\u0131ysa ge\xE7ersizdir:
+      \xE7eki\xE7le \xF6l\xE7 ya da RED.\n\nKitapta yazmayan kusur (balkon, boya,
+      kap\u0131 rengi) reddettirmez: ONAY."
     why: "Zay\u0131f beton deprem y\xFCk\xFCn\xFC ta\u015F\u0131yamaz. B\xFCy\xFCk
       depremlerden sonraki incelemelerde y\u0131k\u0131lan pek \xE7ok binada betonun
       projede yazandan \xE7ok daha zay\u0131f \xE7\u0131kt\u0131\u011F\u0131 g\xF6r\xFCld\xFC."
@@ -35,14 +37,17 @@ MonoBehaviour:
     topic: 2
     day: 1
     body: "Zemin kat <b>market</b> ve tavan\u0131 <b>4 m ya da daha y\xFCksek</b>,
-      perde yoksa: yumu\u015Fak kat.\n\nPERDE EKLE ya da RED."
+      perde yoksa: yumu\u015Fak kat.\n\nTek kusuru buysa do\u011Fru m\xFCh\xFCr <b>PERDE
+      EKLE</b> (harc\u0131n\u0131 da al\u0131rs\u0131n). O g\xFCn perde hakk\u0131n
+      bittiyse RED."
     why: "Zemin kat\u0131 d\xFCkk\xE2n olup duvarlar\u0131 kald\u0131r\u0131lan binalarda
       deprem y\xFCk\xFC o katta toplan\u0131r ve kat \xE7\xF6ker; 1999 ve 2023 depremlerinde
       en s\u0131k g\xF6r\xFClen y\u0131k\u0131lma bi\xE7imlerinden biri buydu."
   - title: Kolon
     topic: 3
     day: 1
-    body: "Kolon <b>kesik</b> ise yaln\u0131z RED. Perde kesik kolonu kurtarmaz."
+    body: "Kolon <b>kesik</b> ise yaln\u0131z RED. Perde kesik kolonu kurtarmaz.\n\nBinada
+      k\xFCnyede yazandan fazla kat (<b>ka\xE7ak kat</b>) varsa: RED."
     why: "Kolon binan\u0131n ta\u015F\u0131y\u0131c\u0131s\u0131d\u0131r; yer a\xE7mak
       i\xE7in kesilen kolon b\xFCt\xFCn binay\u0131 riske atar."
   - title: "\xC7eki\xE7"

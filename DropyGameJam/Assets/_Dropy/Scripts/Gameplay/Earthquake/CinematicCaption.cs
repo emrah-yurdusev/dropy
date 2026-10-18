@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
+using UnityEngine.InputSystem;
 using UnityEngine.UI;
 
 namespace Dropy.Gameplay
@@ -29,6 +30,9 @@ namespace Dropy.Gameplay
 
         CanvasGroup fade;
         CanvasGroup textGroup;
+        TextMeshProUGUI continueHint;
+        /// <summary>ShowLines bütün satırları ekrana koydu mu (ara sahne bunu bekleyip tıklama ister).</summary>
+        bool linesDone = true;
         RectTransform stack;
         RectTransform footer;
         readonly List<GameObject> rows = new List<GameObject>();
@@ -68,6 +72,15 @@ namespace Dropy.Gameplay
             footer = channelText.rectTransform;
             footer.gameObject.AddComponent<LayoutElement>().preferredHeight = 30f;
 
+            // Sağ altta "devam" ipucu: yazılar okunana kadar ara sahne kapanmaz, oyuncu tıklayınca geçer.
+            continueHint = Ui.Text(root, "Continue", "Devam etmek için tıkla  ▶", 26f, Color.white, TextAlignmentOptions.BottomRight, FontStyles.Bold);
+            continueHint.rectTransform.Stretch(0f, 22f, 70f, 0f);
+            continueHint.outlineWidth = 0.25f;
+            continueHint.outlineColor = new Color32(0, 0, 0, 200);
+            if (font != null)
+                continueHint.font = font;
+            continueHint.gameObject.SetActive(false);
+
             var black = Ui.Image(root, "Fade", Color.black, raycast: false);
             black.rectTransform.Stretch();
             fade = black.gameObject.AddComponent<CanvasGroup>();
@@ -86,6 +99,7 @@ namespace Dropy.Gameplay
         {
             if (lines == null || lines.Count == 0)
                 yield break;
+            linesDone = false;
             yield return new WaitForSeconds(delay);
             foreach (var row in rows)
                 Destroy(row);
@@ -98,6 +112,34 @@ namespace Dropy.Gameplay
                 if (i < lines.Count - 1)
                     yield return new WaitForSeconds(lineInterval);
             }
+            linesDone = true;
+        }
+
+        /// <summary>
+        /// Yazıların hepsi çıkana kadar, sonra en az <paramref name="minHold"/> saniye bekler; ardından "Devam etmek için tıkla"
+        /// belirir ve oyuncu tıklayana (ya da Space/Enter) kadar sahne kapanmaz. Böylece yazılar okunmadan geçilmez.
+        /// </summary>
+        public IEnumerator WaitForContinue(float minHold)
+        {
+            while (!linesDone)
+                yield return null;
+            yield return new WaitForSeconds(minHold);
+            continueHint.gameObject.SetActive(true);
+            yield return null;
+            while (!ContinuePressed())
+            {
+                continueHint.alpha = 0.65f + 0.35f * Mathf.Sin(Time.unscaledTime * 4f);
+                yield return null;
+            }
+            continueHint.gameObject.SetActive(false);
+        }
+
+        static bool ContinuePressed()
+        {
+            var mouse = Mouse.current;
+            var keyboard = Keyboard.current;
+            return (mouse != null && mouse.leftButton.wasPressedThisFrame)
+                || (keyboard != null && (keyboard.spaceKey.wasPressedThisFrame || keyboard.enterKey.wasPressedThisFrame));
         }
 
         /// <summary>

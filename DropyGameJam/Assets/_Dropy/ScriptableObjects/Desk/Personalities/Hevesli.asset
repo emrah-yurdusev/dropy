@@ -38,7 +38,7 @@ MonoBehaviour:
       text: "{tavan} metre! Tavan y\xFCksek olunca mek\xE2n nefes al\u0131yor."
     - field: shearwall
       defensive: 1
-      text: "Perde koyarsak vitrin kapan\u0131r {hitap}, konsepti \xF6ld\xFCr\xFCr."
+      text: "Perde koyarsak vitrin kapan\u0131r {hitap}, konsepti bozar."
     tics:
     - "Sosyal medyada \xE7ok tutacak."
     - "\xD6n sat\u0131\u015Flar u\xE7tu {hitap}."

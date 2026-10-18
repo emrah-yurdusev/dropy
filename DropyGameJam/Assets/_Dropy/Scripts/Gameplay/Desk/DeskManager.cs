@@ -33,12 +33,8 @@ namespace Dropy.Gameplay
             public bool bribed;
         }
 
-        /// <summary>Müteahhitler hızlı yürür (1. gün 1.8, 2. günden itibaren 1.95 kat); animasyon hıza kendisi uyar.</summary>
-        const int FastWalkDay = 2;
-        const float FirstDayWalkMultiplier = 1.8f;
-        const float FastWalkMultiplier = 1.95f;
-        /// <summary>Oyunun ilk müteahhidi (atlanamayan giriş) bunun katı daha hızlı yürür: ofis görünsün ama beklenmesin.</summary>
-        const float FirstVisitorWalkBoost = 1.5f;
+        /// <summary>Bütün müteahhitler aynı hızda yürür (yürüme hızının bu katı); animasyon hıza kendisi uyar.</summary>
+        const float WalkMultiplier = 1.95f;
         /// <summary>Kapıya yürürken söylenen tepki balonu en az/en çok bu kadar durur (okuma hızı kelime/saniye).</summary>
         const float LeavingWordsPerSecond = 3.5f, MinLeavingHold = 1.5f, MaxLeavingHold = 4f;
         /// <summary>Gelişi/gidişi geçerken kararma süreleri (saniye).</summary>
@@ -58,6 +54,16 @@ namespace Dropy.Gameplay
         const string TakeBribe = "Onaylarsam konuşuruz.";
         const string RefuseBribe = "Ben harç dışında para almam.";
         const string Landlord = "Ev sahibi";
+        const string Boss = "Müdür", Inspection = "Teftiş Kurulu";
+        /// <summary>
+        /// Gereksiz red de vatandaşın hakkını yer: kitaba uyan ya da perdeyle kurtulabilecek binaya red sayısı bu eşiklere
+        /// gelince o akşam önce müdür uyarır, sonra Teftiş Kurulu şikâyeti kayda geçirir. Oyun bitmez.
+        /// </summary>
+        const int UnjustWarnAt = 2, UnjustReportAt = 3;
+        const string UnjustWarning = "Gereksiz red veriyorsun: kitaba uyan ya da perdeyle kurtulabilecek binalar boş kaldı. " +
+            "Aileler hâlâ kirada, dürüst müteahhitler şikâyetçi. Kuralı çiğnemeyen binaya onay verilir.";
+        const string UnjustReport = "Haksız red şikâyetleri kayda geçti. Vatandaşın hakkı da korunmalı: kitaba uyan binaya onay, " +
+            "yumuşak kata perde.";
 
         [Header("Sahne")]
         [Tooltip("Oyuncunun gözü: karşıdaki sandalyeye bakan sabit kamera")]
@@ -80,7 +86,7 @@ namespace Dropy.Gameplay
         [SerializeField] StampCursorSet stampCursors = new StampCursorSet();
         [Tooltip("Kırmızı kalemle öğretici: hangi gün, hangi dosyada neyin etrafına çizilir. Boşsa öğretici yok")]
         [SerializeField] TutorialData tutorial;
-        [Tooltip("Sırayla 18 dosya: her gün 3 tane")]
+        [Tooltip("Sırayla 8 dosya: her gün 2 tane")]
         [SerializeField] BuildingCase[] cases;
         [Tooltip("Vakada karakter seçilmemişse sırayla bunlar kullanılır")]
         [SerializeField] GameObject[] defaultContractors;
@@ -115,6 +121,8 @@ namespace Dropy.Gameplay
         bool jailed;
         /// <summary>Kusursuz kayıt primi son akşam kasaya girdi (banka ve müdür mesajları bunu bekler).</summary>
         bool bonusPaid;
+        /// <summary>Gereksiz red uyarısı (müdür) ve şikâyet kaydı (Teftiş Kurulu) gönderildi mi: her biri bir kez.</summary>
+        bool unjustWarned, unjustReported;
         int hammersUsedToday;
         bool paused;
         /// <summary>Deprem sahnesi oynarken büronun arayüzü gizli; Esc/Tab çalışmasın.</summary>
@@ -215,7 +223,9 @@ namespace Dropy.Gameplay
             // Esc: önce eldeki mührü bırakır, elde mühür yoksa duraklatma menüsünü açar/kapar.
             if (keyboard.escapeKey.wasPressedThisFrame)
             {
-                if (!paused && inspection.Tools.Active != Seal.None)
+                if (hud.SettingsOpen)
+                    hud.CloseSettings();
+                else if (!paused && inspection.Tools.Active != Seal.None)
                     inspection.Tools.Select(Seal.None);
                 else if (paused || !hud.BlocksInput)
                     SetPaused(!paused);
@@ -469,7 +479,7 @@ namespace Dropy.Gameplay
             var go = Instantiate(prefab, spawnPoint.position, spawnPoint.rotation);
             visitor = go.GetComponent<NpcController>();
             visitorHead = FindDeep(go.transform, "Head") ?? HumanBone(go, HumanBodyBones.Head) ?? go.transform;
-            visitor.SetWalkSpeedMultiplier((day >= FastWalkDay ? FastWalkMultiplier : FirstDayWalkMultiplier) * (index == 0 ? FirstVisitorWalkBoost : 1f));
+            visitor.SetWalkSpeedMultiplier(WalkMultiplier);
             // Oyunun ilk müteahhidinde (Veysel Bey) geçiş yok: oyuncu ofisi, kapıyı ve oturuşu bir kez görsün.
             bool skippable = index > 0;
             if (!go.TryGetComponent<SeatedLife>(out var life))
@@ -568,9 +578,17 @@ namespace Dropy.Gameplay
             visitor = null;
             dialogue.SpeedMultiplier = 1f;
 
-            // Rüşvet bir seçenek değil, suçtur: müteahhit gidince (gün bitmeden) sistem kayda geçirir ve paraya el koyar.
+            // Rüşvet bir seçenek değil, suçtur: para önce kasaya girer, müteahhit gidince (gün bitmeden) Teftiş Kurulu
+            // dosyayı kayda geçirir ve o dosyadan gelen paranın tamamına (harç dahil) el koyar.
             if (result.bribed)
-                yield return hud.SystemAlert("KAYIT ALTINA ALINDI", BribeSeizedText(buildingCase, result));
+            {
+                int seized = result.money;
+                yield return hud.SystemAlert("KAYIT ALTINA ALINDI", BribeSeizedText(buildingCase, seized));
+                money -= seized;
+                result.money = 0;
+                hud.SetMoney(money);
+                hud.Toast($"El konuldu   −{Ui.Money(seized)}", new Color(1f, 0.45f, 0.4f));
+            }
         }
 
         IEnumerator Enter()
@@ -817,17 +835,13 @@ namespace Dropy.Gameplay
             return fee > 0 ? $"+{Ui.Money(fee)}" : "0 TL";
         }
 
-        /// <summary>Rüşvetli onaydan sonra Teftiş Kurulu kartının metni: teklif edilen para kasaya girmez.</summary>
-        string BribeSeizedText(BuildingCase buildingCase, CaseResult result)
-        {
-            int offered = ApproveIncome(buildingCase);
-            return "<b>Rüşvet teklif etmek de kabul etmek de suçtur.</b>\n" +
-                   $"{buildingCase.contractorName} Bey'in teklif ettiği {Ui.Money(offered)} kasana girmedi; paraya el konuldu. " +
-                   $"Yalnız olağan harç ({Ui.Money(result.money)}) yazıldı.\n" +
-                   "Bu dosya ve imzan incelemeye alındı.";
-        }
+        /// <summary>Rüşvetli onaydan sonra Teftiş Kurulu kartının metni: bu dosyadan gelen paranın tamamına el konulur.</summary>
+        static string BribeSeizedText(BuildingCase buildingCase, int seized) =>
+            "<b>Rüşvet teklif etmek de kabul etmek de suçtur.</b>\n" +
+            $"{buildingCase.buildingName} dosyasından kasana giren {Ui.Money(seized)} geri alındı; paranın tamamına el konuldu.\n" +
+            "Bu dosya ve imzan incelemeye alındı.";
 
-        /// <summary>Onay mührünün altında yazan tutar: harç, rüşvetli dosyada müteahhidin teklifi (kasaya girmez).</summary>
+        /// <summary>Onayın kasaya getirdiği: harç, rüşvetli dosyada müteahhidin teklifi (müteahhit gidince el konulur).</summary>
         int ApproveIncome(BuildingCase buildingCase)
         {
             int fee = BuildingRules.Fee(buildingCase, Seal.Approve, day);
@@ -865,8 +879,8 @@ namespace Dropy.Gameplay
                 buildingCase = buildingCase,
                 day = day,
                 seal = seal,
-                // Rüşvetli onayda yalnız olağan harç kasaya girer; teklif edilen paraya el konulur.
-                money = BuildingRules.Income(buildingCase, seal, day),
+                // Rüşvetli onayda teklif kasaya girer; müteahhit gidince tamamına el konulur (RunCase).
+                money = approved ? ApproveIncome(buildingCase) : BuildingRules.Fee(buildingCase, seal, day),
                 fate = BuildingRules.Fate(buildingCase, seal),
                 warning = BuildingRules.KnownViolation(buildingCase, seal, day),
                 bribed = approved && (buildingCase.approveFeeOverride > 0 || (bribeAccepted && buildingCase == current))
@@ -954,11 +968,22 @@ namespace Dropy.Gameplay
                             messages.Add(new EveningMessage { sender = need.sender, text = reply });
                     }
                 foreach (var m in story.messages.Where(m => Deliverable(m, MessageTiming.Evening)))
-                    messages.Add(new EveningMessage { sender = m.sender, text = MessageText(m) });
+                    messages.Add(new EveningMessage { sender = m.sender, text = MessageText(m), important = m.condition == MessageCondition.PerfectRecord });
                 if (!Estranged)
                     requests.AddRange(story.needs.Where(n => n.day == day));
                 foreach (var need in requests)
                     messages.Add(new EveningMessage { sender = need.sender, text = need.request, request = need });
+            }
+            int unjust = results.Count(r => DeskHud.UnjustReject(r, results));
+            if (unjust >= UnjustReportAt && !unjustReported)
+            {
+                unjustReported = unjustWarned = true;
+                messages.Add(new EveningMessage { sender = Inspection, text = UnjustReport, important = true });
+            }
+            else if (unjust >= UnjustWarnAt && !unjustWarned)
+            {
+                unjustWarned = true;
+                messages.Add(new EveningMessage { sender = Boss, text = UnjustWarning, important = true });
             }
             if (messages.Count > 0)
                 Sfx.Notify();
@@ -1223,13 +1248,13 @@ namespace Dropy.Gameplay
                     return captions;
                 case FamilyOutcome.Lost:
                     captions.Add("Ailenin sarsıntıda çatlayan evi yıkıldı");
-                    captions.Add("Allahtan aile o gece teyzedeydi; ama hiçbir hazırlık yoktu, bütün eşyalar yıkıntıda kaldı");
+                    captions.Add("Neyse ki aile o gece akrabadaydı; ancak hiçbir hazırlık yoktu, bütün eşyalar yıkıntıda kaldı");
                     return captions;
             }
             if (purchased.Contains(ShopItem.Repair))
                 captions.Add("Güçlendirilen aile evi depremi ayakta karşıladı");
             captions.Add(purchased.Contains(ShopItem.Fixing)
-                ? "Ailenin evi sarsıldı; dolaplar sabitti, kimsenin burnu bile kanamadı"
+                ? "Ailenin evi sarsıldı; dolaplar sabitti, kimse incinmedi"
                 : "Ailenin evi sarsıldı; sabitlenmemiş dolap devrildi, Elif son anda kenara kaçtı");
             captions.Add(bag ? "Elektrikler kesildi; çantadaki fener ve su işe yaradı" : "Elektrikler kesildi; evde ne fener vardı ne su");
             return captions;
@@ -1271,8 +1296,12 @@ namespace Dropy.Gameplay
         IEnumerator Shake(float seconds, float strength)
         {
             var cam = deskCamera != null ? deskCamera.transform : null;
-            if (cam == null)
+            // Ayarlardan sarsıntı kapalıysa süre aynı kalır, yalnız kamera titremez.
+            if (cam == null || !GameSettings.ScreenShake)
+            {
+                yield return new WaitForSeconds(seconds);
                 yield break;
+            }
             var origin = cam.localPosition;
             for (float t = 0f; t < seconds; t += Time.deltaTime)
             {
@@ -1413,6 +1442,7 @@ namespace Dropy.Gameplay
         void InterruptWeek()
         {
             StopAllCoroutines();
+            unjustWarned = unjustReported = false;
             week = null;
             fieldTalk = null;
             if (visitor != null)

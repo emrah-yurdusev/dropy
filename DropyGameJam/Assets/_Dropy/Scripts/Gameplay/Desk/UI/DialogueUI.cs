@@ -154,7 +154,7 @@ namespace Dropy.Gameplay
                 bubble.localScale = Vector3.Lerp(bubble.localScale, Vector3.one, 0.3f);
                 if (AdvancePressed())
                     shown = total;
-                shown += charsPerSecond * SpeedMultiplier * Time.deltaTime;
+                shown += charsPerSecond * SpeedMultiplier * Dropy.Core.GameSettings.TextSpeedMultiplier * Time.deltaTime;
                 int visible = Mathf.Min(total, Mathf.FloorToInt(shown));
                 bodyText.maxVisibleCharacters = visible;
                 // İki harfte bir hece mırıltısı; tıklayıp yazıyı geçince susar.

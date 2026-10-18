@@ -150,7 +150,7 @@ MonoBehaviour:
   - day: 3
     sender: "M\xFCd\xFCr"
     family: 0
-    text: "B\xFCt\xFCn dosyalarda do\u011Fru karar. Bu \u015Fehirde senin gibi memur
+    text: "B\xFCt\xFCn dosyalarda do\u011Fru karar. Fayk\xF6y'de senin gibi memur
       az. Primini yat\u0131rd\u0131m; evini onart, ailene sahip \xE7\u0131k."
     condition: 6
     item: 0
@@ -172,9 +172,10 @@ MonoBehaviour:
     timing: 0
     fileOfDay: 0
   - day: 3
-    sender: Bilinmeyen numara
+    sender: "Tefti\u015F Kurulu"
     family: 0
-    text: "Pi\u015Fman olacaks\u0131n. -O"
+    text: "\xD6\u011Frenci Yurdu dosyas\u0131nda r\xFC\u015Fvet teklifini geri \xE7evirdi\u011Finiz
+      kayda ge\xE7ti. Te\u015Fekk\xFCr ederiz."
     condition: 3
     item: 0
     other: {fileID: 11400000, guid: 9ac03a467c981484cb0d0e4e6f4b1b83, type: 2}

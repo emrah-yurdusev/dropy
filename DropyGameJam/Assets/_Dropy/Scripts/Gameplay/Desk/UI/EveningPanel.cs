@@ -12,6 +12,8 @@ namespace Dropy.Gameplay
         public string sender;
         public string text;
         public FamilyNeed request;
+        /// <summary>Altın kenarlı önemli bildirim (prim gibi): gözden kaçmasın.</summary>
+        public bool important;
     }
 
     /// <summary>
@@ -34,6 +36,10 @@ namespace Dropy.Gameplay
         static readonly Color MessageCard = Color.white;
         static readonly Color MessageInk = new Color(0.04f, 0.04f, 0.06f);
         static readonly Color MessagesGreen = new Color(0.2f, 0.78f, 0.35f);
+        static readonly Color ImportantGold = new Color(0.96f, 0.72f, 0.12f);
+        /// <summary>Bildirim kartının başlık (uygulama adı) ve gönderen satırının kapladığı üst pay.</summary>
+        const float CardTop = 76f;
+        const float MessageWidth = 396f;
         static readonly Color ShopOrange = new Color(0.98f, 0.58f, 0.18f);
         static readonly Color IosBlue = new Color(0f, 0.48f, 1f);
         static readonly Color PillGrey = new Color(0.9f, 0.9f, 0.93f);
@@ -81,6 +87,7 @@ namespace Dropy.Gameplay
         /// <summary>Bu akşam satılanlar (Run'da gelir); boşsa günün takvimine bakılır.</summary>
         ICollection<ShopItem> offeredTonight;
         RectTransform shopWidget;
+        RectTransform messageViewport;
         bool done;
 
         public event System.Action<ShopItem> BuyClicked;
@@ -207,12 +214,14 @@ namespace Dropy.Gameplay
             walletText.rectTransform.Stretch();
 
             // Bildirimler kaydırılan bir listede: kartlar sıkışıp metni kesmez, sığmayanlar tekerlekle görülür.
+            // Alt kenarı dükkân widget'ının üstüne oturur (widget boyu akşama göre değişir, Refresh ayarlar).
             var viewport = Ui.Rect("Messages", screen);
-            viewport.anchorMin = new Vector2(0f, 1f);
-            viewport.anchorMax = new Vector2(1f, 1f);
+            viewport.anchorMin = Vector2.zero;
+            viewport.anchorMax = Vector2.one;
             viewport.pivot = new Vector2(0.5f, 1f);
-            viewport.offsetMin = new Vector2(14f, -600f);
+            viewport.offsetMin = new Vector2(14f, 380f);
             viewport.offsetMax = new Vector2(-14f, -224f);
+            messageViewport = viewport;
             viewport.gameObject.AddComponent<RectMask2D>();
             // Boş alanda da tekerlek ve sürükleme çalışsın diye görünmez bir zemin.
             viewport.gameObject.AddComponent<Image>().color = new Color(0f, 0f, 0f, 0f);
@@ -238,10 +247,10 @@ namespace Dropy.Gameplay
 
             // Altta daha mesaj varsa küçük ipucu.
             moreHint = Ui.Text(screen, "MoreMessages", "aşağı kaydır · daha fazla mesaj", 15f, new Color(1f, 1f, 1f, 0.85f), TextAlignmentOptions.Center, FontStyles.Bold);
-            moreHint.rectTransform.anchorMin = new Vector2(0f, 1f);
-            moreHint.rectTransform.anchorMax = new Vector2(1f, 1f);
+            moreHint.rectTransform.anchorMin = new Vector2(0f, 0f);
+            moreHint.rectTransform.anchorMax = new Vector2(1f, 0f);
             moreHint.rectTransform.pivot = new Vector2(0.5f, 0.5f);
-            moreHint.rectTransform.anchoredPosition = new Vector2(0f, -612f);
+            moreHint.rectTransform.anchoredPosition = new Vector2(0f, 367f);
             moreHint.rectTransform.sizeDelta = new Vector2(0f, 22f);
             moreHint.gameObject.SetActive(false);
         }
@@ -438,7 +447,11 @@ namespace Dropy.Gameplay
             root.gameObject.SetActive(false);
         }
 
-        /// <summary>Her mesaj kilit ekranına bir bildirim kartı olarak düşer; istekte kartın altında Öde düğmesi var.</summary>
+        /// <summary>
+        /// Her mesaj kilit ekranına kısa bir bildirim kartı olarak düşer: gönderen ve tek satırlık önizleme ("…").
+        /// Okunmamış kart mavi noktayla nabız gibi atar; dokununca tamamı açılır ve okundu olur. İstekte altta Öde düğmesi,
+        /// önemli bildirimde (prim) altın kenar var.
+        /// </summary>
         void ShowMessages(IList<EveningMessage> messages)
         {
             foreach (Transform child in messageList)
@@ -455,16 +468,37 @@ namespace Dropy.Gameplay
             {
                 var message = messages[i];
                 bool request = message.request != null;
-                var card = Ui.Image(messageList, request ? "Request" : "Message", MessageCard, Ui.Rounded).rectTransform;
+                var cardImage = Ui.Image(messageList, request ? "Request" : "Message", MessageCard, Ui.Rounded);
+                var card = cardImage.rectTransform;
                 AppHeader(card, "MESAJLAR", i == messages.Count - 1 ? "şimdi" : $"{messages.Count - 1 - i} dk önce", MessagesGreen);
+                if (message.important)
+                {
+                    var outline = card.gameObject.AddComponent<Outline>();
+                    outline.effectColor = ImportantGold;
+                    outline.effectDistance = new Vector2(3f, -3f);
+                }
 
-                string body = $"<size=21><b>{message.sender}</b></size>\n{message.text}";
-                var text = Ui.Text(card, "Text", body, 19f, MessageInk);
-                text.richText = true;
+                var dot = Ui.Image(card, "Unread", IosBlue, Ui.Rounded, raycast: false).rectTransform;
+                dot.Place(new Vector2(0f, 1f), new Vector2(0.5f, 0.5f), new Vector2(22f, -60f), new Vector2(12f, 12f));
+                var sender = Ui.Text(card, "Sender", message.sender, 21f, MessageInk, TextAlignmentOptions.MidlineLeft, FontStyles.Bold);
+                sender.rectTransform.Place(new Vector2(0f, 1f), new Vector2(0f, 0.5f), new Vector2(36f, -60f), new Vector2(MessageWidth - 20f, 28f));
+                sender.textWrappingMode = TextWrappingModes.NoWrap;
+
                 float buttonRow = request ? 50f : 0f;
-                text.rectTransform.Stretch(16f, 12f + buttonRow, 16f, 46f);
-                float height = text.GetPreferredValues(body, 396f, 0f).y + 60f + buttonRow;
-                card.gameObject.AddComponent<LayoutElement>().preferredHeight = height;
+                var text = Ui.Text(card, "Text", message.text, 19f, MessageInk);
+                text.richText = true;
+                text.rectTransform.Stretch(16f, 12f + buttonRow, 16f, CardTop);
+                float full = text.GetPreferredValues(message.text, MessageWidth, 0f).y;
+                float oneLine = text.GetPreferredValues("Ag", MessageWidth, 0f).y;
+                float collapsed = CardTop + oneLine + 14f + buttonRow;
+                float expanded = CardTop + full + 14f + buttonRow;
+                var size = card.gameObject.AddComponent<LayoutElement>();
+
+                var view = card.gameObject.AddComponent<MessageCardView>();
+                view.Init(cardImage, text, size, dot.gameObject, collapsed, expanded, messageList);
+                var open = card.gameObject.AddComponent<Button>();
+                open.transition = Selectable.Transition.None;
+                open.onClick.AddListener(view.Toggle);
                 if (!request)
                     continue;
 
@@ -512,7 +546,12 @@ namespace Dropy.Gameplay
                 pair.Value.button.interactable = shopOpen && !owned && money >= Shop.Price(pair.Key);
                 pair.Value.chip.SetActive(owned);
             }
-            shopWidget.sizeDelta = new Vector2(shopWidget.sizeDelta.x, 52f + visible * ShopRowHeight + 12f);
+            float shopHeight = 52f + visible * ShopRowHeight + 12f;
+            shopWidget.sizeDelta = new Vector2(shopWidget.sizeDelta.x, shopHeight);
+            // Bildirim listesi dükkânın hemen üstünde biter; arada "daha fazla mesaj" ipucunun payı kalır.
+            float shopTop = shopWidget.anchoredPosition.y + shopHeight;
+            messageViewport.offsetMin = new Vector2(messageViewport.offsetMin.x, shopTop + 28f);
+            moreHint.rectTransform.anchoredPosition = new Vector2(0f, shopTop + 14f);
             ShowBond(bond, bondMax);
         }
 
@@ -532,6 +571,71 @@ namespace Dropy.Gameplay
             // 5–4 tam renk, 3–2 hafif soluk, 1 iyice soluk.
             float fade = bond >= 4 ? 0f : bond >= 2 ? 0.3f : 0.6f;
             photoFade.color = new Color(0.55f, 0.53f, 0.5f, fade);
+        }
+    }
+
+    /// <summary>
+    /// Akşam telefonundaki bir bildirim kartı: kısa hâlde tek satır önizleme ve "…", dokununca tam metin.
+    /// Okunana kadar kart nabız gibi açık maviye döner ve mavi nokta yanıp söner.
+    /// </summary>
+    public class MessageCardView : MonoBehaviour
+    {
+        static readonly Color UnreadTint = new Color(0.83f, 0.91f, 1f);
+
+        Image card;
+        Color baseColor;
+        TextMeshProUGUI text;
+        LayoutElement size;
+        GameObject dot;
+        RectTransform list;
+        float collapsedHeight;
+        float expandedHeight;
+        bool expanded;
+        bool read;
+
+        public void Init(Image cardImage, TextMeshProUGUI body, LayoutElement layout, GameObject unreadDot,
+            float collapsed, float full, RectTransform parentList)
+        {
+            card = cardImage;
+            baseColor = cardImage.color;
+            text = body;
+            size = layout;
+            dot = unreadDot;
+            list = parentList;
+            collapsedHeight = collapsed;
+            expandedHeight = Mathf.Max(collapsed, full);
+            Apply();
+        }
+
+        /// <summary>Kartı açar/kapatır; ilk dokunuşta okundu sayılır.</summary>
+        public void Toggle()
+        {
+            expanded = !expanded;
+            if (!read)
+            {
+                read = true;
+                dot.SetActive(false);
+                card.color = baseColor;
+            }
+            Apply();
+        }
+
+        void Apply()
+        {
+            text.textWrappingMode = expanded ? TextWrappingModes.Normal : TextWrappingModes.NoWrap;
+            text.overflowMode = expanded ? TextOverflowModes.Overflow : TextOverflowModes.Ellipsis;
+            size.preferredHeight = expanded ? expandedHeight : collapsedHeight;
+            if (list != null)
+                LayoutRebuilder.MarkLayoutForRebuild(list);
+        }
+
+        void Update()
+        {
+            if (read)
+                return;
+            float k = 0.5f + 0.5f * Mathf.Sin(Time.unscaledTime * 4f);
+            card.color = Color.Lerp(baseColor, UnreadTint, k * 0.8f);
+            dot.transform.localScale = Vector3.one * (0.8f + 0.4f * k);
         }
     }
 }

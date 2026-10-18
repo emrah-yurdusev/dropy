@@ -262,9 +262,9 @@ namespace Dropy.EditorTools
             Add(v.softHonest, "Anlaşacağız, belli.");
             Add(v.softDishonest, "Akıllı adamsınız. Anlaşacağız.");
             Field(v, FieldKey.Columns, true, "Biraz açtık, odalar ferah olsun. Taşır {hitap}, taşır.");
-            Add(v.tics, "Herkesin bir ailesi var, değil mi?", "Bu şehirde herkes beni tanır.");
+            Add(v.tics, "Hepimizin bir işi var, değil mi?", "Fayköy'de herkes beni tanır.");
             Add(v.approved, "Akıllı adamsınız. Kimse bir şey demez.");
-            Add(v.rejected, "Pişman olacaksınız {hitap}. Bunu unutmam.");
+            Add(v.rejected, "Siz bilirsiniz {hitap}. Ben başka kapı çalarım.");
         }
 
         static void TatliDilli(VoiceLines v)
@@ -331,7 +331,7 @@ namespace Dropy.EditorTools
             Add(v.softDishonest, "Süper! Zaten her şey çok modern.");
             Field(v, FieldKey.Use, true, "Altta konsept market var {hitap}! Kahve köşesi, organik raflar, tam bir deneyim.");
             Field(v, FieldKey.Height, true, "{tavan} metre! Tavan yüksek olunca mekân nefes alıyor.");
-            Field(v, FieldKey.ShearWall, true, "Perde koyarsak vitrin kapanır {hitap}, konsepti öldürür.");
+            Field(v, FieldKey.ShearWall, true, "Perde koyarsak vitrin kapanır {hitap}, konsepti bozar.");
             Add(v.tics, "Sosyal medyada çok tutacak.", "Ön satışlar uçtu {hitap}.");
             Add(v.approved, "Harika! Açılışta ilk kahve benden {hitap}!");
             Add(v.rejected, "Red mi? Ama ön satışlar... Yatırımcıya ne diyeceğim?");
@@ -391,9 +391,9 @@ namespace Dropy.EditorTools
             // ---- 1. gün: öğretici. Beton, ek raporun önceliği ve çekiç; sonra yumuşak kat (perde) ve kesik kolon.
             // Künyede C20 yazıyor ama ek rapor da çekiç de C30: geçerli olan ek rapor, bina sağlam → ONAY.
             var s = File("Ada Konutları", "Veysel", 3, 20, 30, SoilType.Kaya, Seal.Approve,
-                    "Ada Konutları, üç kat. Betonu şehrin laboratuvarında test ettirdik, rapor ekte {hitap}.")
+                    "Ada Konutları, üç kat. Betonu Fayköy'ün laboratuvarında test ettirdik, rapor ekte {hitap}.")
                 .Ask("Künyede neden C20 yazıyor?", "Künyeyi yeğenim doldurdu {hitap}, rakamı yanlış yazmış. Döktüğümüz beton raporda yazıyor.")
-                .Ask("Betonu kim test etti?", "Şehrin laboratuvarı. İçiniz rahat etmezse çekiçle vurun, görün.")
+                .Ask("Betonu kim test etti?", "Fayköy'ün laboratuvarı. İçiniz rahat etmezse çekiçle vurun, görün.")
                 .News("Ada Konutları çöktü", "Ada Konutları ayakta: Veysel Bey mahalleye çay dağıttı.");
             s.hammer = 30;
             list.Add(s);
@@ -441,7 +441,7 @@ namespace Dropy.EditorTools
 
             // Ozan sarsıntının hemen ardından girer: sallantıyı geçiştirir (cevap kartı açmasın diye soru sormaz).
             s = File("Öğrenci Yurdu", "Ozan", 5, 30, 30, SoilType.Kaya, Seal.Reject,
-                    "Yer biraz oynadı. Siz keyfinizi bozmayın, bu şehrin binaları böyle şeylere alışık.",
+                    "Yer biraz oynadı. Siz keyfinizi bozmayın, Fayköy'ün binaları böyle şeylere alışık.",
                     "Yurt acil, dönem başlıyor. İki yüz öğrenci kapıda kalmasın.",
                     "Siz onayı basın, zahmetinize karşılık kırk bin. Kimse bir şey demez.")
                 .Ask("Kolonlar neden kesik?", "Odalar geniş olsun diye biraz açtık. Taşır {hitap}, taşır.")
@@ -454,9 +454,9 @@ namespace Dropy.EditorTools
             // Yalan yok: yalnızca oyuncunun gerçek durumunu kullanır ({kasa}, {eksik}, {hazirlik} kira sonrası hesaplanır).
             s.Press(PressureCondition.Always, "Bir dakika. Acele etmeyin, bir daha düşünün.")
                 .Press(PressureCondition.PrepShort, "Kira düşünce kasanızda {kasa} kalacak. Evde {hazirlik} hâlâ yok; açığınız {eksik}.")
-                .Press(PressureCondition.PrepShort, "Bu kırk bin o açığı kapatır. Bir baba ailesini korumaz mı?")
-                .Press(PressureCondition.BondLow, "Kızınız geziye gidemedi diye duydum... Bir baba eli boş durur mu?")
-                .Press(PressureCondition.Otherwise, "Bu şehirde herkes beni tanır. Bugün reddedersiniz, yarın kapınızı kimse çalmaz.");
+                .Press(PressureCondition.PrepShort, "Bu kırk bin o açığı kapatır. Bir düşünün.")
+                .Press(PressureCondition.BondLow, "Kızınız geziye gidemedi diye duydum... Bir düşünün.")
+                .Press(PressureCondition.Otherwise, "Fayköy'de herkes beni tanır. Bugün reddederseniz yarın başka kapı çalarım.");
             list.Add(s);
 
             // ---- 4. gün: çekiç tuzağı (kâğıtlar temiz, çekiç çürük) ve künyesi karışık dürüst dosya. Gün sonunda deprem.
@@ -597,9 +597,9 @@ namespace Dropy.EditorTools
 
                 // Kusursuz kayıt: 3. akşam bütün dosyalar doğru ve rüşvet yoksa müdürlük prim yatırır (evi onarmaya yeter).
                 Perfect(3, Bank, "Hesabınıza {prim} yatırıldı. Açıklama: Performans primi · İmar Müdürlüğü."),
-                Perfect(3, Boss, "Bütün dosyalarda doğru karar. Bu şehirde senin gibi memur az. Primini yatırdım; evini onart, ailene sahip çık."),
+                Perfect(3, Boss, "Bütün dosyalarda doğru karar. Fayköy'de senin gibi memur az. Primini yatırdım; evini onart, ailene sahip çık."),
                 Sealed(3, Inspection, "Öğrenci Yurdu dosyasındaki rüşvet kaydı incelemeye alındı. Teklif edilen paraya el konuldu.", cases[Yurt], Seal.Approve),
-                Sealed(3, Unknown, "Pişman olacaksın. -O", cases[Yurt], Seal.Reject),
+                Sealed(3, Inspection, "Öğrenci Yurdu dosyasında rüşvet teklifini geri çevirdiğiniz kayda geçti. Teşekkür ederiz.", cases[Yurt], Seal.Reject),
                 Msg(3, Wife, "Öğleden sonraki sarsıntıda evin duvarları çatladı. Elif korkudan masanın altına girmiş. Akşam erken gel."),
             };
 
@@ -717,16 +717,17 @@ namespace Dropy.EditorTools
                 new RegulationPage
                 {
                     day = 1, title = "Mühürler", topic = RuleTopic.None,
-                    body = $"<b>ONAY</b>: +{Economy.ApproveFee} TL harç. İskân verilir, aileler taşınır.\n\n" +
+                    body = $"<b>ONAY</b>: +{Ui.Money(Economy.ApproveFee)} harç. İskân verilir, aileler taşınır.\n\n" +
                            "<b>RED</b>: 0 TL. İskân verilmez, bina boş kalır.\n\n" +
-                           $"<b>PERDE EKLE</b>: +{Economy.ShearWallFee} TL, günde bir kez. Binaya deprem perdesi (taşıyıcı duvar) eklenir, " +
+                           $"<b>PERDE EKLE</b>: +{Ui.Money(Economy.ShearWallFee)}, günde bir kez. Binaya deprem perdesi (taşıyıcı duvar) eklenir, " +
                            "sonra iskân verilir."
                 },
                 new RegulationPage
                 {
                     day = 1, title = "Beton", topic = RuleTopic.Beton,
                     body = "Gerçek beton yalnız <b>C25, C30 ya da C35</b> olabilir. Başka her beton: RED.\n\n" +
-                           "Künye ile ek rapor farklıysa <b>ek rapor</b> geçerlidir.\n\n" +
+                           "Künye ile ek rapor farklıysa <b>ek rapor</b> geçerlidir. Rapor <b>3 küp, 28 günlük</b> numuneyle " +
+                           "yapılmadıysa geçersizdir: çekiçle ölç ya da RED.\n\n" +
                            "Kitapta yazmayan kusur (balkon, boya, kapı rengi) reddettirmez: ONAY.",
                     why = "Zayıf beton deprem yükünü taşıyamaz. Büyük depremlerden sonraki incelemelerde yıkılan " +
                           "pek çok binada betonun projede yazandan çok daha zayıf çıktığı görüldü."
@@ -735,14 +736,15 @@ namespace Dropy.EditorTools
                 {
                     day = 1, title = "Yumuşak kat", topic = RuleTopic.YumusakKat,
                     body = "Zemin kat <b>market</b> ve tavanı <b>4 m ya da daha yüksek</b>, perde yoksa: yumuşak kat.\n\n" +
-                           "PERDE EKLE ya da RED.",
+                           "Tek kusuru buysa doğru mühür <b>PERDE EKLE</b> (harcını da alırsın). O gün perde hakkın bittiyse RED.",
                     why = "Zemin katı dükkân olup duvarları kaldırılan binalarda deprem yükü o katta toplanır ve kat " +
                           "çöker; 1999 ve 2023 depremlerinde en sık görülen yıkılma biçimlerinden biri buydu."
                 },
                 new RegulationPage
                 {
                     day = 1, title = "Kolon", topic = RuleTopic.Kolon,
-                    body = "Kolon <b>kesik</b> ise yalnız RED. Perde kesik kolonu kurtarmaz.",
+                    body = "Kolon <b>kesik</b> ise yalnız RED. Perde kesik kolonu kurtarmaz.\n\n" +
+                           "Binada künyede yazandan fazla kat (<b>kaçak kat</b>) varsa: RED.",
                     why = "Kolon binanın taşıyıcısıdır; yer açmak için kesilen kolon bütün binayı riske atar."
                 },
                 new RegulationPage
@@ -898,7 +900,7 @@ namespace Dropy.EditorTools
                     var c = cases[(day - 1) * Economy.FilesPerDay + k];
                     allCorrect &= policy(c) == BuildingRules.CorrectSeal(c);
                     var seal = OnePerDay(policy(c), ref shearUsed);
-                    // Rüşvetli onayda yalnız olağan harç kasaya girer (DeskManager.Decide ile aynı kural).
+                    // Rüşvetli onayın parasına müteahhit gidince el konulur: net 0 (DeskManager.RunCase ile aynı kural).
                     r.money += BuildingRules.Income(c, seal, day);
                     if (BuildingRules.Fate(c, seal) == BuildingFate.Collapsed)
                         collapsedThisPart = true;

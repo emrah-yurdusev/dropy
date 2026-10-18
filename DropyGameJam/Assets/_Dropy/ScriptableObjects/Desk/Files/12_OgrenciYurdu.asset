@@ -38,7 +38,7 @@ MonoBehaviour:
   dialogue: {fileID: 0}
   callbacks: []
   introLines:
-  - "Yer biraz oynad\u0131. Siz keyfinizi bozmay\u0131n, bu \u015Fehrin binalar\u0131
+  - "Yer biraz oynad\u0131. Siz keyfinizi bozmay\u0131n, Fayk\xF6y'\xFCn binalar\u0131
     b\xF6yle \u015Feylere al\u0131\u015F\u0131k."
   - "Yurt acil, d\xF6nem ba\u015Fl\u0131yor. \u0130ki y\xFCz \xF6\u011Frenci kap\u0131da
     kalmas\u0131n."
@@ -58,13 +58,11 @@ MonoBehaviour:
     text: "Kira d\xFC\u015F\xFCnce kasan\u0131zda {kasa} kalacak. Evde {hazirlik}
       h\xE2l\xE2 yok; a\xE7\u0131\u011F\u0131n\u0131z {eksik}."
   - condition: 1
-    text: "Bu k\u0131rk bin o a\xE7\u0131\u011F\u0131 kapat\u0131r. Bir baba ailesini
-      korumaz m\u0131?"
+    text: "Bu k\u0131rk bin o a\xE7\u0131\u011F\u0131 kapat\u0131r. Bir d\xFC\u015F\xFCn\xFCn."
   - condition: 2
-    text: "K\u0131z\u0131n\u0131z geziye gidemedi diye duydum... Bir baba eli bo\u015F
-      durur mu?"
+    text: "K\u0131z\u0131n\u0131z geziye gidemedi diye duydum... Bir d\xFC\u015F\xFCn\xFCn."
   - condition: 4
-    text: "Bu \u015Fehirde herkes beni tan\u0131r. Bug\xFCn reddedersiniz, yar\u0131n
-      kap\u0131n\u0131z\u0131 kimse \xE7almaz."
+    text: "Fayk\xF6y'de herkes beni tan\u0131r. Bug\xFCn reddederseniz yar\u0131n
+      ba\u015Fka kap\u0131 \xE7alar\u0131m."
   collapseHeadline: "\xD6\u011Frenci yurdu \xE7\xF6kt\xFC"
   standingLine: "\xD6\u011Frenci Yurdu ayakta."

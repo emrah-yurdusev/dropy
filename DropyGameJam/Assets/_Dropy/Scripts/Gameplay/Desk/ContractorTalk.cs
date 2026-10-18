@@ -149,11 +149,11 @@ namespace Dropy.Gameplay
             string s = line.ToLower(Tr);
             if (Has(s, "kırk bin", "zahmetinize"))
             {
-                var bribe = Two("Rüşvet mi teklif ediyorsunuz?", "Teşekkür diyelim, teşekkür. Kimse bir şey demez.",
-                    "Rüşvet mi? Ne çirkin kelime {hitap}. Ben ona \"mesai sonrası teşekkür\" diyorum. " +
-                    "Teşekkürü geri çevirenler bu koltukta pek uzun oturmaz ama.",
-                    "Dosyaya bakmadan bir şey demem.", "Bakın, bakın. Teklifim duruyor.",
-                    "Bakın tabii, acelem yok. Teklifim de kaçmaz; masada sizi bekler.");
+                // Net ret ya da kararsız kalmak; rüşveti kabul etmek bir kart değil, ONAY mührünü basmaktır.
+                var bribe = Two("Ben harç dışında para almam.", "Peki peki, laf arasında dedim.",
+                    "Peki {hitap}, siz bilirsiniz. Ama teklif geçerli; fikriniz değişirse onayı basmanız yeter.",
+                    "Önce dosyaya bakalım.", "Bakın, bakın.",
+                    "Bakın tabii, acelem yok. Teklifim masada duruyor.");
                 foreach (var reply in bribe)
                     reply.specific = true;
                 return bribe;
