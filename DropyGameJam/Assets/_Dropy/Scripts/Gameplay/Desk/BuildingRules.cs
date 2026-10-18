@@ -41,7 +41,7 @@ namespace Dropy.Gameplay
     /// kira düşünce çanta + sabitlemeye (5.000 + 10.000) tam yeter; 3. günün harcı son akşama 5.000 TL bırakır.
     /// Aileye ödenen her istek bir güvenlik önleminden çıkar. Değiştirmeden önce o hesabı yeniden yap (üretici script denetler).
     /// Yanlış onaya para cezası yok: depremde onayladığın bina çökerse soruşturma açılır, oyun biter. Rüşvetin parasına
-    /// el konulur (<see cref="BuildingRules.Income"/>): rüşvet kasaya hiç girmez. Kasa eksiye düşebilir (borç).
+    /// el konulur (<see cref="BuildingRules.Income"/>): rüşvetten kasada hiçbir şey kalmaz. Kasa eksiye düşebilir (borç).
     /// </summary>
     public static class Economy
     {
@@ -183,7 +183,7 @@ namespace Dropy.Gameplay
             switch (flaw)
             {
                 case Flaw.BadConcrete: return "Beton C25, C30 ya da C35 değil";
-                case Flaw.SoftStory: return "Yumuşak kat: perde ya da red";
+                case Flaw.SoftStory: return "Yumuşak kat: perde ekle (hak bittiyse red)";
                 case Flaw.CutColumn: return "Kesik kolon: yalnız red";
                 case Flaw.SandFoundation: return "Kum zemin, 5+ kat: kazık şart";
                 default: return "Ağır hasarlı bina onarılmaz: red";
@@ -246,7 +246,7 @@ namespace Dropy.Gameplay
                 return why;
             }
             if (played == Seal.Reject && ShearWallSaves(c))
-                return $"Yumuşak kat perdeyle kurtarılabilirdi: perde eklenir, aileler taşınır, sen de {Economy.ShearWallFee} TL alırdın.";
+                return $"Yumuşak kat perdeyle kurtarılabilirdi: perde eklenir, aileler taşınır, sen de {Ui.Money(Economy.ShearWallFee)} alırdın.";
             var parts = new List<string>();
             foreach (var flaw in flaws)
                 parts.Add(Explain(flaw, c));
@@ -273,11 +273,11 @@ namespace Dropy.Gameplay
         }
 
         /// <summary>
-        /// Mühürün kasaya gerçekten getirdiği. Rüşvetli onayda (teklif edilen tutar) Teftiş Kurulu paraya el koyar:
-        /// kasaya yalnız olağan harç girer. Mühürün altında yine teklif edilen tutar yazar (<see cref="Fee"/>).
+        /// Mühürün o gün sonunda kasada bıraktığı. Rüşvetli onayda teklif önce kasaya girer, müteahhit gidince
+        /// Teftiş Kurulu tamamına (harç dahil) el koyar: net 0. Mühürün altında teklif edilen tutar yazar (<see cref="Fee"/>).
         /// </summary>
         public static int Income(BuildingCase c, Seal seal, int day) =>
-            seal == Seal.Approve && c.approveFeeOverride > 0 && day <= Economy.LastPaidDay ? Economy.ApproveFee : Fee(c, seal, day);
+            seal == Seal.Approve && c.approveFeeOverride > 0 ? 0 : Fee(c, seal, day);
 
         /// <summary>Mühürün altında yazan tutar: rüşvetli dosyada müteahhidin teklifi.</summary>
         public static int Fee(BuildingCase c, Seal seal, int day)

@@ -95,9 +95,9 @@ MonoBehaviour:
     boxCollapsed: "\xC7\xD6KENLER"
     boxInvestigation: "SORU\u015ETURMA"
     boxReward: "\xD6D\xDCL"
-    rewardLine: "Kusursuz sicil: \u0130mar M\xFCd\xFCrl\xFC\u011F\xFC d\xFCr\xFCst
-      memura {0} prim verdi. R\xFC\u015Fvet\xE7inin teklif etti\u011Fi para, hak
-      edilerek kazan\u0131ld\u0131."
+    rewardLine: "Kusursuz sicil: \u0130sk\xE2n memuru r\xFC\u015Fvet teklifini reddetti,
+      b\xFCt\xFCn dosyalarda do\u011Fru karar\u0131 verdi. Fayk\xF6y \u0130mar M\xFCd\xFCrl\xFC\u011F\xFC
+      ona {0} prim verdi. D\xFCr\xFCst kalan kazand\u0131."
     boxCourt: "SORU\u015ETURMA"
     boxExperts: "UZMANLAR D\u0130YOR K\u0130"
     expertLines:
@@ -106,6 +106,9 @@ MonoBehaviour:
     - "M\xFCteahhitler: Fayk\xF6y'\xFCn ustalar\u0131n\u0131n \xE7o\u011Fu i\u015Fini
       kurala g\xF6re yapar; denetim d\xFCr\xFCst i\u015Fi korur."
     emptySoundNote: "\u0130sk\xE2n verilmedi; aileleri h\xE2l\xE2 kirada."
+    boxUnjust: HAKSIZ RED
+    unjustNote: "Kurala uyan ya da perdeyle kurtulabilecek binalar bo\u015F kald\u0131;
+      aileler h\xE2l\xE2 kirada. Vatanda\u015F\u0131n hakk\u0131 da korunmal\u0131."
     investigation: "Tefti\u015F Kurulu, {0} dosyas\u0131ndaki r\xFC\u015Fvet kayd\u0131n\u0131
       inceledi: paraya el konuldu. G\xF6revden uzakla\u015Ft\u0131r\u0131ld\u0131n,
       soru\u015Fturma s\xFCr\xFCyor."
@@ -132,15 +135,15 @@ MonoBehaviour:
       ge\xE7ti."
     verdictHomeLostNoFixing: "Ev y\u0131k\u0131ld\u0131 ama aile \xE7antay\u0131
       kap\u0131p \xE7\u0131kt\u0131. Devrilen dolap Elif'i \xE7ok korkuttu."
-    verdictHomeLostNone: "Ev y\u0131k\u0131ld\u0131. Allahtan evde kimse yoktu; ama
+    verdictHomeLostNone: "Ev y\u0131k\u0131ld\u0131. Neyse ki evde kimse yoktu; ancak
       hi\xE7bir haz\u0131rl\u0131k olmad\u0131\u011F\u0131 i\xE7in b\xFCt\xFCn e\u015Fyalar
       y\u0131k\u0131nt\u0131da kald\u0131."
     homeStorySurvived: "Y\u0131k\u0131lan evden hemen \xE7\u0131kt\u0131lar: \xE7anta
       kap\u0131n\u0131n yan\u0131ndayd\u0131, aile toplanma alan\u0131nda bulu\u015Ftu."
     homeStoryInjured: "\u0130sk\xE2n memurunun evi y\u0131k\u0131ld\u0131; aile d\u0131\u015Far\u0131
       \xE7\u0131kt\u0131 ama gece zor ge\xE7ti."
-    headlineFamilyLost: "\u0130sk\xE2n memurunun evi y\u0131k\u0131ld\u0131; Allahtan
-      evde kimse yoktu"
+    headlineFamilyLost: "\u0130sk\xE2n memurunun evi y\u0131k\u0131ld\u0131; neyse
+      ki evde kimse yoktu"
     subheadFamilyLost: "Sars\u0131nt\u0131da \xE7atlayan ev g\xFC\xE7lendirilmemi\u015Fti;
       evde ne sabitlenmi\u015F dolap vard\u0131 ne deprem \xE7antas\u0131."
     homeStoryLost: "\u0130sk\xE2n memurunun ailesi o gece akrabadayd\u0131. Ev y\u0131k\u0131ld\u0131;

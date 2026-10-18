@@ -11,6 +11,8 @@ namespace Dropy.Gameplay
     {
         const string Good = "•  ";
         const string Bad = "×  ";
+        /// <summary>Bu kadar gereksiz redde (Teftiş Kurulu şikâyeti) gazetede "Haksız red" kutusu çıkar.</summary>
+        const int UnjustBoxAt = 3;
 
         /// <summary>6. gün depreminden sonra, hapse girilmediyse.</summary>
         public static NewspaperPage Final(IList<DeskManager.CaseResult> results, IDictionary<ShopItem, int> boughtOn,
@@ -58,7 +60,7 @@ namespace Dropy.Gameplay
             page.boxes.Add(home);
             // Ev yıkıldıysa ailenin haberi ikinci sütunun başına çıkar; ayakta kalan bina haberi kutuya iner.
             string homeStory = HomeStory(outcome, t);
-            // Hiç hazırlık yoksa manşet ailenin evinin haberi olur (ev yıkıldı, Allahtan evde kimse yoktu).
+            // Hiç hazırlık yoksa manşet ailenin evinin haberi olur (ev yıkıldı, neyse ki evde kimse yoktu).
             if (outcome == FamilyOutcome.Lost && collapsed.Count == 0)
             {
                 page.headline = t.headlineFamilyLost;
@@ -98,11 +100,16 @@ namespace Dropy.Gameplay
                 box.inverted = true;
                 page.boxes.Add(box);
             }
-            if (emptySound.Count > 0)
-                page.boxes.Add(Box(t.boxEmptySound, 0, Names(emptySound), t.emptySoundNote));
+            // Gereksiz redler çoksa (Teftiş Kurulu şikâyeti) kendi kutusunu alır; boş kalan sağlam binalar onun içinde.
+            var unjust = results.Where(r => DeskHud.UnjustReject(r, results)).ToList();
+            if (unjust.Count >= UnjustBoxAt)
+                // Sol sütun fotoğraf ve "Evde" kutusuyla dolu: orta sütuna, çökenlerin altına.
+                page.boxes.Add(Box(t.boxUnjust, 1, Names(unjust), t.unjustNote));
+            else if (emptySound.Count > 0)
+                page.boxes.Add(Box(t.boxEmptySound, 1, Names(emptySound), t.emptySoundNote));
             // Soruşturmasız sonda mühendislerin ve dürüst müteahhitlerin sözü.
             if (bribes.Count == 0 && t.expertLines != null && t.expertLines.Count > 0)
-                page.boxes.Add(Box(t.boxExperts, 0, t.expertLines.ToArray()));
+                page.boxes.Add(Box(t.boxExperts, 2, t.expertLines.ToArray()));
 
             var needs = new NewsBox { title = t.boxFamily, column = 2 };
             foreach (var (need, paid) in family)

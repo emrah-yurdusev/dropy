@@ -27,12 +27,16 @@ namespace Dropy.Core
         /// <summary>Konuşma balonlarının yazılma hızına çarpan.</summary>
         public static float TextSpeedMultiplier => TextSpeedMultipliers[TextSpeed];
 
+        /// <summary>Son seçilen tam ekran değeri: Unity değişikliği kare sonunda uygular, düğme o ana kadar eskisini okumasın.</summary>
+        static bool? requestedFullscreen;
+
         /// <summary>Unity tam ekran tercihini oyunun kendi ayarlarında saklar; burada yalnız uygulanır.</summary>
         public static bool Fullscreen
         {
-            get => Screen.fullScreen;
+            get => requestedFullscreen ?? Screen.fullScreen;
             set
             {
+                requestedFullscreen = value;
                 Screen.fullScreenMode = value ? FullScreenMode.FullScreenWindow : FullScreenMode.Windowed;
                 Changed?.Invoke();
             }

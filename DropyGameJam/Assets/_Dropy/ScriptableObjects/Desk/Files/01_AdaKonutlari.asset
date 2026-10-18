@@ -38,14 +38,14 @@ MonoBehaviour:
   dialogue: {fileID: 0}
   callbacks: []
   introLines:
-  - "Ada Konutlar\u0131, \xFC\xE7 kat. Betonu \u015Fehrin laboratuvar\u0131nda test
-    ettirdik, rapor ekte {hitap}."
+  - "Ada Konutlar\u0131, \xFC\xE7 kat. Betonu Fayk\xF6y'\xFCn laboratuvar\u0131nda
+    test ettirdik, rapor ekte {hitap}."
   questions:
   - question: "K\xFCnyede neden C20 yaz\u0131yor?"
     answer: "K\xFCnyeyi ye\u011Fenim doldurdu {hitap}, rakam\u0131 yanl\u0131\u015F
       yazm\u0131\u015F. D\xF6kt\xFC\u011F\xFCm\xFCz beton raporda yaz\u0131yor."
   - question: Betonu kim test etti?
-    answer: "\u015Eehrin laboratuvar\u0131. \u0130\xE7iniz rahat etmezse \xE7eki\xE7le
+    answer: "Fayk\xF6y'\xFCn laboratuvar\u0131. \u0130\xE7iniz rahat etmezse \xE7eki\xE7le
       vurun, g\xF6r\xFCn."
   approvedLine: 
   shearWallLine: 

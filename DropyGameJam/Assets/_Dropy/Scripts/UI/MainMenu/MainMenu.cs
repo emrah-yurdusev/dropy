@@ -19,8 +19,8 @@ namespace Dropy.Menu
     /// </summary>
     public class MainMenu : MonoBehaviour
     {
-        const string Title = "MÜTEAHHİT\nAVCISI";
-        const string Subtitle = "İNŞAAT İZİN DENETİMİ";
+        const string Title = "SAĞLAM\nMÜHÜR";
+        const string Subtitle = "FAYKÖY İSKÂN BÜROSU";
 
         static readonly Color Wall = new Color(0.84f, 0.67f, 0.38f);
         static readonly Color LogoPanel = new Color(0.13f, 0.12f, 0.11f);
@@ -60,6 +60,9 @@ namespace Dropy.Menu
             shown = false;
             Time.timeScale = 1f;
             AudioListener.pause = false;
+            // Masanın ortam uğultusu kalıcı bir kaynakta çalar: menüde yalnız menü müziği duyulsun.
+            Sfx.Ambience(0f);
+            Sfx.Room(0f);
             GameAudio.Save();
             SceneManager.LoadScene(0);
         }

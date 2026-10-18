@@ -150,7 +150,8 @@ namespace Dropy.Gameplay
         void Photo(RectTransform column, NewspaperPage page)
         {
             var frame = Ui.Image(column, "Photo", style.ink, raycast: false).rectTransform;
-            frame.gameObject.AddComponent<LayoutElement>().preferredHeight = 170f;
+            // Sol sütunda "Evde" kutusu da tam sığsın diye fotoğraf alçak tutulur.
+            frame.gameObject.AddComponent<LayoutElement>().preferredHeight = 140f;
             var back = Ui.Image(frame, "Paper", style.paper, raycast: false);
             back.rectTransform.Stretch(2f, 2f, 2f, 2f);
             var custom = page.mugshot ? style.mugshotPhoto : style.playerPhoto;

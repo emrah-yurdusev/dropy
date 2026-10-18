@@ -253,8 +253,8 @@ namespace Dropy.Gameplay
             risk.offsetMin = new Vector2(12f, 12f);
             risk.offsetMax = new Vector2(-12f, 112f);
             var riskText = Ui.Text(risk, "Text",
-                $"<b>İlçe bir fay hattının üstünde; {Economy.QuakeDays[0]}. günün sonunda deprem bekleniyor.</b>\n" +
-                "Onayladığın bina çökerse hakkında soruşturma açılır. Senin ailen de bu ilçede yaşıyor.",
+                $"<b>Fayköy bir fay hattının üstünde; {Economy.QuakeDays[0]}. günün sonunda deprem bekleniyor.</b>\n" +
+                "Onayladığın bina çökerse hakkında soruşturma açılır. Senin ailen de Fayköy'de yaşıyor.",
                 22f, Color.white, TextAlignmentOptions.MidlineLeft);
             riskText.richText = true;
             riskText.rectTransform.Stretch(30f, 0f, 30f, 0f);
@@ -501,6 +501,10 @@ namespace Dropy.Gameplay
         }
 
         public static int CountCorrect(IList<DeskManager.CaseResult> results) => results.Count(r => r.seal == RightSeal(r, results));
+
+        /// <summary>Gereksiz red: bina kitaba uyuyordu ya da perdeyle kurtulabilirdi (o gün perde hakkı da vardı).</summary>
+        public static bool UnjustReject(DeskManager.CaseResult r, IList<DeskManager.CaseResult> results) =>
+            r.seal == Seal.Reject && RightSeal(r, results) != Seal.Reject;
 
         /// <summary>
         /// Dosya karnesi: her dosyada basılan ve doğru mühür; yanlışlarda kuralın kısa açıklaması.

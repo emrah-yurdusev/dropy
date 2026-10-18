@@ -33,11 +33,11 @@ MonoBehaviour:
       defensive: 1
       text: "Biraz a\xE7t\u0131k, odalar ferah olsun. Ta\u015F\u0131r {hitap}, ta\u015F\u0131r."
     tics:
-    - "Herkesin bir ailesi var, de\u011Fil mi?"
-    - "Bu \u015Fehirde herkes beni tan\u0131r."
+    - "Hepimizin bir i\u015Fi var, de\u011Fil mi?"
+    - "Fayk\xF6y'de herkes beni tan\u0131r."
     approved:
     - "Ak\u0131ll\u0131 adams\u0131n\u0131z. Kimse bir \u015Fey demez."
     rejected:
-    - "Pi\u015Fman olacaks\u0131n\u0131z {hitap}. Bunu unutmam."
+    - "Siz bilirsiniz {hitap}. Ben ba\u015Fka kap\u0131 \xE7alar\u0131m."
     shearWall: []
     unjustReject: []

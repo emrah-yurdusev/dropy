@@ -139,7 +139,7 @@ namespace Dropy.Gameplay
         public string boxInvestigation = "SORUŞTURMA";
         public string boxReward = "ÖDÜL";
         [Tooltip("{0} = prim tutarı")]
-        public string rewardLine = "Kusursuz sicil: İmar Müdürlüğü dürüst memura {0} prim verdi. Rüşvetçinin teklif ettiği para, hak edilerek kazanıldı.";
+        public string rewardLine = "Kusursuz sicil: İskân memuru rüşvet teklifini reddetti, bütün dosyalarda doğru kararı verdi. Fayköy İmar Müdürlüğü ona {0} prim verdi. Dürüst kalan kazandı.";
         public string boxCourt = "SORUŞTURMA";
         [Tooltip("Final gazetesinde uzmanların kutusu (soruşturmasız sonda)")]
         public string boxExperts = "UZMANLAR DİYOR Kİ";
@@ -150,6 +150,8 @@ namespace Dropy.Gameplay
             "Müteahhitler: Fayköy'ün ustalarının çoğu işini kurala göre yapar; denetim dürüst işi korur.",
         };
         public string emptySoundNote = "İskân verilmedi; aileleri hâlâ kirada.";
+        public string boxUnjust = "HAKSIZ RED";
+        public string unjustNote = "Kurala uyan ya da perdeyle kurtulabilecek binalar boş kaldı; aileler hâlâ kirada. Vatandaşın hakkı da korunmalı.";
         [Tooltip("{0} = müteahhit adları")]
         public string investigation = "Teftiş Kurulu, {0} dosyasındaki rüşvet kaydını inceledi: paraya el konuldu. Görevden uzaklaştırıldın, soruşturma sürüyor.";
         [Tooltip("{0} = müteahhit, {1} = onay günü sözü")]
@@ -174,10 +176,10 @@ namespace Dropy.Gameplay
         public string verdictHomeLostSafe = "EVİN YIKILDI, AİLEN GÜVENDE";
         public string verdictHomeLostNoBag = "Ev yıkıldı ama aile dışarı çıktı. Dolaplar sabitti; yalnız fener yoktu, gece karanlıkta geçti.";
         public string verdictHomeLostNoFixing = "Ev yıkıldı ama aile çantayı kapıp çıktı. Devrilen dolap Elif'i çok korkuttu.";
-        public string verdictHomeLostNone = "Ev yıkıldı. Allahtan evde kimse yoktu; ama hiçbir hazırlık olmadığı için bütün eşyalar yıkıntıda kaldı.";
+        public string verdictHomeLostNone = "Ev yıkıldı. Neyse ki evde kimse yoktu; ancak hiçbir hazırlık olmadığı için bütün eşyalar yıkıntıda kaldı.";
         public string homeStorySurvived = "Yıkılan evden hemen çıktılar: çanta kapının yanındaydı, aile toplanma alanında buluştu.";
         public string homeStoryInjured = "İskân memurunun evi yıkıldı; aile dışarı çıktı ama gece zor geçti.";
-        public string headlineFamilyLost = "İskân memurunun evi yıkıldı; Allahtan evde kimse yoktu";
+        public string headlineFamilyLost = "İskân memurunun evi yıkıldı; neyse ki evde kimse yoktu";
         public string subheadFamilyLost = "Sarsıntıda çatlayan ev güçlendirilmemişti; evde ne sabitlenmiş dolap vardı ne deprem çantası.";
         public string homeStoryLost = "İskân memurunun ailesi o gece akrabadaydı. Ev yıkıldı; hazırlık olmadığı için hiçbir eşya kurtarılamadı.";
 
