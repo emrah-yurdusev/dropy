@@ -21,6 +21,7 @@ namespace Dropy.Gameplay
         public static Sprite Frame => RoundedRect("frame", 64, 16, 5f, 1.5f);
         public static Sprite Shadow => RoundedRect("shadow", 64, 28, 0f, 22f);
         public static Sprite Ellipse => EllipseRing("ellipse", 128, 64, 5f);
+        public static Sprite Device => RoundedRect("device", 128, 56, 0f, 1.5f);
 
         public static RectTransform Rect(string name, Transform parent)
         {
