@@ -1,4 +1,3 @@
-#if UNITY_EDITOR || DEVELOPMENT_BUILD
 using System.Collections;
 using System.Collections.Generic;
 using TMPro;
@@ -14,8 +13,8 @@ namespace Dropy.Gameplay
 {
     /// <summary>
     /// F1 geliştirici paneli: dosya/gün atlama, ara sahneleri oynatma, kasa/sabitleme/aile bağı hileleri, hız,
-    /// sahne yükleme. Editörde ve Development Build'de kendiliğinden kurulur (sahneye eklemeye gerek yok);
-    /// yayın derlemesine hiç girmez.
+    /// sahne yükleme. Kendiliğinden kurulur (sahneye eklemeye gerek yok). Yayın derlemesinde de vardır ki jüri farklı
+    /// sonları deneyebilsin; F1 yalnız ayarlardan açıksa çalışır (Esc menüsündeki "Geliştirici paneli" anahtarı).
     /// </summary>
     public class DevPanel : MonoBehaviour
     {
@@ -40,6 +39,7 @@ namespace Dropy.Gameplay
         int targetIndex;
         bool fast;
         GameObject ownEventSystem;
+        bool wasAllowed;
 
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
         static void Install()
@@ -58,14 +58,29 @@ namespace Dropy.Gameplay
             Build();
             panel.SetActive(false);
             SceneManager.sceneLoaded += OnSceneLoaded;
+            Dropy.Core.GameSettings.Changed += OnSettingsChanged;
+            wasAllowed = Dropy.Core.GameSettings.DevPanel;
         }
 
-        void OnDestroy() => SceneManager.sceneLoaded -= OnSceneLoaded;
+        void OnDestroy()
+        {
+            SceneManager.sceneLoaded -= OnSceneLoaded;
+            Dropy.Core.GameSettings.Changed -= OnSettingsChanged;
+        }
+
+        /// <summary>Anahtar açılınca panel hemen görünür (nerede olduğu anlaşılsın), kapanınca gizlenir.</summary>
+        void OnSettingsChanged()
+        {
+            bool allowed = Dropy.Core.GameSettings.DevPanel;
+            if (allowed != wasAllowed)
+                SetOpen(allowed);
+            wasAllowed = allowed;
+        }
 
         void Update()
         {
             var keyboard = Keyboard.current;
-            if (keyboard != null && keyboard.f1Key.wasPressedThisFrame)
+            if (keyboard != null && keyboard.f1Key.wasPressedThisFrame && Dropy.Core.GameSettings.DevPanel)
                 SetOpen(!panel.activeSelf);
             if (panel.activeSelf && Time.unscaledTime >= nextRefresh)
             {
@@ -123,14 +138,14 @@ namespace Dropy.Gameplay
             Row(($"{Economy.Days}. gün sonu: deprem", DangerColor, () => JumpAbsolute(int.MaxValue)));
 
             Header("ARA SAHNELER");
-            Row(("Deprem sahnesi", ButtonColor, () => PlayCinematic(prison: false)), ("Hapishane sahnesi", ButtonColor, () => PlayCinematic(prison: true)));
+            Row(("Deprem sahnesi", ButtonColor, () => PlayCinematic(prison: false)), ("Gözaltı sahnesi", ButtonColor, () => PlayCinematic(prison: true)));
 
             Header("DURUM");
             fixingLabel = Row(("+50.000 TL", ButtonColor, () => WithDesk(d => d.DebugAddMoney(50000))), ("", ButtonColor, ToggleFixing))[1];
             speedLabel = Row(("Aile bağını doldur", ButtonColor, () => WithDesk(d => d.DebugFillBond())), ("", ButtonColor, ToggleSpeed))[1];
 
             Header("SAHNELER");
-            Row(("main", ButtonColor, () => Load("main")), ("Deprem", ButtonColor, () => Load(EarthquakeCinematic.SceneName)), ("Hapishane", ButtonColor, () => Load(PrisonCinematic.SceneName)));
+            Row(("main", ButtonColor, () => Load("main")), ("Deprem", ButtonColor, () => Load(EarthquakeCinematic.SceneName)), ("Gözaltı", ButtonColor, () => Load(PrisonCinematic.SceneName)));
             Row(("Oyunu baştan başlat", DangerColor, () => Load("main")));
         }
 
@@ -364,4 +379,3 @@ namespace Dropy.Gameplay
         }
     }
 }
-#endif

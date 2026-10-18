@@ -302,7 +302,7 @@ namespace Dropy.Gameplay
         {
             var panel = Ui.Image(root, "Pause", new Color(0.03f, 0.03f, 0.05f, 0.96f)).rectTransform.Stretch();
             var box = Ui.Rect("Box", panel);
-            box.Place(new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), Vector2.zero, new Vector2(420f, 520f));
+            box.Place(new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), Vector2.zero, new Vector2(460f, 600f));
             var layout = box.gameObject.AddComponent<VerticalLayoutGroup>();
             layout.spacing = 18f;
             layout.childControlHeight = true;
@@ -316,11 +316,25 @@ namespace Dropy.Gameplay
             gear.type = Image.Type.Simple;
             gear.rectTransform.Place(new Vector2(0f, 0.5f), new Vector2(0f, 0.5f), new Vector2(26f, 0f), new Vector2(38f, 38f));
             AddMenuButton(box, "BAŞTAN BAŞLA", new Color(0.45f, 0.33f, 0.25f), () => RestartClicked?.Invoke());
+            // Jüri farklı sonları deneyebilsin: F1 geliştirici panelini açan/kapatan anahtar.
+            Button dev = null;
+            dev = AddMenuButton(box, DevLabel(), new Color(0.3f, 0.28f, 0.42f), () =>
+            {
+                Dropy.Core.GameSettings.DevPanel = !Dropy.Core.GameSettings.DevPanel;
+                dev.GetComponentInChildren<TextMeshProUGUI>().text = DevLabel();
+            });
+            var devLabel = dev.GetComponentInChildren<TextMeshProUGUI>();
+            devLabel.fontSize = 20f;
+            devLabel.richText = true;
             AddMenuButton(box, "ANA MENÜ", new Color(0.3f, 0.36f, 0.3f), Dropy.Menu.MainMenu.ReturnToMenu);
             AddMenuButton(box, "OYUNDAN ÇIK", new Color(0.4f, 0.15f, 0.15f), Dropy.Core.GameExit.Quit);
             panel.gameObject.SetActive(false);
             return panel.gameObject;
         }
+
+        static string DevLabel() => Dropy.Core.GameSettings.DevPanel
+            ? "GELİŞTİRİCİ PANELİ [F1]:  <color=#9be36b>AÇIK</color>"
+            : "GELİŞTİRİCİ PANELİ [F1]:  <color=#ff9d8f>KAPALI</color>";
 
         static Button AddMenuButton(RectTransform parent, string label, Color color, UnityEngine.Events.UnityAction onClick)
         {

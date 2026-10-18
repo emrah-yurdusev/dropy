@@ -1311,8 +1311,7 @@ namespace Dropy.Gameplay
             cam.localPosition = origin;
         }
 
-#if UNITY_EDITOR || DEVELOPMENT_BUILD
-        // Geliştirici paneli (F1) kısayolları. Yayın derlemesine girmez.
+        // Geliştirici paneli (F1) kısayolları. Jüri farklı sonları deneyebilsin diye yayın derlemesinde de var.
 
         public enum DebugSeal
         {
@@ -1473,8 +1472,6 @@ namespace Dropy.Gameplay
             if (paused)
                 SetPaused(false);
         }
-#endif
-
         public static string SealName(Seal seal)
         {
             switch (seal)

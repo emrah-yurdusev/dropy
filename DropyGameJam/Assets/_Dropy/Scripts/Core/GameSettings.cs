@@ -11,6 +11,7 @@ namespace Dropy.Core
         const string TextSpeedKey = "settings.textSpeed";
         const string ShakeKey = "settings.shake";
         const string PenKey = "settings.penTutorial";
+        const string DevPanelKey = "settings.devPanel";
 
         public static readonly string[] TextSpeedNames = { "YAVAŞ", "NORMAL", "HIZLI" };
         static readonly float[] TextSpeedMultipliers = { 0.55f, 1f, 1.8f };
@@ -46,6 +47,13 @@ namespace Dropy.Core
         {
             get => PlayerPrefs.GetInt(ShakeKey, 1) == 1;
             set => SetInt(ShakeKey, value ? 1 : 0);
+        }
+
+        /// <summary>F1 geliştirici paneli kullanılabilir mi (jüri farklı sonları denesin diye). Editörde varsayılan açık.</summary>
+        public static bool DevPanel
+        {
+            get => PlayerPrefs.GetInt(DevPanelKey, Application.isEditor ? 1 : 0) == 1;
+            set => SetInt(DevPanelKey, value ? 1 : 0);
         }
 
         public static bool PenTutorial
